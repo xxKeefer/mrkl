@@ -1,16 +1,76 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { mkdtempSync, mkdirSync, existsSync, writeFileSync, readFileSync, rmSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { loadConfig, initConfig } from "../src/config.js";
+
+let tmp: string;
+
+beforeEach(() => {
+  tmp = mkdtempSync(join(tmpdir(), "mrkl-test-"));
+});
+
+afterEach(() => {
+  rmSync(tmp, { recursive: true, force: true });
+});
 
 describe("config", () => {
   describe("loadConfig", () => {
-    it.todo("reads mrkl.toml and returns Config");
-    it.todo("throws if mrkl.toml not found");
-    it.todo("applies default tasks_dir when not specified");
+    it("reads mrkl.toml and returns Config", () => {
+      writeFileSync(join(tmp, "mrkl.toml"), 'prefix = "TEST"\ntasks_dir = ".tasks"\n');
+      const config = loadConfig(tmp);
+      expect(config).toEqual({ prefix: "TEST", tasks_dir: ".tasks" });
+    });
+
+    it("prefers .config/mrkl/mrkl.toml over root", () => {
+      writeFileSync(join(tmp, "mrkl.toml"), 'prefix = "ROOT"\ntasks_dir = ".tasks"\n');
+      mkdirSync(join(tmp, ".config", "mrkl"), { recursive: true });
+      writeFileSync(join(tmp, ".config", "mrkl", "mrkl.toml"), 'prefix = "NESTED"\ntasks_dir = ".tasks"\n');
+      const config = loadConfig(tmp);
+      expect(config.prefix).toBe("NESTED");
+    });
+    it("falls back to root mrkl.toml", () => {
+      writeFileSync(join(tmp, "mrkl.toml"), 'prefix = "ROOT"\ntasks_dir = ".tasks"\n');
+      const config = loadConfig(tmp);
+      expect(config.prefix).toBe("ROOT");
+    });
+    it("throws if mrkl.toml not found", () => {
+      expect(() => loadConfig(tmp)).toThrow("mrkl.toml not found");
+    });
+    it("applies default tasks_dir when not specified", () => {
+      writeFileSync(join(tmp, "mrkl.toml"), 'prefix = "TEST"\n');
+      const config = loadConfig(tmp);
+      expect(config.tasks_dir).toBe(".tasks");
+    });
   });
 
   describe("initConfig", () => {
-    it.todo("creates mrkl.toml with given prefix");
-    it.todo("creates .tasks directory");
-    it.todo("creates mrkl_counter file");
-    it.todo("is idempotent — does not overwrite existing config");
+    it("creates mrkl.toml with given prefix", () => {
+      initConfig(tmp, { prefix: "FOO" });
+      const config = loadConfig(tmp);
+      expect(config.prefix).toBe("FOO");
+      expect(config.tasks_dir).toBe(".tasks");
+    });
+    it("creates .tasks directory and .archive subdirectory", () => {
+      initConfig(tmp, { prefix: "FOO" });
+      expect(existsSync(join(tmp, ".tasks"))).toBe(true);
+      expect(existsSync(join(tmp, ".tasks", ".archive"))).toBe(true);
+    });
+    it("creates mrkl_counter file starting at 0", () => {
+      initConfig(tmp, { prefix: "FOO" });
+      const counter = readFileSync(join(tmp, "mrkl_counter"), "utf-8");
+      expect(counter).toBe("0");
+    });
+    it("is idempotent — does not overwrite existing config or reset counter", () => {
+      initConfig(tmp, { prefix: "FOO" });
+      // Simulate counter advancement
+      writeFileSync(join(tmp, "mrkl_counter"), "5");
+      // Run again — should not reset
+      initConfig(tmp, { prefix: "BAR" });
+      const config = loadConfig(tmp);
+      expect(config.prefix).toBe("FOO");
+      const counter = readFileSync(join(tmp, "mrkl_counter"), "utf-8");
+      expect(counter).toBe("5");
+    });
   });
 });
