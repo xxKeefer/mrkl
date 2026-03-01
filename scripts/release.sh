@@ -3,7 +3,7 @@ set -euo pipefail
 
 version="${1:?Usage: npm run release -- x.y.z}"
 
-npm version "$version" --no-git-tag-version
+npm version "$version" --no-git-tag-version --allow-same-version
 git add -A
 git commit -m "chore: release v$version"
 git push

@@ -1,6 +1,6 @@
 {
   "name": "@xxkeefer/mrkl",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "type": "module",
   "description": "Lightweight CLI tool for structured markdown task tracking",
   "bin": {
@@ -19,7 +19,9 @@
     "markdown"
   ],
   "license": "MIT",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/xxKeefer/mrkl.git"
