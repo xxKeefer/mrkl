@@ -1,6 +1,6 @@
 {
   "name": "@xxkeefer/mrkl",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "description": "Lightweight CLI tool for structured markdown task tracking",
   "bin": {
@@ -9,7 +9,8 @@
   "scripts": {
     "build": "unbuild",
     "dev": "node --import tsx src/cli.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "release": "./scripts/release.sh"
   },
   "keywords": [
     "cli",
