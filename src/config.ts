@@ -45,7 +45,7 @@ export function initConfig(
   const tasksDir = join(dir, config.tasks_dir);
   mkdirSync(join(tasksDir, ".archive"), { recursive: true });
 
-  const counterPath = join(dir, "mrkl_counter");
+  const counterPath = join(dir, ".config", "mrkl", "mrkl_counter");
   if (!existsSync(counterPath)) {
     writeFileSync(counterPath, "0");
   }

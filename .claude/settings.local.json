@@ -3,7 +3,11 @@
     "allow": [
       "Bash(npm info:*)",
       "Bash(npx vitest:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(npm view:*)",
+      "Bash(npm test:*)",
+      "Bash(npx tsx:*)",
+      "Bash(npm run:*)"
     ]
   }
 }

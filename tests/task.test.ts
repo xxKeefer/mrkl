@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdtempSync, existsSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, existsSync, readFileSync, writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { initConfig } from "../src/config.js";
@@ -75,6 +75,13 @@ describe("task", () => {
     });
     it("returns empty array when no tasks exist", () => {
       expect(listTasks({ dir: tmp })).toEqual([]);
+    });
+    it("skips files that fail to parse", () => {
+      createTask({ dir: tmp, type: "feat", title: "valid task" });
+      writeFileSync(join(tmp, ".tasks", "not-a-task.md"), "# Just a README\nNo frontmatter here.");
+      const tasks = listTasks({ dir: tmp });
+      expect(tasks).toHaveLength(1);
+      expect(tasks[0].id).toBe("TEST-001");
     });
   });
 

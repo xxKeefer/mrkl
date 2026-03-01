@@ -36,9 +36,15 @@ export function listTasks(filter: ListFilter): TaskData[] {
     (f) => f.endsWith(".md") && !f.startsWith("."),
   );
 
-  let tasks = files.map((f) => {
-    const content = readFileSync(join(tasksDir, f), "utf-8");
-    return parse(content, f);
+  let tasks = files.flatMap((f) => {
+    try {
+      const content = readFileSync(join(tasksDir, f), "utf-8");
+      const task = parse(content, f);
+      if (!task.id || !task.type || !task.status) return [];
+      return [task];
+    } catch {
+      return [];
+    }
   });
 
   if (filter.type) tasks = tasks.filter((t) => t.type === filter.type);

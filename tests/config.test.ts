@@ -58,18 +58,18 @@ describe("config", () => {
     });
     it("creates mrkl_counter file starting at 0", () => {
       initConfig(tmp, { prefix: "FOO" });
-      const counter = readFileSync(join(tmp, "mrkl_counter"), "utf-8");
+      const counter = readFileSync(join(tmp, ".config", "mrkl", "mrkl_counter"), "utf-8");
       expect(counter).toBe("0");
     });
     it("is idempotent — does not overwrite existing config or reset counter", () => {
       initConfig(tmp, { prefix: "FOO" });
       // Simulate counter advancement
-      writeFileSync(join(tmp, "mrkl_counter"), "5");
+      writeFileSync(join(tmp, ".config", "mrkl", "mrkl_counter"), "5");
       // Run again — should not reset
       initConfig(tmp, { prefix: "BAR" });
       const config = loadConfig(tmp);
       expect(config.prefix).toBe("FOO");
-      const counter = readFileSync(join(tmp, "mrkl_counter"), "utf-8");
+      const counter = readFileSync(join(tmp, ".config", "mrkl", "mrkl_counter"), "utf-8");
       expect(counter).toBe("5");
     });
   });

@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-const COUNTER_FILE = "mrkl_counter";
+const COUNTER_FILE = join(".config", "mrkl", "mrkl_counter");
 
 export function nextId(dir: string): number {
   const filePath = join(dir, COUNTER_FILE);
