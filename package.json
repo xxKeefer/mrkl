@@ -1,0 +1,42 @@
+{
+  "name": "mrkl",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Lightweight CLI tool for structured markdown task tracking",
+  "bin": {
+    "mrkl": "./dist/cli.mjs"
+  },
+  "scripts": {
+    "build": "unbuild",
+    "dev": "node --import tsx src/cli.ts",
+    "test": "vitest run"
+  },
+  "keywords": [
+    "cli",
+    "task",
+    "tracker",
+    "markdown"
+  ],
+  "license": "MIT",
+  "files": ["dist"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xxkeefer/mrkl.git"
+  },
+  "homepage": "https://github.com/xxkeefer/mrkl#readme",
+  "bugs": {
+    "url": "https://github.com/xxkeefer/mrkl/issues"
+  },
+  "dependencies": {
+    "citty": "^0.1.6",
+    "consola": "^3.4.0",
+    "gray-matter": "^4.0.3",
+    "smol-toml": "^1.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.3",
+    "typescript": "^5.7.0",
+    "unbuild": "^3.3.1",
+    "vitest": "^3.0.0"
+  }
+}
