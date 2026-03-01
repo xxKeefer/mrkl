@@ -1,7 +1,20 @@
-export function nextId(_dir: string): number {
-  throw new Error("not implemented");
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+
+const COUNTER_FILE = "mrkl_counter";
+
+export function nextId(dir: string): number {
+  const filePath = join(dir, COUNTER_FILE);
+  const current = existsSync(filePath)
+    ? parseInt(readFileSync(filePath, "utf-8").trim(), 10)
+    : 0;
+  const next = current + 1;
+  writeFileSync(filePath, String(next));
+  return next;
 }
 
-export function currentId(_dir: string): number {
-  throw new Error("not implemented");
+export function currentId(dir: string): number {
+  const filePath = join(dir, COUNTER_FILE);
+  if (!existsSync(filePath)) return 0;
+  return parseInt(readFileSync(filePath, "utf-8").trim(), 10);
 }
