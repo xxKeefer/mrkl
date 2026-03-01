@@ -15,7 +15,12 @@ export default defineCommand({
   },
   run({ args }) {
     const dir = process.cwd();
-    initConfig(dir, { prefix: args.prefix });
-    consola.success("mrkl initialized");
+    try {
+      initConfig(dir, { prefix: args.prefix });
+      consola.success("mrkl initialized");
+    } catch (err) {
+      consola.error(String((err as Error).message));
+      process.exit(1);
+    }
   },
 });
