@@ -1,5 +1,5 @@
 {
-  "name": "mrkl",
+  "name": "@xxkeefer/mrkl",
   "version": "0.1.0",
   "type": "module",
   "description": "Lightweight CLI tool for structured markdown task tracking",
