@@ -186,6 +186,30 @@ your-project/
 
 Commit `.config/mrkl/` and `.tasks/` to version control. They're designed to be tracked alongside your code.
 
+## Team Workflow
+
+When using mrkl with **git worktrees** or **protected branches**, task IDs can conflict if multiple branches create tasks concurrently. The fix is a simple convention: **separate planning from execution.**
+
+1. **Plan** — Create tasks on a `planning/` branch, merge to main via PR
+2. **Execute** — Branch feature work from main (which has all tasks)
+3. **Ad-hoc** — Mid-sprint tasks follow the same pattern at smaller scale
+
+```sh
+# Sprint planning
+git checkout -b planning/sprint-3 main
+mrkl create feat "user authentication"
+mrkl create fix "login redirect loop"
+# commit, PR, merge to main
+
+# Feature work (branch from main after planning merges)
+git checkout -b feature/MRKL-019_user-auth main
+# ... do the work ...
+mrkl done MRKL-019
+# commit, PR, merge to main
+```
+
+The counter only increments on planning branches — one at a time — so IDs never conflict. See **[docs/workflow.md](docs/workflow.md)** for the full guide with examples and edge cases.
+
 ## Configuration
 
 Configuration lives in `.config/mrkl/mrkl.toml` (or `mrkl.toml` at the project root):
