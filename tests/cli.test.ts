@@ -12,6 +12,10 @@ import createCommand from "../src/commands/create.js";
 import listCommand from "../src/commands/list.js";
 import doneCommand from "../src/commands/done.js";
 import * as taskModule from "../src/task.js";
+import consola from "consola";
+
+type RunCtx = { args: Record<string, unknown> };
+const run = (createCommand as { run: (ctx: RunCtx) => Promise<void> }).run;
 
 describe("cli aliases", () => {
   it("`c` subcommand is registered", () => {
@@ -85,8 +89,7 @@ describe("create command --ac flag", () => {
   });
 
   it("passes multiple --ac values as separate acceptance criteria", async () => {
-    const run = (createCommand as { run: (ctx: { args: Record<string, unknown> }) => void }).run;
-    run({ args: { type: "feat", title: "test", ac: ["first", "second"] } });
+    await run({ args: { type: "feat", title: "test", ac: ["first", "second"] } });
 
     expect(createTaskSpy).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -96,8 +99,7 @@ describe("create command --ac flag", () => {
   });
 
   it("wraps a single --ac value in an array", async () => {
-    const run = (createCommand as { run: (ctx: { args: Record<string, unknown> }) => void }).run;
-    run({ args: { type: "feat", title: "test", ac: "only one" } });
+    await run({ args: { type: "feat", title: "test", ac: "only one" } });
 
     expect(createTaskSpy).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -107,13 +109,100 @@ describe("create command --ac flag", () => {
   });
 
   it("passes undefined when no --ac is provided", async () => {
-    const run = (createCommand as { run: (ctx: { args: Record<string, unknown> }) => void }).run;
-    run({ args: { type: "feat", title: "test" } });
+    await run({ args: { type: "feat", title: "test" } });
 
     expect(createTaskSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         acceptance_criteria: undefined,
       }),
     );
+  });
+});
+
+describe("create command interactive mode", () => {
+  let createTaskSpy: ReturnType<typeof vi.spyOn>;
+  let promptSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    createTaskSpy = vi.spyOn(taskModule, "createTask").mockReturnValue({
+      id: "MRKL-999",
+      title: "test task",
+    } as ReturnType<typeof taskModule.createTask>);
+    promptSpy = vi.spyOn(consola, "prompt");
+  });
+
+  afterEach(() => {
+    createTaskSpy.mockRestore();
+    promptSpy.mockRestore();
+  });
+
+  it("enters interactive mode when no positional args given", async () => {
+    promptSpy
+      .mockResolvedValueOnce("feat")              // type
+      .mockResolvedValueOnce("test task")          // title
+      .mockResolvedValueOnce("")                   // description
+      .mockResolvedValueOnce(Symbol("cancel"));    // Esc to skip AC
+
+    await run({ args: {} });
+
+    expect(promptSpy).toHaveBeenCalledTimes(4);
+    expect(createTaskSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "feat",
+        title: "test task",
+      }),
+    );
+  });
+
+  it("collects multiple acceptance criteria until Esc", async () => {
+    promptSpy
+      .mockResolvedValueOnce("fix")
+      .mockResolvedValueOnce("broken login")
+      .mockResolvedValueOnce("Fix the auth flow")
+      .mockResolvedValueOnce("login works")        // first AC
+      .mockResolvedValueOnce("tests pass")         // second AC
+      .mockResolvedValueOnce(Symbol("cancel"));    // Esc to finish
+
+    await run({ args: {} });
+
+    expect(createTaskSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "fix",
+        title: "broken login",
+        description: "Fix the auth flow",
+        acceptance_criteria: ["login works", "tests pass"],
+      }),
+    );
+  });
+
+  it("skips optional fields when left empty", async () => {
+    promptSpy
+      .mockResolvedValueOnce("chore")
+      .mockResolvedValueOnce("update deps")
+      .mockResolvedValueOnce("")                   // description
+      .mockResolvedValueOnce(Symbol("cancel"));    // Esc to skip AC
+
+    await run({ args: {} });
+
+    expect(createTaskSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "chore",
+        title: "update deps",
+        description: undefined,
+        acceptance_criteria: undefined,
+      }),
+    );
+  });
+
+  it("exits gracefully on cancel (Ctrl+C)", async () => {
+    const exitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
+      throw new Error("process.exit");
+    });
+    promptSpy.mockResolvedValueOnce(Symbol("clack:cancel"));
+
+    await expect(run({ args: {} })).rejects.toThrow("process.exit");
+    expect(exitSpy).toHaveBeenCalledWith(0);
+
+    exitSpy.mockRestore();
   });
 });
