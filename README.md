@@ -28,7 +28,7 @@ Most task trackers live outside your codebase. mrkl keeps tasks as markdown file
 ## Install
 
 ```sh
-npm install -g @xxkeefer/mrkl
+pnpm add -g @xxkeefer/mrkl
 ```
 
 Or use without installing:
@@ -229,16 +229,16 @@ tasks_dir = ".tasks"
 ```sh
 git clone https://github.com/xxKeefer/mrkl.git
 cd mrkl
-npm install
+pnpm install
 
 # Run tests
-npm test
+pnpm test
 
 # Run CLI in development
-npx tsx src/cli.ts list
+pnpm tsx src/cli.ts list
 
 # Build
-npm run build
+pnpm build
 ```
 
 ## Contributing

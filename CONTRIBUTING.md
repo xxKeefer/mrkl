@@ -43,16 +43,16 @@ The `ci` workflow (typecheck, test, build) runs automatically on your PR. It mus
 ```sh
 git clone https://github.com/xxKeefer/mrkl.git
 cd mrkl
-npm install
+pnpm install
 
 # Run tests
-npm test
+pnpm test
 
 # Run CLI in development
-npx tsx src/cli.ts list
+pnpm tsx src/cli.ts list
 
 # Build
-npm run build
+pnpm build
 ```
 
 ## Task Workflow
