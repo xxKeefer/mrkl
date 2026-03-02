@@ -23,10 +23,12 @@ export default defineCommand({
     },
     desc: {
       type: "string",
+      alias: "d",
       description: "Task description",
     },
     ac: {
       type: "string",
+      alias: "a",
       description: "Acceptance criterion (can be specified multiple times)",
     },
   },

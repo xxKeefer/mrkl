@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach, type MockInstance } from "vitest";
 
 // Mock citty's runMain to prevent the CLI from actually executing on import
 vi.mock("citty", async (importOriginal) => {
@@ -7,7 +7,10 @@ vi.mock("citty", async (importOriginal) => {
 });
 
 import { main } from "../src/cli.js";
+import initCommand from "../src/commands/init.js";
 import createCommand from "../src/commands/create.js";
+import listCommand from "../src/commands/list.js";
+import doneCommand from "../src/commands/done.js";
 import * as taskModule from "../src/task.js";
 
 describe("cli aliases", () => {
@@ -25,10 +28,50 @@ describe("cli aliases", () => {
     const subs = main.subCommands as Record<string, unknown>;
     expect(subs.c).toBe(createCommand);
   });
+
+  it("`i` is the same command definition as `init`", () => {
+    const subs = main.subCommands as Record<string, unknown>;
+    expect(subs.i).toBe(subs.init);
+    expect(subs.i).toBe(initCommand);
+  });
+
+  it("`ls` is the same command definition as `list`", () => {
+    const subs = main.subCommands as Record<string, unknown>;
+    expect(subs.ls).toBe(subs.list);
+    expect(subs.ls).toBe(listCommand);
+  });
+
+  it("`d` is the same command definition as `done`", () => {
+    const subs = main.subCommands as Record<string, unknown>;
+    expect(subs.d).toBe(subs.done);
+    expect(subs.d).toBe(doneCommand);
+  });
+});
+
+describe("flag aliases", () => {
+  it("create --desc has alias -d", () => {
+    const args = createCommand.args as Record<string, { alias?: string }>;
+    expect(args.desc.alias).toBe("d");
+  });
+
+  it("create --ac has alias -a", () => {
+    const args = createCommand.args as Record<string, { alias?: string }>;
+    expect(args.ac.alias).toBe("a");
+  });
+
+  it("list --type has alias -t", () => {
+    const args = listCommand.args as Record<string, { alias?: string }>;
+    expect(args.type.alias).toBe("t");
+  });
+
+  it("list --status has alias -s", () => {
+    const args = listCommand.args as Record<string, { alias?: string }>;
+    expect(args.status.alias).toBe("s");
+  });
 });
 
 describe("create command --ac flag", () => {
-  let createTaskSpy: ReturnType<typeof vi.spyOn>;
+  let createTaskSpy: MockInstance<typeof taskModule.createTask>;
 
   beforeEach(() => {
     createTaskSpy = vi.spyOn(taskModule, "createTask").mockReturnValue({

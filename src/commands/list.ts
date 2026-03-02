@@ -11,10 +11,12 @@ export default defineCommand({
   args: {
     type: {
       type: "string",
+      alias: "t",
       description: "Filter by task type",
     },
     status: {
       type: "string",
+      alias: "s",
       description: "Filter by status (todo, in-progress, done)",
     },
   },
