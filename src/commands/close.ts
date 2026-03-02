@@ -18,7 +18,7 @@ export default defineCommand({
     const dir = process.cwd();
     try {
       closeTask(dir, args.id);
-      consola.success(`Closed ${args.id}`);
+      consola.success(`🚫 Closed ${args.id}`);
     } catch (err) {
       consola.error(String((err as Error).message));
       process.exit(1);

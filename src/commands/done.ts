@@ -18,7 +18,7 @@ export default defineCommand({
     const dir = process.cwd();
     try {
       archiveTask(dir, args.id);
-      consola.success(`Archived ${args.id}`);
+      consola.success(`✅ Archived ${args.id}`);
     } catch (err) {
       consola.error(String((err as Error).message));
       process.exit(1);

@@ -17,7 +17,7 @@ export default defineCommand({
     const dir = process.cwd();
     try {
       initConfig(dir, { prefix: args.prefix });
-      consola.success("mrkl initialized");
+      consola.success("🎉 mrkl initialized");
     } catch (err) {
       consola.error(String((err as Error).message));
       process.exit(1);
