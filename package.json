@@ -11,8 +11,7 @@
     "build": "unbuild",
     "dev": "node --import tsx src/cli.ts",
     "test": "vitest run",
-    "release": "./scripts/release.sh",
-    "changelog": "changelogen",
+    "changelog": "changelogen --output",
     "changelog:preview": "changelogen --no-output"
   },
   "keywords": [

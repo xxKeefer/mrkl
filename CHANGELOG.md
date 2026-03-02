@@ -1,5 +1,44 @@
 # Changelog
 
+## v0.2.8
+
+[compare changes](https://github.com/xxKeefer/mrkl/compare/v0.2.6...v0.2.8)
+
+### Changed
+
+- Migrate to github action for releases ([#5](https://github.com/xxKeefer/mrkl/pull/5))
+- Fix release action struggle ([#7](https://github.com/xxKeefer/mrkl/pull/7))
+
+### Fixed
+
+- Pnpm version in release action ([#6](https://github.com/xxKeefer/mrkl/pull/6))
+
+## v0.2.6
+
+[compare changes](https://github.com/xxKeefer/mrkl/compare/v0.2.5...v0.2.6)
+
+### Fixed
+
+- Fix publish workflow ([204aba2](https://github.com/xxKeefer/mrkl/commit/204aba2))
+
+## v0.2.5
+
+[compare changes](https://github.com/xxKeefer/mrkl/compare/v0.2.4...v0.2.5)
+
+### Added
+
+- Add `c` alias for `create` command ([718ba38](https://github.com/xxKeefer/mrkl/commit/718ba38))
+
+### Changed
+
+- Sanitise task titles to prevent invalid filenames ([c0325f6](https://github.com/xxKeefer/mrkl/commit/c0325f6))
+- Document best practice for teams and worktrees ([b7a36ac](https://github.com/xxKeefer/mrkl/commit/b7a36ac))
+- Automate changelog ([#4](https://github.com/xxKeefer/mrkl/pull/4))
+
+### Fixed
+
+- Normalize multiple --ac flags into separate acceptance criteria ([4b07d88](https://github.com/xxKeefer/mrkl/commit/4b07d88))
+
 ## v0.2.4
 
 [compare changes](https://github.com/xxKeefer/mrkl/compare/v0.2.3...v0.2.4)
