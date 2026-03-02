@@ -13,7 +13,7 @@ export const TASK_TYPES = [
 
 export type TaskType = (typeof TASK_TYPES)[number];
 
-export const STATUSES = ["todo", "in-progress", "done"] as const;
+export const STATUSES = ["todo", "in-progress", "done", "closed"] as const;
 
 export type Status = (typeof STATUSES)[number];
 

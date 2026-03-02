@@ -4,6 +4,7 @@ import initCommand from "./commands/init.js";
 import createCommand from "./commands/create.js";
 import listCommand from "./commands/list.js";
 import doneCommand from "./commands/done.js";
+import closeCommand from "./commands/close.js";
 import installSkillsCommand from "./commands/install-skills.js";
 
 export const main = defineCommand({
@@ -21,6 +22,8 @@ export const main = defineCommand({
     ls: listCommand,
     done: doneCommand,
     d: doneCommand,
+    close: closeCommand,
+    x: closeCommand,
     "install-skills": installSkillsCommand,
   },
 });

@@ -3,7 +3,7 @@ import { mkdtempSync, existsSync, readFileSync, writeFileSync, rmSync } from "no
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { initConfig } from "../src/config.js";
-import { createTask, listTasks, archiveTask, normalizeTitle } from "../src/task.js";
+import { createTask, listTasks, archiveTask, closeTask, normalizeTitle } from "../src/task.js";
 
 let tmp: string;
 
@@ -189,6 +189,28 @@ describe("task", () => {
     });
     it("throws if task ID not found", () => {
       expect(() => archiveTask(tmp, "TEST-999")).toThrow("Task TEST-999 not found");
+    });
+  });
+
+  describe("closeTask", () => {
+    it("moves task to .archive and updates status to closed", () => {
+      createTask({ dir: tmp, type: "feat", title: "close me" });
+      closeTask(tmp, "TEST-001");
+
+      expect(existsSync(join(tmp, ".tasks", "TEST-001 feat - close me.md"))).toBe(false);
+      const archivePath = join(tmp, ".tasks", ".archive", "TEST-001 feat - close me.md");
+      expect(existsSync(archivePath)).toBe(true);
+      const content = readFileSync(archivePath, "utf-8");
+      expect(content).toContain("status: closed");
+    });
+    it("accepts lowercase id", () => {
+      createTask({ dir: tmp, type: "feat", title: "lower case" });
+      closeTask(tmp, "test-001");
+      const archivePath = join(tmp, ".tasks", ".archive", "TEST-001 feat - lower case.md");
+      expect(existsSync(archivePath)).toBe(true);
+    });
+    it("throws if task ID not found", () => {
+      expect(() => closeTask(tmp, "TEST-999")).toThrow("Task TEST-999 not found");
     });
   });
 });
