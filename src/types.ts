@@ -45,3 +45,8 @@ export interface ListFilter {
   type?: TaskType;
   status?: Status;
 }
+
+export interface PruneResult {
+  deleted: Array<{ id: string; title: string; created: string; filename: string }>;
+  total: number;
+}
