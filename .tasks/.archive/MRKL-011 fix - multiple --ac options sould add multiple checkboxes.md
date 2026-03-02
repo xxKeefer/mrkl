@@ -1,7 +1,7 @@
 ---
 id: MRKL-011
 type: fix
-status: todo
+status: done
 created: '2026-03-01'
 ---
 ## Description
