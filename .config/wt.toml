@@ -1,0 +1,12 @@
+# Install deps when creating a worktree (blocking — must finish before work starts)
+[post-create]
+deps = "pnpm install"
+
+# Quick checks before commit during merge
+[pre-commit]
+lint = "pnpm lint"
+
+# Full validation before merging to target branch
+[pre-merge]
+test = "pnpm test"
+build = "pnpm build"
