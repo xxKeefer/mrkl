@@ -11,6 +11,7 @@ import initCommand from "../src/commands/init.js";
 import createCommand from "../src/commands/create.js";
 import listCommand from "../src/commands/list.js";
 import doneCommand from "../src/commands/done.js";
+import closeCommand from "../src/commands/close.js";
 import * as taskModule from "../src/task.js";
 import consola from "consola";
 
@@ -49,6 +50,12 @@ describe("cli aliases", () => {
     const subs = main.subCommands as Record<string, unknown>;
     expect(subs.d).toBe(subs.done);
     expect(subs.d).toBe(doneCommand);
+  });
+
+  it("`x` is the same command definition as `close`", () => {
+    const subs = main.subCommands as Record<string, unknown>;
+    expect(subs.x).toBe(subs.close);
+    expect(subs.x).toBe(closeCommand);
   });
 });
 

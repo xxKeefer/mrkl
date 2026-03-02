@@ -89,3 +89,26 @@ export function archiveTask(dir: string, id: string): void {
   writeFileSync(archivePath, render(task));
   unlinkSync(filePath);
 }
+
+export function closeTask(dir: string, id: string): void {
+  const config = loadConfig(dir);
+  const tasksDir = join(dir, config.tasks_dir);
+
+  const idUpper = id.toUpperCase();
+  const file = readdirSync(tasksDir).find(
+    (f) => f.endsWith(".md") && f.toUpperCase().startsWith(idUpper),
+  );
+
+  if (!file) {
+    throw new Error(`Task ${id} not found`);
+  }
+
+  const filePath = join(tasksDir, file);
+  const content = readFileSync(filePath, "utf-8");
+  const task = parse(content, file);
+  task.status = "closed";
+
+  const archivePath = join(tasksDir, ".archive", file);
+  writeFileSync(archivePath, render(task));
+  unlinkSync(filePath);
+}
