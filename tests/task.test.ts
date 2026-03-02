@@ -3,7 +3,7 @@ import { mkdtempSync, existsSync, readFileSync, writeFileSync, rmSync } from "no
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { initConfig } from "../src/config.js";
-import { createTask, listTasks, archiveTask } from "../src/task.js";
+import { createTask, listTasks, archiveTask, normalizeTitle } from "../src/task.js";
 
 let tmp: string;
 
@@ -14,6 +14,69 @@ beforeEach(() => {
 
 afterEach(() => {
   rmSync(tmp, { recursive: true, force: true });
+});
+
+describe("normalizeTitle", () => {
+  it("passes through a clean title", () => {
+    expect(normalizeTitle("add login")).toBe("add login");
+  });
+  it("trims whitespace", () => {
+    expect(normalizeTitle("  hello  ")).toBe("hello");
+  });
+  it("lowercases", () => {
+    expect(normalizeTitle("Add Login")).toBe("add login");
+  });
+  it("replaces / with -", () => {
+    expect(normalizeTitle("feat/login")).toBe("feat-login");
+  });
+  it("replaces \\ with -", () => {
+    expect(normalizeTitle("feat\\login")).toBe("feat-login");
+  });
+  it("removes <", () => {
+    expect(normalizeTitle("a<b")).toBe("ab");
+  });
+  it("removes >", () => {
+    expect(normalizeTitle("a>b")).toBe("ab");
+  });
+  it("removes :", () => {
+    expect(normalizeTitle("a:b")).toBe("ab");
+  });
+  it("removes \"", () => {
+    expect(normalizeTitle('a"b')).toBe("ab");
+  });
+  it("removes |", () => {
+    expect(normalizeTitle("a|b")).toBe("ab");
+  });
+  it("removes ?", () => {
+    expect(normalizeTitle("a?b")).toBe("ab");
+  });
+  it("removes *", () => {
+    expect(normalizeTitle("a*b")).toBe("ab");
+  });
+  it("removes control characters", () => {
+    expect(normalizeTitle("a\x00b\x1fc")).toBe("abc");
+  });
+  it("collapses consecutive spaces", () => {
+    expect(normalizeTitle("a   b")).toBe("a b");
+  });
+  it("collapses consecutive dashes", () => {
+    expect(normalizeTitle("a---b")).toBe("a-b");
+  });
+  it("trims leading and trailing dashes", () => {
+    expect(normalizeTitle("-hello-")).toBe("hello");
+  });
+  it("handles complex combined input", () => {
+    expect(normalizeTitle("  /Feat: <My> \"Cool\" | Title?*\\  ")).toBe("feat my cool title");
+  });
+  it("throws on empty string", () => {
+    expect(() => normalizeTitle("")).toThrow("Title is empty after normalisation");
+  });
+  it("throws on all-invalid characters", () => {
+    expect(() => normalizeTitle("<>:\"|?*")).toThrow("Title is empty after normalisation");
+  });
+  it("throws on whitespace-only", () => {
+    expect(() => normalizeTitle("   ")).toThrow("Title is empty after normalisation");
+  });
 });
 
 describe("task", () => {
@@ -46,6 +109,19 @@ describe("task", () => {
       expect(content).toContain("Fix the login bug.");
       expect(content).toContain("- [ ] login works");
       expect(content).toContain("- [ ] tests pass");
+    });
+    it("normalises the title in the filename on disk", () => {
+      createTask({ dir: tmp, type: "feat", title: "  My <Cool> Title  " });
+      expect(existsSync(join(tmp, ".tasks", "TEST-001 feat - my cool title.md"))).toBe(true);
+    });
+    it("returns normalised title in TaskData", () => {
+      const task = createTask({ dir: tmp, type: "feat", title: "Feat/Login" });
+      expect(task.title).toBe("feat-login");
+    });
+    it("throws when title is empty after normalisation", () => {
+      expect(() => createTask({ dir: tmp, type: "feat", title: "***" })).toThrow(
+        "Title is empty after normalisation",
+      );
     });
     it("increments counter across creates", () => {
       const t1 = createTask({ dir: tmp, type: "feat", title: "first" });
