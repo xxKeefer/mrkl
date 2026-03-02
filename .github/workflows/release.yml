@@ -1,4 +1,5 @@
 name: Release & Publish
+run-name: Release v${{ github.event.inputs.version }} by @${{ github.actor }}
 
 on:
   workflow_dispatch:

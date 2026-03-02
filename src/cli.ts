@@ -13,10 +13,13 @@ export const main = defineCommand({
   },
   subCommands: {
     init: initCommand,
+    i: initCommand,
     create: createCommand,
     c: createCommand,
     list: listCommand,
+    ls: listCommand,
     done: doneCommand,
+    d: doneCommand,
   },
 });
 
