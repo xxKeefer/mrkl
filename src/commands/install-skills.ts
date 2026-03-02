@@ -50,7 +50,7 @@ export default defineCommand({
       const skillsDir = join(packageRoot, "skills");
 
       if (!existsSync(skillsDir)) {
-        consola.error("No skills directory found in mrkl package");
+        consola.error("❌ No skills directory found in mrkl package");
         process.exit(1);
       }
 
@@ -59,7 +59,7 @@ export default defineCommand({
       );
 
       if (skills.length === 0) {
-        consola.info("No skills to install");
+        consola.info("📭 No skills to install");
         return;
       }
 
@@ -67,7 +67,7 @@ export default defineCommand({
         const src = join(skillsDir, skill);
         const target = join(dest, skill);
         copyDirSync(src, target);
-        consola.success(`Installed ${skill}`);
+        consola.success(`🧩 Installed ${skill}`);
       }
     } catch (err) {
       consola.error(String((err as Error).message));

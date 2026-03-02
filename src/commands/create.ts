@@ -17,7 +17,7 @@ async function promptForTask(dir: string): Promise<CreateTaskOpts> {
   });
   if (typeof title === "symbol") process.exit(0);
   if (!title.trim()) {
-    consola.error("Title cannot be empty");
+    consola.error("❌ Title cannot be empty");
     process.exit(1);
   }
 
@@ -82,7 +82,7 @@ export default defineCommand({
     const interactive = !args.type && !args.title;
 
     if (!interactive && (!args.type || !args.title)) {
-      consola.error("Both type and title are required, or omit both for interactive mode");
+      consola.error("❌ Both type and title are required, or omit both for interactive mode");
       process.exit(1);
     }
 
@@ -93,7 +93,7 @@ export default defineCommand({
             dir,
             type: (() => {
               if (!TASK_TYPES.includes(args.type as TaskType)) {
-                consola.error(`Invalid type "${args.type}". Must be one of: ${TASK_TYPES.join(", ")}`);
+                consola.error(`❌ Invalid type "${args.type}". Must be one of: ${TASK_TYPES.join(", ")}`);
                 process.exit(1);
               }
               return args.type as TaskType;
@@ -106,7 +106,7 @@ export default defineCommand({
           };
 
       const task = createTask(opts);
-      consola.success(`Created ${task.id}: ${task.title}`);
+      consola.success(`📝 Created ${task.id}: ${task.title}`);
     } catch (err) {
       consola.error(String((err as Error).message));
       process.exit(1);

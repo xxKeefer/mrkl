@@ -30,7 +30,7 @@ export default defineCommand({
       });
 
       if (tasks.length === 0) {
-        consola.info("No tasks found");
+        consola.info("📭 No tasks found");
         return;
       }
 

@@ -34,11 +34,11 @@ export default defineCommand({
     const result = pruneTasks(dir, cutoff);
 
     if (result.deleted.length === 0) {
-      consola.info(`No archived tasks found on or before ${cutoff}`);
+      consola.info(`📭 No archived tasks found on or before ${cutoff}`);
       return;
     }
 
-    consola.info(`Found ${result.deleted.length} task(s) to prune:`);
+    consola.info(`🔍 Found ${result.deleted.length} task(s) to prune:`);
     for (const task of result.deleted) {
       consola.log(`  ${task.id} — ${task.title} (${task.created})`);
     }
@@ -48,12 +48,12 @@ export default defineCommand({
         type: "confirm",
       });
       if (typeof confirm === "symbol" || !confirm) {
-        consola.info("Aborted");
+        consola.info("👋 Aborted");
         return;
       }
     }
 
     executePrune(dir, result.deleted.map((t) => t.filename));
-    consola.success(`Pruned ${result.deleted.length} archived task(s)`);
+    consola.success(`🧹 Pruned ${result.deleted.length} archived task(s)`);
   },
 });
