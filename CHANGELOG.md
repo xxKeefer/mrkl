@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.3.0...main
+
+[compare changes](https://github.com/xxKeefer/mrkl/compare/v0.3.0...main)
+
+### Added
+
+- Add close command ([#16](https://github.com/xxKeefer/mrkl/pull/16))
+
+### Changed
+
+- Update readme with latest commands and aliases ([#18](https://github.com/xxKeefer/mrkl/pull/18))
+
+### ❤️ Contributors
+
+- Daniel John Keefer <xxkeefer.code@gmail.com>
+
 ## v0.2.14...main
 
 [compare changes](https://github.com/xxKeefer/mrkl/compare/v0.2.14...main)
