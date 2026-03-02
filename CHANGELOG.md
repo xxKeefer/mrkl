@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.2.14...main
+
+[compare changes](https://github.com/xxKeefer/mrkl/compare/v0.2.14...main)
+
+### Added
+
+- **done:** Make arg case insensitive ([#11](https://github.com/xxKeefer/mrkl/pull/11))
+- **create:** Add interactive mode if called with no args ([#12](https://github.com/xxKeefer/mrkl/pull/12))
+- Add claude skill and install command ([#14](https://github.com/xxKeefer/mrkl/pull/14))
+
+### Changed
+
+- Plan sprint two ([#15](https://github.com/xxKeefer/mrkl/pull/15))
+
+### ❤️ Contributors
+
+- Daniel John Keefer <xxkeefer.code@gmail.com>
+
 ## v0.2.13...v0.2.13
 
 [compare changes](https://github.com/xxKeefer/mrkl/compare/v0.2.13...v0.2.13)
