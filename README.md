@@ -60,9 +60,25 @@ mrkl list --status todo
 
 # Archive a completed task
 mrkl done PROJ-001
+
+# All commands have short aliases
+mrkl c feat "dark mode"   # create
+mrkl ls --type fix         # list
+mrkl d PROJ-001            # done
+mrkl x PROJ-002            # close
 ```
 
 ## Commands
+
+| Command | Alias | Description |
+|---------|-------|-------------|
+| `init` | `i` | Initialize mrkl in the current project |
+| `create` | `c` | Create a new task |
+| `list` | `ls` | List active tasks |
+| `done` | `d` | Mark a task as done and archive it |
+| `close` | `x` | Close a task (won't do, duplicate, etc.) and archive it |
+| `prune` | `p` | Delete archived tasks created on or before a given date |
+| `install-skills` | — | Install bundled Claude Code skills |
 
 ### `mrkl init <prefix>`
 
@@ -89,10 +105,10 @@ Creates a new task file.
 | `type` | Task type (see [Task Types](#task-types)) |
 | `title` | Short description of the task |
 
-| Option | Description |
-|--------|-------------|
-| `--desc <text>` | Detailed description |
-| `--ac <text>` | Acceptance criterion (repeatable) |
+| Option | Alias | Description |
+|--------|-------|-------------|
+| `--desc <text>` | `-d` | Detailed description |
+| `--ac <text>` | `-a` | Acceptance criterion (repeatable) |
 
 ```sh
 mrkl create feat "search functionality" \
@@ -102,14 +118,16 @@ mrkl create feat "search functionality" \
   --ac "highlights matching terms"
 ```
 
+Running `mrkl create` with no arguments enters **interactive mode**, prompting for type, title, description, and acceptance criteria.
+
 ### `mrkl list [options]`
 
 Lists all active tasks.
 
-| Option | Description |
-|--------|-------------|
-| `--type <type>` | Filter by task type |
-| `--status <status>` | Filter by status (`todo`, `in-progress`, `done`) |
+| Option | Alias | Description |
+|--------|-------|-------------|
+| `--type <type>` | `-t` | Filter by task type |
+| `--status <status>` | `-s` | Filter by status (`todo`, `in-progress`, `done`) |
 
 Non-conforming markdown files in the tasks directory are silently skipped.
 
@@ -122,6 +140,38 @@ Archives a completed task.
 | `id` | Task ID to archive (e.g., `PROJ-001`) |
 
 Moves the task file to `.tasks/.archive/` and sets its status to `done`.
+
+### `mrkl close <id>`
+
+Closes a task that won't be done — duplicates, out-of-scope work, etc.
+
+| Argument | Description |
+|----------|-------------|
+| `id` | Task ID to close (e.g., `PROJ-002`) |
+
+Sets the task status to `closed` and moves it to `.tasks/.archive/`.
+
+### `mrkl prune <date> [options]`
+
+Permanently deletes archived tasks created on or before a cutoff date.
+
+| Argument | Description |
+|----------|-------------|
+| `date` | Cutoff date (`YYYY-MM-DD` or `YYYYMMDD`) |
+
+| Option | Alias | Description |
+|--------|-------|-------------|
+| `--force` | `-f` | Skip confirmation prompt |
+
+Shows a confirmation prompt listing tasks to be deleted unless `--force` is used.
+
+```sh
+# Delete archived tasks from January or earlier
+mrkl prune 2026-01-31
+
+# Skip confirmation
+mrkl prune 2026-01-31 --force
+```
 
 ### `mrkl install-skills`
 
