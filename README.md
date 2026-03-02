@@ -28,7 +28,7 @@ Most task trackers live outside your codebase. mrkl keeps tasks as markdown file
 ## Install
 
 ```sh
-npm install -g @xxkeefer/mrkl
+pnpm add -g @xxkeefer/mrkl
 ```
 
 Or use without installing:
@@ -229,27 +229,21 @@ tasks_dir = ".tasks"
 ```sh
 git clone https://github.com/xxKeefer/mrkl.git
 cd mrkl
-npm install
+pnpm install
 
 # Run tests
-npm test
+pnpm test
 
 # Run CLI in development
-npx tsx src/cli.ts list
+pnpm tsx src/cli.ts list
 
 # Build
-npm run build
+pnpm build
 ```
 
 ## Contributing
 
-Contributions are welcome. Please open an issue first to discuss what you'd like to change.
-
-1. Fork the repo
-2. Create your branch (`git checkout -b feat/my-feature`)
-3. Commit your changes using [conventional commits](https://www.conventionalcommits.org/)
-4. Push to your branch (`git push origin feat/my-feature`)
-5. Open a Pull Request
+Contributions are welcome! See **[CONTRIBUTING.md](CONTRIBUTING.md)** for branch protection rules, merge strategy, and development setup.
 
 ## License
 

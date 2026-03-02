@@ -12,13 +12,13 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
-
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
+          cache: pnpm
 
-      - run: npm ci
-      - run: npx vitest run
-      - run: npx unbuild
-      - run: npm publish --provenance --access public
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm vitest run
+      - run: pnpm exec unbuild
+      - run: pnpm publish --provenance --access public
