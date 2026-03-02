@@ -175,6 +175,18 @@ describe("task", () => {
       const content = readFileSync(archivePath, "utf-8");
       expect(content).toContain("status: done");
     });
+    it("accepts lowercase id", () => {
+      createTask({ dir: tmp, type: "feat", title: "lower case" });
+      archiveTask(tmp, "test-001");
+      const archivePath = join(tmp, ".tasks", ".archive", "TEST-001 feat - lower case.md");
+      expect(existsSync(archivePath)).toBe(true);
+    });
+    it("accepts mixed-case id", () => {
+      createTask({ dir: tmp, type: "fix", title: "mixed case" });
+      archiveTask(tmp, "Test-001");
+      const archivePath = join(tmp, ".tasks", ".archive", "TEST-001 fix - mixed case.md");
+      expect(existsSync(archivePath)).toBe(true);
+    });
     it("throws if task ID not found", () => {
       expect(() => archiveTask(tmp, "TEST-999")).toThrow("Task TEST-999 not found");
     });

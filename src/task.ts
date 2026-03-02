@@ -71,8 +71,9 @@ export function archiveTask(dir: string, id: string): void {
   const config = loadConfig(dir);
   const tasksDir = join(dir, config.tasks_dir);
 
+  const idUpper = id.toUpperCase();
   const file = readdirSync(tasksDir).find(
-    (f) => f.endsWith(".md") && f.startsWith(id),
+    (f) => f.endsWith(".md") && f.toUpperCase().startsWith(idUpper),
   );
 
   if (!file) {
