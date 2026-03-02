@@ -43,7 +43,9 @@ export default defineCommand({
         type: args.type as TaskType,
         title: args.title,
         description: args.desc,
-        acceptance_criteria: args.ac ? [args.ac] : undefined,
+        acceptance_criteria: args.ac
+          ? Array.isArray(args.ac) ? args.ac : [args.ac]
+          : undefined,
       });
       consola.success(`Created ${task.id}: ${task.title}`);
     } catch (err) {
