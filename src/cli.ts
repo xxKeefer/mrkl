@@ -1,17 +1,18 @@
 #!/usr/bin/env node
-import { defineCommand, runMain } from "citty";
-import initCommand from "./commands/init.js";
-import createCommand from "./commands/create.js";
-import listCommand from "./commands/list.js";
-import doneCommand from "./commands/done.js";
-import pruneCommand from "./commands/prune.js";
-import installSkillsCommand from "./commands/install-skills.js";
+import { defineCommand, runMain } from 'citty'
+import initCommand from './commands/init.js'
+import createCommand from './commands/create.js'
+import listCommand from './commands/list.js'
+import doneCommand from './commands/done.js'
+import pruneCommand from './commands/prune.js'
+import closeCommand from './commands/close.js'
+import installSkillsCommand from './commands/install-skills.js'
 
 export const main = defineCommand({
   meta: {
-    name: "mrkl",
-    version: "0.1.0",
-    description: "Lightweight CLI for structured markdown task tracking",
+    name: 'mrkl',
+    version: '0.1.0',
+    description: 'Lightweight CLI for structured markdown task tracking',
   },
   subCommands: {
     init: initCommand,
@@ -24,8 +25,10 @@ export const main = defineCommand({
     d: doneCommand,
     prune: pruneCommand,
     p: pruneCommand,
-    "install-skills": installSkillsCommand,
+    close: closeCommand,
+    x: closeCommand,
+    'install-skills': installSkillsCommand,
   },
-});
+})
 
-runMain(main);
+runMain(main)
