@@ -1,10 +1,9 @@
 ---
 id: MRKL-010
 type: feat
-status: todo
+status: done
 created: '2026-03-01'
 ---
-
 ## Description
 
 Add a `plan-from-task` Claude Code skill and an `install-skills` CLI command.
@@ -20,10 +19,10 @@ into `.claude/skills/` in the current working directory so they are available to
 
 ## Acceptance Criteria
 
-- [x] skill is made and resides in `/skills/plan-from-task/SKILL.md` at the repo root
-- [x] a new command `install-skills` exists at `src/commands/install-skills.ts`
-- [x] `install-skills` copies skills from `/skills` into `.claude/skills/` in the calling directory
-- [x] `install-skills` is documented in README.md
-- [x] `install-skills` has no alias
-- [x] `skills` directory added to `files` in `package.json` so it ships with the package
-- [x] tests cover command registration, no-alias constraint, and file copying behaviour
+- [ ] skill is made and resides in `/skills/plan-from-task/SKILL.md` at the repo root
+- [ ] a new command `install-skills` exists at `src/commands/install-skills.ts`
+- [ ] `install-skills` copies skills from `/skills` into `.claude/skills/` in the calling directory
+- [ ] `install-skills` is documented in README.md
+- [ ] `install-skills` has no alias
+- [ ] `skills` directory added to `files` in `package.json` so it ships with the package
+- [ ] tests cover command registration, no-alias constraint, and file copying behaviour
