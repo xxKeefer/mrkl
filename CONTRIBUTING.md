@@ -55,6 +55,42 @@ pnpm tsx src/cli.ts list
 pnpm build
 ```
 
+## Releasing
+
+Releases are handled by the **Release & Publish** GitHub Action.
+
+### How to trigger
+
+1. Go to the **Actions** tab in GitHub
+2. Select **Release & Publish** from the workflow list
+3. Click **Run workflow**
+4. Enter the version bump — either a semver keyword (`patch`, `minor`, `major`) or an explicit version (`1.2.3`)
+
+### What it does
+
+1. Runs tests and typechecking (fails fast before any version changes)
+2. Builds the package
+3. Bumps the version in `package.json`
+4. Generates changelog entries via `changelogen`
+5. Commits the version bump + changelog, tags, and pushes to `main`
+6. Creates a GitHub Release with the changelog notes
+7. Publishes to npm with provenance
+
+### Prerequisites
+
+- **`RELEASE_TOKEN`** — a GitHub PAT with `contents: write` permission, stored as a repository secret. Required so the bot push can bypass branch protection.
+- **npm OIDC trusted publishing** — configured in npm so the `id-token: write` permission enables provenance-signed publishes without a manual npm token.
+
+### Semver guidance
+
+- **patch** (`0.2.8` → `0.2.9`) — bug fixes, docs, internal chores
+- **minor** (`0.2.9` → `0.3.0`) — new features, backwards-compatible changes
+- **major** (`0.3.0` → `1.0.0`) — breaking changes
+
+### Failure recovery
+
+If the `publish` job fails after the `release` job succeeds, the GitHub Release and tag still exist. Re-run just the `publish` job from the Actions UI.
+
 ## Task Workflow
 
 mrkl uses its own tool for task tracking. If you're working with git worktrees or need to create tasks, see [docs/workflow.md](docs/workflow.md) for the full guide on separating planning from execution.

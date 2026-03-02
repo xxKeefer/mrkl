@@ -1,23 +1,24 @@
-name: Manual Release
+name: Release & Publish
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'New version (e.g., 1.2.3)'
+        description: "Version bump (e.g., patch, minor, major, or explicit like 1.2.3)"
         required: true
 
 jobs:
   release:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Needed to push commits and create releases
-
+      contents: write
+    outputs:
+      tag: v${{ github.event.inputs.version }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Important for changelogen to see history
+          fetch-depth: 0
           token: ${{ secrets.RELEASE_TOKEN }}
 
       - name: Install pnpm
@@ -28,21 +29,31 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
-          cache: 'pnpm'
+          node-version: 24
+          cache: pnpm
 
       - name: Install Dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Configure Git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Bump Version & Generate Changelog
-        run: |
-          pnpm version ${{ github.event.inputs.version }} --no-git-tag-version
-          pnpm exec changelogen --write
+      - name: Run Tests
+        run: pnpm vitest run
+
+      - name: Typecheck
+        run: pnpm exec tsc --noEmit
+
+      - name: Build
+        run: pnpm exec unbuild
+
+      - name: Bump Version
+        run: pnpm version ${{ github.event.inputs.version }} --no-git-tag-version
+
+      - name: Generate Changelog
+        run: pnpm exec changelogen --output
 
       - name: Commit & Tag
         run: |
@@ -55,6 +66,40 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Extract the latest entry from CHANGELOG.md
           sed -n '/^## / { :a; n; /^## / q; p; ba }' CHANGELOG.md > latest_notes.txt
           gh release create "v${{ github.event.inputs.version }}" --notes-file latest_notes.txt
+
+  publish:
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout Tag
+        uses: actions/checkout@v4
+        with:
+          ref: v${{ github.event.inputs.version }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm exec unbuild
+
+      - name: Publish to npm
+        run: pnpm publish --provenance --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
