@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.2.11...main
+
+[compare changes](https://github.com/xxKeefer/mrkl/compare/v0.2.11...main)
+
 ## v0.2.10...main
 
 [compare changes](https://github.com/xxKeefer/mrkl/compare/v0.2.10...main)
