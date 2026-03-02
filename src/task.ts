@@ -1,9 +1,9 @@
-import { readdirSync, readFileSync, writeFileSync, unlinkSync } from "node:fs";
+import { readdirSync, readFileSync, writeFileSync, unlinkSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { loadConfig } from "./config.js";
 import { nextId } from "./counter.js";
 import { render, parse } from "./template.js";
-import type { CreateTaskOpts, ListFilter, TaskData } from "./types.js";
+import type { CreateTaskOpts, ListFilter, PruneResult, TaskData } from "./types.js";
 
 export function normalizeTitle(raw: string): string {
   const result = raw
@@ -88,4 +88,62 @@ export function archiveTask(dir: string, id: string): void {
   const archivePath = join(tasksDir, ".archive", file);
   writeFileSync(archivePath, render(task));
   unlinkSync(filePath);
+}
+
+export function parseCutoffDate(input: string): string {
+  const normalized = input.replace(/^(\d{4})(\d{2})(\d{2})$/, "$1-$2-$3");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(normalized)) {
+    throw new Error(`Invalid date format: "${input}". Expected YYYY-MM-DD or YYYYMMDD.`);
+  }
+  const [y, m, d] = normalized.split("-").map(Number);
+  const date = new Date(y, m - 1, d);
+  if (date.getFullYear() !== y || date.getMonth() !== m - 1 || date.getDate() !== d) {
+    throw new Error(`Invalid date: "${input}" is not a real calendar date.`);
+  }
+  return normalized;
+}
+
+function normalizeCreatedDate(created: unknown): string {
+  if (created instanceof Date) {
+    return created.toISOString().slice(0, 10);
+  }
+  return String(created);
+}
+
+export function pruneTasks(dir: string, cutoff: string): PruneResult {
+  const config = loadConfig(dir);
+  const archiveDir = join(dir, config.tasks_dir, ".archive");
+
+  if (!existsSync(archiveDir)) {
+    return { deleted: [], total: 0 };
+  }
+
+  const files = readdirSync(archiveDir).filter(
+    (f) => f.endsWith(".md") && !f.startsWith("."),
+  );
+
+  const deleted: PruneResult["deleted"] = [];
+
+  for (const f of files) {
+    try {
+      const content = readFileSync(join(archiveDir, f), "utf-8");
+      const task = parse(content, f);
+      const created = normalizeCreatedDate(task.created);
+      if (created <= cutoff) {
+        deleted.push({ id: task.id, title: task.title, created, filename: f });
+      }
+    } catch {
+      // skip unparseable files
+    }
+  }
+
+  return { deleted, total: files.length };
+}
+
+export function executePrune(dir: string, filenames: string[]): void {
+  const config = loadConfig(dir);
+  const archiveDir = join(dir, config.tasks_dir, ".archive");
+  for (const f of filenames) {
+    unlinkSync(join(archiveDir, f));
+  }
 }

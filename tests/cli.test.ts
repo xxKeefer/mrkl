@@ -11,6 +11,7 @@ import initCommand from "../src/commands/init.js";
 import createCommand from "../src/commands/create.js";
 import listCommand from "../src/commands/list.js";
 import doneCommand from "../src/commands/done.js";
+import pruneCommand from "../src/commands/prune.js";
 import * as taskModule from "../src/task.js";
 import consola from "consola";
 
@@ -50,6 +51,12 @@ describe("cli aliases", () => {
     expect(subs.d).toBe(subs.done);
     expect(subs.d).toBe(doneCommand);
   });
+
+  it("`p` is the same command definition as `prune`", () => {
+    const subs = main.subCommands as Record<string, unknown>;
+    expect(subs.p).toBe(subs.prune);
+    expect(subs.p).toBe(pruneCommand);
+  });
 });
 
 describe("flag aliases", () => {
@@ -71,6 +78,11 @@ describe("flag aliases", () => {
   it("list --status has alias -s", () => {
     const args = listCommand.args as Record<string, { alias?: string }>;
     expect(args.status.alias).toBe("s");
+  });
+
+  it("prune --force has alias -f", () => {
+    const args = pruneCommand.args as Record<string, { alias?: string }>;
+    expect(args.force.alias).toBe("f");
   });
 });
 

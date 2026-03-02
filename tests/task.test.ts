@@ -3,7 +3,9 @@ import { mkdtempSync, existsSync, readFileSync, writeFileSync, rmSync } from "no
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { initConfig } from "../src/config.js";
-import { createTask, listTasks, archiveTask, normalizeTitle } from "../src/task.js";
+import { createTask, listTasks, archiveTask, normalizeTitle, parseCutoffDate, pruneTasks, executePrune } from "../src/task.js";
+import { render } from "../src/template.js";
+import type { TaskData } from "../src/types.js";
 
 let tmp: string;
 
@@ -189,6 +191,101 @@ describe("task", () => {
     });
     it("throws if task ID not found", () => {
       expect(() => archiveTask(tmp, "TEST-999")).toThrow("Task TEST-999 not found");
+    });
+  });
+
+  describe("parseCutoffDate", () => {
+    it("accepts YYYY-MM-DD format", () => {
+      expect(parseCutoffDate("2026-03-01")).toBe("2026-03-01");
+    });
+    it("accepts YYYYMMDD format", () => {
+      expect(parseCutoffDate("20260301")).toBe("2026-03-01");
+    });
+    it("rejects invalid formats", () => {
+      expect(() => parseCutoffDate("03-01-2026")).toThrow("Invalid date format");
+      expect(() => parseCutoffDate("2026/03/01")).toThrow("Invalid date format");
+      expect(() => parseCutoffDate("not-a-date")).toThrow("Invalid date format");
+    });
+    it("rejects impossible dates", () => {
+      expect(() => parseCutoffDate("2026-02-30")).toThrow("not a real calendar date");
+      expect(() => parseCutoffDate("2026-13-01")).toThrow("not a real calendar date");
+    });
+  });
+
+  describe("pruneTasks", () => {
+    function writeArchivedTask(task: TaskData): void {
+      const filename = `${task.id} ${task.type} - ${task.title}.md`;
+      writeFileSync(join(tmp, ".tasks", ".archive", filename), render(task));
+    }
+
+    it("returns tasks on or before cutoff", () => {
+      writeArchivedTask({ id: "TEST-001", type: "feat", status: "done", created: "2026-01-15", title: "old task", description: "", acceptance_criteria: [] });
+      writeArchivedTask({ id: "TEST-002", type: "fix", status: "done", created: "2026-03-01", title: "cutoff task", description: "", acceptance_criteria: [] });
+
+      const result = pruneTasks(tmp, "2026-03-01");
+      expect(result.deleted).toHaveLength(2);
+      expect(result.deleted.map((d) => d.id)).toContain("TEST-001");
+      expect(result.deleted.map((d) => d.id)).toContain("TEST-002");
+    });
+
+    it("excludes tasks after cutoff", () => {
+      writeArchivedTask({ id: "TEST-001", type: "feat", status: "done", created: "2026-01-15", title: "old task", description: "", acceptance_criteria: [] });
+      writeArchivedTask({ id: "TEST-002", type: "fix", status: "done", created: "2026-03-02", title: "new task", description: "", acceptance_criteria: [] });
+
+      const result = pruneTasks(tmp, "2026-03-01");
+      expect(result.deleted).toHaveLength(1);
+      expect(result.deleted[0].id).toBe("TEST-001");
+    });
+
+    it("handles empty archive", () => {
+      const result = pruneTasks(tmp, "2026-12-31");
+      expect(result.deleted).toEqual([]);
+      expect(result.total).toBe(0);
+    });
+
+    it("handles unquoted YAML dates (Date objects)", () => {
+      // gray-matter parses unquoted dates as JS Date objects
+      // Write raw content with an unquoted date to trigger this
+      const filename = "TEST-001 feat - date object.md";
+      const content = `---\nid: TEST-001\ntype: feat\nstatus: done\ncreated: 2026-01-15\n---\n\n## Description\n\n\n\n## Acceptance Criteria\n\n`;
+      writeFileSync(join(tmp, ".tasks", ".archive", filename), content);
+
+      const result = pruneTasks(tmp, "2026-03-01");
+      expect(result.deleted).toHaveLength(1);
+      expect(result.deleted[0].created).toBe("2026-01-15");
+    });
+
+    it("skips unparseable files", () => {
+      writeArchivedTask({ id: "TEST-001", type: "feat", status: "done", created: "2026-01-15", title: "valid", description: "", acceptance_criteria: [] });
+      writeFileSync(join(tmp, ".tasks", ".archive", "garbage.md"), "not valid frontmatter {{{");
+
+      const result = pruneTasks(tmp, "2026-12-31");
+      expect(result.deleted).toHaveLength(1);
+      expect(result.total).toBe(2);
+    });
+  });
+
+  describe("executePrune", () => {
+    function writeArchivedTask(task: TaskData): string {
+      const filename = `${task.id} ${task.type} - ${task.title}.md`;
+      writeFileSync(join(tmp, ".tasks", ".archive", filename), render(task));
+      return filename;
+    }
+
+    it("deletes specified files", () => {
+      const f1 = writeArchivedTask({ id: "TEST-001", type: "feat", status: "done", created: "2026-01-15", title: "delete me", description: "", acceptance_criteria: [] });
+
+      executePrune(tmp, [f1]);
+      expect(existsSync(join(tmp, ".tasks", ".archive", f1))).toBe(false);
+    });
+
+    it("leaves other files untouched", () => {
+      const f1 = writeArchivedTask({ id: "TEST-001", type: "feat", status: "done", created: "2026-01-15", title: "delete me", description: "", acceptance_criteria: [] });
+      const f2 = writeArchivedTask({ id: "TEST-002", type: "fix", status: "done", created: "2026-03-01", title: "keep me", description: "", acceptance_criteria: [] });
+
+      executePrune(tmp, [f1]);
+      expect(existsSync(join(tmp, ".tasks", ".archive", f1))).toBe(false);
+      expect(existsSync(join(tmp, ".tasks", ".archive", f2))).toBe(true);
     });
   });
 });
