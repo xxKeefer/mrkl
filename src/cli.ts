@@ -5,7 +5,7 @@ import createCommand from "./commands/create.js";
 import listCommand from "./commands/list.js";
 import doneCommand from "./commands/done.js";
 
-const main = defineCommand({
+export const main = defineCommand({
   meta: {
     name: "mrkl",
     version: "0.1.0",
@@ -14,6 +14,7 @@ const main = defineCommand({
   subCommands: {
     init: initCommand,
     create: createCommand,
+    c: createCommand,
     list: listCommand,
     done: doneCommand,
   },

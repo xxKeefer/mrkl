@@ -7,7 +7,9 @@
       "Bash(npm view:*)",
       "Bash(npm test:*)",
       "Bash(npx tsx:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(git:*)",
+      "Bash(pnpm test:*)"
     ]
   }
 }
