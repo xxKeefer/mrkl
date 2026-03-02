@@ -5,6 +5,20 @@ import { nextId } from "./counter.js";
 import { render, parse } from "./template.js";
 import type { CreateTaskOpts, ListFilter, TaskData } from "./types.js";
 
+export function normalizeTitle(raw: string): string {
+  const result = raw
+    .trim()
+    .toLowerCase()
+    .replace(/[/\\]/g, "-")
+    .replace(/[<>:"|?*\x00-\x1f]/g, "")
+    .replace(/-{2,}/g, "-")
+    .replace(/ {2,}/g, " ")
+    .replace(/^-+|-+$/g, "");
+
+  if (!result) throw new Error("Title is empty after normalisation");
+  return result;
+}
+
 export function createTask(opts: CreateTaskOpts): TaskData {
   const config = loadConfig(opts.dir);
   const num = nextId(opts.dir);
@@ -16,7 +30,7 @@ export function createTask(opts: CreateTaskOpts): TaskData {
     type: opts.type,
     status: "todo",
     created: today,
-    title: opts.title,
+    title: normalizeTitle(opts.title),
     description: opts.description ?? "",
     acceptance_criteria: opts.acceptance_criteria ?? [],
   };
