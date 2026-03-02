@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.2.9...main
+
+[compare changes](https://github.com/xxKeefer/mrkl/compare/v0.2.9...main)
+
+### Fixed
+
+- Auth issues in release job ([54305aa](https://github.com/xxKeefer/mrkl/commit/54305aa))
+
+### ❤️ Contributors
+
+- XxKeefer <xxkeefer@pm.me>
+
 ## v0.2.8...main
 
 [compare changes](https://github.com/xxKeefer/mrkl/compare/v0.2.8...main)

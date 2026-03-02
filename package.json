@@ -1,6 +1,6 @@
 {
   "name": "@xxkeefer/mrkl",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "type": "module",
   "packageManager": "pnpm@10.14.0",
   "description": "Lightweight CLI tool for structured markdown task tracking",
