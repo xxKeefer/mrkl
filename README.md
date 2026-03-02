@@ -123,6 +123,23 @@ Archives a completed task.
 
 Moves the task file to `.tasks/.archive/` and sets its status to `done`.
 
+### `mrkl install-skills`
+
+Installs bundled Claude Code skills into the current project.
+
+Copies skill directories from the mrkl package into `.claude/skills/` so they are available to Claude Code agents working in this project.
+
+```sh
+mrkl install-skills
+# ✔ Installed plan-from-task
+```
+
+Currently ships with:
+
+| Skill | Description |
+|-------|-------------|
+| `plan-from-task` | Generate and execute implementation plans from mrkl task files |
+
 ## Task Types
 
 mrkl uses [conventional commit](https://www.conventionalcommits.org/) types:
