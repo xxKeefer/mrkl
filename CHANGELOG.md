@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.2.8...main
+
+[compare changes](https://github.com/xxKeefer/mrkl/compare/v0.2.8...main)
+
+### Fixed
+
+- Consolidate release & publish workflow and backfill changelog (MRKL-019) ([#9](https://github.com/xxKeefer/mrkl/pull/9))
+
+### Changed
+
+- Plan some work items ([#8](https://github.com/xxKeefer/mrkl/pull/8))
+
+### ❤️ Contributors
+
+- Daniel John Keefer <xxkeefer.code@gmail.com>
+
 ## v0.2.8
 
 [compare changes](https://github.com/xxKeefer/mrkl/compare/v0.2.6...v0.2.8)
