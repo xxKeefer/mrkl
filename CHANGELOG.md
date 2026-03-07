@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.4.1...main
+
+[compare changes](https://github.com/xxKeefer/mrkl/compare/v0.4.1...main)
+
+### Added
+
+- Close command overhaul ([#24](https://github.com/xxKeefer/mrkl/pull/24))
+- Create interactive now tui ([#25](https://github.com/xxKeefer/mrkl/pull/25))
+
+### Changed
+
+- Plan sprint 4 ([#23](https://github.com/xxKeefer/mrkl/pull/23))
+
+### ❤️ Contributors
+
+- Daniel John Keefer <xxkeefer.code@gmail.com>
+
 ## v0.4.0...main
 
 [compare changes](https://github.com/xxKeefer/mrkl/compare/v0.4.0...main)
