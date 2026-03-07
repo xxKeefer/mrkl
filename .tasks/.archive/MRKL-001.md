@@ -5,6 +5,7 @@ type: feat
 status: todo
 created: '2026-03-01'
 ---
+
 ## Description
 
 Implement the config module (`src/config.ts`) that reads and writes `mrkl.toml` configuration files. The module should handle loading existing configs, creating new configs idempotently, applying defaults, and validating required fields.

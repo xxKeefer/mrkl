@@ -5,6 +5,7 @@ type: feat
 status: done
 created: '2026-03-01'
 ---
+
 ## Description
 
 Add a `plan-from-task` Claude Code skill and an `install-skills` CLI command.

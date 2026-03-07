@@ -5,6 +5,7 @@ type: feat
 status: todo
 created: '2026-03-01'
 ---
+
 ## Description
 
 Implement the counter module (`src/counter.ts`) that manages the `mrkl_counter` file for auto-incrementing task IDs. The module provides atomic read-and-increment operations.

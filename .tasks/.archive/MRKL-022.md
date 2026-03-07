@@ -5,9 +5,7 @@ type: feat
 status: done
 created: '2026-03-02'
 ---
+
 ## Description
 
-
-
 ## Acceptance Criteria
-

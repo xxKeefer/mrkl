@@ -11,7 +11,7 @@ The fix is a workflow convention, not a code change. Separate **planning** (task
 
 ## Core Principle
 
-> Create tasks on a dedicated planning branch. Merge to main via PR. Branch feature work from main *after* tasks land.
+> Create tasks on a dedicated planning branch. Merge to main via PR. Branch feature work from main _after_ tasks land.
 
 The counter only ever increments on planning branches — one at a time — so IDs never conflict.
 
@@ -102,14 +102,14 @@ git rebase main
 
 ## Why This Works
 
-| Concern | How the convention handles it |
-|---------|-------------------------------|
-| Counter conflicts | Counter only increments on planning branches — one at a time |
-| Task visibility | Tasks merge to main via PR before feature branches start |
-| Protected branches | Everything goes through PRs — no direct pushes to main |
-| Worktree isolation | Each worktree branches from main *after* tasks are merged |
-| Ad-hoc tasks | Same pattern at smaller scale — planning branch, PR, merge |
-| No special tooling | Standard git + mrkl commands, no infrastructure needed |
+| Concern            | How the convention handles it                                |
+| ------------------ | ------------------------------------------------------------ |
+| Counter conflicts  | Counter only increments on planning branches — one at a time |
+| Task visibility    | Tasks merge to main via PR before feature branches start     |
+| Protected branches | Everything goes through PRs — no direct pushes to main       |
+| Worktree isolation | Each worktree branches from main _after_ tasks are merged    |
+| Ad-hoc tasks       | Same pattern at smaller scale — planning branch, PR, merge   |
+| No special tooling | Standard git + mrkl commands, no infrastructure needed       |
 
 ---
 
@@ -138,6 +138,7 @@ Avoid having two planning branches open at the same time — that reintroduces t
 ### AI agents following the convention
 
 If an AI agent is creating tasks, instruct it to:
+
 1. Check which branch it's on (`git branch --show-current`)
 2. Only create tasks on branches prefixed with `planning/`
 3. Never create tasks on feature branches
@@ -156,13 +157,13 @@ mrkl list  # now shows newly planned tasks
 
 ## Quick Reference
 
-| Action | Command |
-|--------|---------|
-| Start planning | `git checkout -b planning/sprint-N main` |
-| Create task | `mrkl create <type> "<title>"` |
-| Commit planning | `git add .tasks/ .config/mrkl/mrkl_counter && git commit` |
-| Start feature work | `git checkout -b feature/MRKL-NNN_slug main` |
-| Complete task | `mrkl done MRKL-NNN` |
-| Ad-hoc task | `git checkout -b planning/adhoc-YYYYMMDD main` |
-| View tasks | `mrkl list` |
-| Sync with main | `git rebase main` |
+| Action             | Command                                                   |
+| ------------------ | --------------------------------------------------------- |
+| Start planning     | `git checkout -b planning/sprint-N main`                  |
+| Create task        | `mrkl create <type> "<title>"`                            |
+| Commit planning    | `git add .tasks/ .config/mrkl/mrkl_counter && git commit` |
+| Start feature work | `git checkout -b feature/MRKL-NNN_slug main`              |
+| Complete task      | `mrkl done MRKL-NNN`                                      |
+| Ad-hoc task        | `git checkout -b planning/adhoc-YYYYMMDD main`            |
+| View tasks         | `mrkl list`                                               |
+| Sync with main     | `git rebase main`                                         |

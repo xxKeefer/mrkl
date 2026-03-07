@@ -5,6 +5,7 @@ type: docs
 status: done
 created: '2026-03-02'
 ---
+
 ## Description
 
 Update README.md to document the `close` and `prune` commands, add a command alias reference table,

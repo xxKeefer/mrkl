@@ -5,6 +5,7 @@ type: feat
 status: todo
 created: '2026-03-02'
 ---
+
 ## Description
 
 - ai might want to read recently completed tasks for context, but we might want to use hooks to stop
@@ -19,4 +20,3 @@ created: '2026-03-02'
   - maybe need to run a prd on this i kinda want to prio simplicity
 
 ## Acceptance Criteria
-

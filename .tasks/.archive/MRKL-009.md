@@ -5,6 +5,7 @@ type: feat
 status: closed
 created: '2026-03-01'
 ---
+
 ## Description
 
 allow for --sect option that takes a string a parameter and will add it as a L3 heading in the
