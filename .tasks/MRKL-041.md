@@ -5,9 +5,7 @@ type: feat
 status: todo
 created: '2026-03-07'
 ---
+
 ## Description
 
-
-
 ## Acceptance Criteria
-

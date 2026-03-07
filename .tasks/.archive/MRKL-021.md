@@ -5,17 +5,20 @@ type: feat
 status: done
 created: '2026-03-02'
 ---
+
 ## Description
 
 Add shorthand aliases for all existing commands and flags so users can type less.
 
 **Command aliases:**
+
 - `i` → `init`
 - `c` → `create` (already exists)
 - `ls` → `list`
 - `d` → `done`
 
 **Flag aliases:**
+
 - `create --desc` → `-d`
 - `create --ac` → `-a`
 - `list --type` → `-t`

@@ -5,6 +5,7 @@ type: feat
 status: todo
 created: '2026-03-07'
 ---
+
 ## Description
 
 allow direct editing of tickets within terminal with configured editor

@@ -1,10 +1,21 @@
 import { Fzf } from 'fzf'
 import type { TaskData } from '../types.js'
 import {
-  ESC, CSI,
-  ALT_SCREEN_ON, ALT_SCREEN_OFF, CURSOR_HIDE, CURSOR_SHOW, CLEAR_SCREEN,
-  BOLD, DIM, UNDERLINE, RESET, INVERSE,
-  FG_CYAN, FG_YELLOW, FG_GREEN, FG_RED, FG_GRAY,
+  ESC,
+  ALT_SCREEN_ON,
+  ALT_SCREEN_OFF,
+  CURSOR_HIDE,
+  CURSOR_SHOW,
+  CLEAR_SCREEN,
+  BOLD,
+  UNDERLINE,
+  RESET,
+  INVERSE,
+  FG_CYAN,
+  FG_YELLOW,
+  FG_GREEN,
+  FG_RED,
+  FG_GRAY,
 } from './ansi.js'
 
 interface FzfEntry {
@@ -14,11 +25,16 @@ interface FzfEntry {
 
 function statusColor(status: string): string {
   switch (status) {
-    case 'todo': return FG_YELLOW
-    case 'in-progress': return FG_CYAN
-    case 'done': return FG_GREEN
-    case 'closed': return FG_RED
-    default: return ''
+    case 'todo':
+      return FG_YELLOW
+    case 'in-progress':
+      return FG_CYAN
+    case 'done':
+      return FG_GREEN
+    case 'closed':
+      return FG_RED
+    default:
+      return ''
   }
 }
 
@@ -29,7 +45,10 @@ function buildEntries(tasks: TaskData[]): FzfEntry[] {
   }))
 }
 
-export async function interactiveList(tasks: TaskData[], archivedTasks: TaskData[]): Promise<void> {
+export async function interactiveList(
+  tasks: TaskData[],
+  archivedTasks: TaskData[],
+): Promise<void> {
   const { stdin, stdout } = process
 
   const datasets = [
@@ -74,12 +93,18 @@ export async function interactiveList(tasks: TaskData[], archivedTasks: TaskData
     // Separator
     const listWidth = Math.floor(cols * 0.55)
     const previewWidth = cols - listWidth - 3
-    buf.push(`${FG_GRAY}${'─'.repeat(listWidth)}┬${'─'.repeat(previewWidth + 2)}${RESET}`)
+    buf.push(
+      `${FG_GRAY}${'─'.repeat(listWidth)}┬${'─'.repeat(previewWidth + 2)}${RESET}`,
+    )
 
     // Column headers
     const headerLine = formatRow('ID', 'TYPE', 'STATUS', 'TITLE', listWidth)
-    buf.push(`${BOLD}${headerLine}${RESET}${FG_GRAY}│${RESET}${BOLD} Preview${RESET}`)
-    buf.push(`${FG_GRAY}${'─'.repeat(listWidth)}┼${'─'.repeat(previewWidth + 2)}${RESET}`)
+    buf.push(
+      `${BOLD}${headerLine}${RESET}${FG_GRAY}│${RESET}${BOLD} Preview${RESET}`,
+    )
+    buf.push(
+      `${FG_GRAY}${'─'.repeat(listWidth)}┼${'─'.repeat(previewWidth + 2)}${RESET}`,
+    )
 
     // Content area
     const contentRows = rows - 9 // tab + blank + search + 2 separators + header + bottom sep + count
@@ -95,7 +120,8 @@ export async function interactiveList(tasks: TaskData[], archivedTasks: TaskData
 
     // Adjust scroll
     if (selectedIndex < scrollOffset) scrollOffset = selectedIndex
-    if (selectedIndex >= scrollOffset + maxVisible) scrollOffset = selectedIndex - maxVisible + 1
+    if (selectedIndex >= scrollOffset + maxVisible)
+      scrollOffset = selectedIndex - maxVisible + 1
 
     // Build preview lines
     const selectedTask = filtered[selectedIndex]?.task
@@ -111,12 +137,25 @@ export async function interactiveList(tasks: TaskData[], archivedTasks: TaskData
         leftPart = ' '.repeat(listWidth)
       } else {
         const isSelected = taskIdx === selectedIndex
-        const row = formatRow(entry.task.id, entry.task.type, entry.task.status, entry.task.title, listWidth)
+        const row = formatRow(
+          entry.task.id,
+          entry.task.type,
+          entry.task.status,
+          entry.task.title,
+          listWidth,
+        )
         if (isSelected) {
           leftPart = `${INVERSE}${row}${RESET}`
         } else {
           const sc = statusColor(entry.task.status)
-          leftPart = colorizeRow(entry.task.id, entry.task.type, entry.task.status, entry.task.title, listWidth, sc)
+          leftPart = colorizeRow(
+            entry.task.id,
+            entry.task.type,
+            entry.task.status,
+            entry.task.title,
+            listWidth,
+            sc,
+          )
         }
       }
 
@@ -125,38 +164,66 @@ export async function interactiveList(tasks: TaskData[], archivedTasks: TaskData
     }
 
     // Bottom bar
-    buf.push(`${FG_GRAY}${'─'.repeat(listWidth)}┴${'─'.repeat(previewWidth + 2)}${RESET}`)
+    buf.push(
+      `${FG_GRAY}${'─'.repeat(listWidth)}┴${'─'.repeat(previewWidth + 2)}${RESET}`,
+    )
     const countInfo = `${filtered.length}/${datasets[activeTab].entries.length}`
-    buf.push(`${FG_GRAY}${countInfo} tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search${RESET}`)
+    buf.push(
+      `${FG_GRAY}${countInfo} tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search${RESET}`,
+    )
 
     stdout.write(CLEAR_SCREEN + buf.join('\n'))
   }
 
-  function formatRow(id: string, type: string, status: string, title: string, width: number): string {
+  function formatRow(
+    id: string,
+    type: string,
+    status: string,
+    title: string,
+    width: number,
+  ): string {
     const idCol = id.padEnd(14)
     const typeCol = type.padEnd(12)
     const statusCol = status.padEnd(14)
     const usedWidth = 14 + 12 + 14
     const titleWidth = Math.max(1, width - usedWidth)
-    const titleCol = title.length > titleWidth ? title.slice(0, titleWidth - 1) + '…' : title.padEnd(titleWidth)
+    const titleCol =
+      title.length > titleWidth
+        ? title.slice(0, titleWidth - 1) + '…'
+        : title.padEnd(titleWidth)
     return `${idCol}${typeCol}${statusCol}${titleCol}`
   }
 
-  function colorizeRow(id: string, type: string, status: string, title: string, width: number, sc: string): string {
+  function colorizeRow(
+    id: string,
+    type: string,
+    status: string,
+    title: string,
+    width: number,
+    sc: string,
+  ): string {
     const idCol = id.padEnd(14)
     const typeCol = type.padEnd(12)
     const statusCol = status.padEnd(14)
     const usedWidth = 14 + 12 + 14
     const titleWidth = Math.max(1, width - usedWidth)
-    const titleCol = title.length > titleWidth ? title.slice(0, titleWidth - 1) + '…' : title.padEnd(titleWidth)
+    const titleCol =
+      title.length > titleWidth
+        ? title.slice(0, titleWidth - 1) + '…'
+        : title.padEnd(titleWidth)
     return `${FG_CYAN}${idCol}${RESET}${typeCol}${sc}${statusCol}${RESET}${titleCol}`
   }
 
-  function buildPreviewLines(task: TaskData | undefined, width: number): string[] {
+  function buildPreviewLines(
+    task: TaskData | undefined,
+    width: number,
+  ): string[] {
     if (!task) return []
     const lines: string[] = []
 
-    lines.push(`${BOLD}${task.id}${RESET} ${FG_GRAY}${task.type}${RESET} ${statusColor(task.status)}${task.status}${RESET}`)
+    lines.push(
+      `${BOLD}${task.id}${RESET} ${FG_GRAY}${task.type}${RESET} ${statusColor(task.status)}${task.status}${RESET}`,
+    )
     lines.push(`${BOLD}${task.title}${RESET}`)
     lines.push('')
 
@@ -226,12 +293,14 @@ export async function interactiveList(tasks: TaskData[], archivedTasks: TaskData
           // Arrow keys: ESC [ A/B
           if (data[i + 1] === '[') {
             const arrow = data[i + 2]
-            if (arrow === 'A') { // Up
+            if (arrow === 'A') {
+              // Up
               if (selectedIndex > 0) selectedIndex--
               i += 2
               continue
             }
-            if (arrow === 'B') { // Down
+            if (arrow === 'B') {
+              // Down
               if (selectedIndex < filtered.length - 1) selectedIndex++
               i += 2
               continue
@@ -267,7 +336,9 @@ export async function interactiveList(tasks: TaskData[], archivedTasks: TaskData
           cleanup()
           const selected = getFiltered()[selectedIndex]
           if (selected) {
-            process.stdout.write(`\nSelected: ${selected.task.id} - ${selected.task.title}\n`)
+            process.stdout.write(
+              `\nSelected: ${selected.task.id} - ${selected.task.title}\n`,
+            )
           }
           resolve()
           return

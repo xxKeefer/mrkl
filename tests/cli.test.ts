@@ -1,4 +1,12 @@
-import { describe, it, expect, vi, beforeEach, afterEach, type MockInstance } from 'vitest'
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  afterEach,
+  type MockInstance,
+} from 'vitest'
 
 // Mock citty's runMain to prevent the CLI from actually executing on import
 vi.mock('citty', async (importOriginal) => {
@@ -19,7 +27,6 @@ import pruneCommand from '../src/commands/prune.js'
 import closeCommand from '../src/commands/close.js'
 import * as taskModule from '../src/task.js'
 import { interactiveCreate } from '../src/tui/create-tui.js'
-import consola from 'consola'
 
 type RunCtx = { args: Record<string, unknown> }
 const run = (createCommand as { run: (ctx: RunCtx) => Promise<void> }).run
@@ -118,12 +125,14 @@ describe('create command --ac flag', () => {
   })
 
   it('passes multiple --ac values as separate acceptance criteria', async () => {
-    await run({ args: { type: 'feat', title: 'test', ac: ['first', 'second'] } })
+    await run({
+      args: { type: 'feat', title: 'test', ac: ['first', 'second'] },
+    })
 
     expect(createTaskSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         acceptance_criteria: ['first', 'second'],
-      })
+      }),
     )
   })
 
@@ -133,7 +142,7 @@ describe('create command --ac flag', () => {
     expect(createTaskSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         acceptance_criteria: ['only one'],
-      })
+      }),
     )
   })
 
@@ -143,7 +152,7 @@ describe('create command --ac flag', () => {
     expect(createTaskSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         acceptance_criteria: undefined,
-      })
+      }),
     )
   })
 })
@@ -177,7 +186,7 @@ describe('create command interactive mode', () => {
       expect.objectContaining({
         type: 'feat',
         title: 'test task',
-      })
+      }),
     )
   })
 
@@ -197,7 +206,7 @@ describe('create command interactive mode', () => {
         title: 'broken login',
         description: 'Fix the auth flow',
         acceptance_criteria: ['login works', 'tests pass'],
-      })
+      }),
     )
   })
 
@@ -217,7 +226,7 @@ describe('create command interactive mode', () => {
         title: 'update deps',
         description: undefined,
         acceptance_criteria: undefined,
-      })
+      }),
     )
   })
 
@@ -237,7 +246,7 @@ describe('create command interactive mode', () => {
         title: 'no criteria task',
         description: 'some description',
         acceptance_criteria: undefined,
-      })
+      }),
     )
   })
 
@@ -255,7 +264,7 @@ describe('create command interactive mode', () => {
         type: 'fix',
         title: 'one criterion task',
         acceptance_criteria: ['first criterion'],
-      })
+      }),
     )
   })
 
@@ -275,7 +284,7 @@ describe('create command interactive mode', () => {
         title: 'two criteria task',
         description: 'a description',
         acceptance_criteria: ['criterion one', 'criterion two'],
-      })
+      }),
     )
   })
 
@@ -297,7 +306,9 @@ describe('close command', () => {
   let closeTaskSpy: MockInstance<typeof taskModule.closeTask>
 
   beforeEach(() => {
-    closeTaskSpy = vi.spyOn(taskModule, 'closeTask').mockImplementation(() => {})
+    closeTaskSpy = vi
+      .spyOn(taskModule, 'closeTask')
+      .mockImplementation(() => {})
   })
 
   afterEach(() => {
@@ -306,25 +317,55 @@ describe('close command', () => {
 
   it('passes reason to closeTask', () => {
     closeRun({ args: { id: 'TEST-001', reason: 'duplicate' } })
-    expect(closeTaskSpy).toHaveBeenCalledWith(expect.any(String), 'TEST-001', 'duplicate')
+    expect(closeTaskSpy).toHaveBeenCalledWith(
+      expect.any(String),
+      'TEST-001',
+      'duplicate',
+    )
   })
 
   it('passes undefined reason when not provided', () => {
     closeRun({ args: { id: 'TEST-001' } })
-    expect(closeTaskSpy).toHaveBeenCalledWith(expect.any(String), 'TEST-001', undefined)
+    expect(closeTaskSpy).toHaveBeenCalledWith(
+      expect.any(String),
+      'TEST-001',
+      undefined,
+    )
   })
 
   it('handles multiple positional IDs via args._', () => {
-    closeRun({ args: { id: 'TEST-001', _: ['TEST-001', 'TEST-002', 'TEST-003'], reason: 'batch close' } })
+    closeRun({
+      args: {
+        id: 'TEST-001',
+        _: ['TEST-001', 'TEST-002', 'TEST-003'],
+        reason: 'batch close',
+      },
+    })
     expect(closeTaskSpy).toHaveBeenCalledTimes(3)
-    expect(closeTaskSpy).toHaveBeenCalledWith(expect.any(String), 'TEST-001', 'batch close')
-    expect(closeTaskSpy).toHaveBeenCalledWith(expect.any(String), 'TEST-002', 'batch close')
-    expect(closeTaskSpy).toHaveBeenCalledWith(expect.any(String), 'TEST-003', 'batch close')
+    expect(closeTaskSpy).toHaveBeenCalledWith(
+      expect.any(String),
+      'TEST-001',
+      'batch close',
+    )
+    expect(closeTaskSpy).toHaveBeenCalledWith(
+      expect.any(String),
+      'TEST-002',
+      'batch close',
+    )
+    expect(closeTaskSpy).toHaveBeenCalledWith(
+      expect.any(String),
+      'TEST-003',
+      'batch close',
+    )
   })
 
   it('falls back to args.id when args._ is empty', () => {
     closeRun({ args: { id: 'TEST-001', _: [] } })
     expect(closeTaskSpy).toHaveBeenCalledTimes(1)
-    expect(closeTaskSpy).toHaveBeenCalledWith(expect.any(String), 'TEST-001', undefined)
+    expect(closeTaskSpy).toHaveBeenCalledWith(
+      expect.any(String),
+      'TEST-001',
+      undefined,
+    )
   })
 })
