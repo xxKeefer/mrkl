@@ -1,30 +1,16 @@
 import { Fzf } from 'fzf'
 import type { TaskData } from '../types.js'
+import {
+  ESC, CSI,
+  ALT_SCREEN_ON, ALT_SCREEN_OFF, CURSOR_HIDE, CURSOR_SHOW, CLEAR_SCREEN,
+  BOLD, DIM, UNDERLINE, RESET, INVERSE,
+  FG_CYAN, FG_YELLOW, FG_GREEN, FG_RED, FG_GRAY,
+} from './ansi.js'
 
 interface FzfEntry {
   task: TaskData
   searchText: string
 }
-
-const ESC = '\x1b'
-const CSI = `${ESC}[`
-
-const ALT_SCREEN_ON = `${CSI}?1049h`
-const ALT_SCREEN_OFF = `${CSI}?1049l`
-const CURSOR_HIDE = `${CSI}?25l`
-const CURSOR_SHOW = `${CSI}?25h`
-const CLEAR_SCREEN = `${CSI}2J${CSI}H`
-
-const BOLD = `${CSI}1m`
-const DIM = `${CSI}2m`
-const UNDERLINE = `${CSI}4m`
-const RESET = `${CSI}0m`
-const INVERSE = `${CSI}7m`
-const FG_CYAN = `${CSI}36m`
-const FG_YELLOW = `${CSI}33m`
-const FG_GREEN = `${CSI}32m`
-const FG_RED = `${CSI}31m`
-const FG_GRAY = `${CSI}90m`
 
 function statusColor(status: string): string {
   switch (status) {
