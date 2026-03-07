@@ -20,7 +20,7 @@ let tmp: string
 
 beforeEach(() => {
   tmp = mkdtempSync(join(tmpdir(), 'mrkl-test-'))
-  initConfig(tmp, { prefix: 'TEST' })
+  initConfig(tmp, { prefix: 'TEST', verbose_files: true })
 })
 
 afterEach(() => {
@@ -222,6 +222,49 @@ describe('task', () => {
     })
   })
 
+  describe('createTask with verbose_files false', () => {
+    let nonVerboseTmp: string
+
+    beforeEach(() => {
+      nonVerboseTmp = mkdtempSync(join(tmpdir(), 'mrkl-test-nv-'))
+      initConfig(nonVerboseTmp, { prefix: 'TEST', verbose_files: false })
+    })
+
+    afterEach(() => {
+      rmSync(nonVerboseTmp, { recursive: true, force: true })
+    })
+
+    it('produces non-verbose filename', () => {
+      const task = createTask({ dir: nonVerboseTmp, type: 'feat', title: 'add login' })
+      expect(task.id).toBe('TEST-001')
+      expect(existsSync(join(nonVerboseTmp, '.tasks', 'TEST-001.md'))).toBe(true)
+    })
+
+    it('listTasks works with non-verbose filenames', () => {
+      createTask({ dir: nonVerboseTmp, type: 'feat', title: 'one' })
+      createTask({ dir: nonVerboseTmp, type: 'fix', title: 'two' })
+      const tasks = listTasks({ dir: nonVerboseTmp })
+      expect(tasks).toHaveLength(2)
+      expect(tasks.map((t) => t.id)).toEqual(['TEST-001', 'TEST-002'])
+    })
+
+    it('archiveTask works with non-verbose filenames', () => {
+      createTask({ dir: nonVerboseTmp, type: 'feat', title: 'archive me' })
+      archiveTask(nonVerboseTmp, 'TEST-001')
+      expect(existsSync(join(nonVerboseTmp, '.tasks', 'TEST-001.md'))).toBe(false)
+      expect(existsSync(join(nonVerboseTmp, '.tasks', '.archive', 'TEST-001.md'))).toBe(true)
+    })
+
+    it('closeTask works with non-verbose filenames', () => {
+      createTask({ dir: nonVerboseTmp, type: 'feat', title: 'close me' })
+      closeTask(nonVerboseTmp, 'TEST-001')
+      expect(existsSync(join(nonVerboseTmp, '.tasks', 'TEST-001.md'))).toBe(false)
+      expect(existsSync(join(nonVerboseTmp, '.tasks', '.archive', 'TEST-001.md'))).toBe(true)
+      const content = readFileSync(join(nonVerboseTmp, '.tasks', '.archive', 'TEST-001.md'), 'utf-8')
+      expect(content).toContain('status: closed')
+    })
+  })
+
   describe('parseCutoffDate', () => {
     it('accepts YYYY-MM-DD format', () => {
       expect(parseCutoffDate('2026-03-01')).toBe('2026-03-01')
@@ -307,7 +350,7 @@ describe('task', () => {
       // gray-matter parses unquoted dates as JS Date objects
       // Write raw content with an unquoted date to trigger this
       const filename = 'TEST-001 feat - date object.md'
-      const content = `---\nid: TEST-001\ntype: feat\nstatus: done\ncreated: 2026-01-15\n---\n\n## Description\n\n\n\n## Acceptance Criteria\n\n`
+      const content = `---\nid: TEST-001\ntitle: date object\ntype: feat\nstatus: done\ncreated: 2026-01-15\n---\n\n## Description\n\n\n\n## Acceptance Criteria\n\n`
       writeFileSync(join(tmp, '.tasks', '.archive', filename), content)
 
       const result = pruneTasks(tmp, '2026-03-01')

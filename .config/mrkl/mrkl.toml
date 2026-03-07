@@ -1,2 +1,3 @@
 prefix = "MRKL"
 tasks_dir = ".tasks"
+verbose_files = false

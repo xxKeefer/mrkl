@@ -22,6 +22,7 @@ export function loadConfig(dir: string): Config {
   return {
     prefix: parsed.prefix as string,
     tasks_dir: (parsed.tasks_dir as string) ?? ".tasks",
+    verbose_files: (parsed.verbose_files as boolean) ?? false,
   };
 }
 
@@ -36,6 +37,7 @@ export function initConfig(
     const config: Config = {
       prefix: opts?.prefix ?? "TASK",
       tasks_dir: opts?.tasks_dir ?? ".tasks",
+      verbose_files: opts?.verbose_files ?? false,
     };
     mkdirSync(configDir, { recursive: true });
     writeFileSync(configPath, stringify(config));
