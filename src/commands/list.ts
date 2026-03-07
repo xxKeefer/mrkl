@@ -51,7 +51,7 @@ export default defineCommand({
       const archivedTasks = listArchivedTasks(filter)
 
       if (tasks.length === 0 && archivedTasks.length === 0) {
-        consola.info('No tasks found')
+        consola.info('📭 No tasks found')
         return
       }
 
@@ -82,11 +82,11 @@ export default defineCommand({
         const result = await interactiveEdit(selected)
         if (result) {
           const updated = updateTask(dir, selected.id, result)
-          consola.success(`Updated ${updated.id}: ${updated.title}`)
+          consola.success(`✏️  Updated ${updated.id}: ${updated.title}`)
         }
       }
     } catch (err) {
-      consola.error(String((err as Error).message))
+      consola.error(`❌ ${(err as Error).message}`)
       process.exit(1)
     }
   },
