@@ -80,6 +80,7 @@ mrkl x PROJ-002            # close
 | `done` | `d` | Mark a task as done and archive it |
 | `close` | `x` | Close a task (won't do, duplicate, etc.) and archive it |
 | `prune` | `p` | Delete archived tasks created on or before a given date |
+| `migrate_prior_verbose` | — | Migrate legacy verbose-filename tasks to frontmatter-based format |
 | `install-skills` | — | Install bundled Claude Code skills |
 
 ### `mrkl init <prefix>`
@@ -175,6 +176,25 @@ mrkl prune 2026-01-31
 mrkl prune 2026-01-31 --force
 ```
 
+### `mrkl migrate_prior_verbose`
+
+Migrates task files from the legacy verbose-filename format to the current format. This is a **one-time migration** for projects that were using mrkl before v0.4.0.
+
+**What it does:**
+
+1. Scans all task files in `.tasks/` and `.tasks/.archive/`
+2. Extracts the title from the verbose filename (e.g., `PROJ-001 feat - user auth.md`)
+3. Writes the title into YAML frontmatter
+4. If `verbose_files = false` (default): renames files to short format (`PROJ-001.md`)
+5. If `verbose_files = true`: keeps verbose filenames as-is
+
+```sh
+mrkl migrate_prior_verbose
+# ✅ Migrated 12 file(s), skipped 3 file(s).
+```
+
+> **Note:** After upgrading to v0.4.0+, existing task files will fail to parse until migrated. Run this command once to fix them.
+
 ### `mrkl install-skills`
 
 Installs bundled Claude Code skills into the current project.
@@ -211,15 +231,16 @@ mrkl uses [conventional commit](https://www.conventionalcommits.org/) types:
 
 ## Task File Format 📄
 
-Each task is a markdown file with YAML frontmatter:
+Each task is a markdown file with YAML frontmatter. By default, filenames use the short format:
 
 ```
-.tasks/PROJ-001 feat - user authentication.md
+.tasks/PROJ-001.md
 ```
 
 ```markdown
 ---
 id: PROJ-001
+title: user authentication
 type: feat
 status: todo
 created: '2026-03-01'
@@ -235,7 +256,13 @@ Implement user authentication with OAuth2.
 - [ ] session persists across refreshes
 ```
 
-The format is intentionally simple — edit task files directly when you need to update descriptions, change status, or check off criteria.
+With `verbose_files = true`, filenames include the type and title:
+
+```
+.tasks/PROJ-001 feat - user authentication.md
+```
+
+The `title` is always stored in frontmatter regardless of filename format. Edit task files directly when you need to update descriptions, change status, or check off criteria.
 
 ## Project Structure 🗂️
 
@@ -247,10 +274,10 @@ your-project/
     mrkl.toml           # project configuration
     mrkl_counter        # current task number
   .tasks/
-    PROJ-001 feat - first task.md
-    PROJ-002 fix - second task.md
+    PROJ-001.md
+    PROJ-002.md
     .archive/
-      PROJ-000 chore - archived task.md
+      PROJ-000.md
 ```
 
 Commit `.config/mrkl/` and `.tasks/` to version control. They're designed to be tracked alongside your code.
@@ -286,12 +313,14 @@ Configuration lives in `.config/mrkl/mrkl.toml` (or `mrkl.toml` at the project r
 ```toml
 prefix = "PROJ"
 tasks_dir = ".tasks"
+verbose_files = false
 ```
 
 | Key | Default | Description |
 |-----|---------|-------------|
 | `prefix` | *(required)* | Project prefix for task IDs |
 | `tasks_dir` | `".tasks"` | Directory for task files |
+| `verbose_files` | `false` | Use verbose filenames (`PROJ-001 feat - title.md` vs `PROJ-001.md`) |
 
 ## Development 🧑‍💻
 
