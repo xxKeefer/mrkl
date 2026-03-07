@@ -96,6 +96,11 @@ describe('flag aliases', () => {
     const args = pruneCommand.args as Record<string, { alias?: string }>
     expect(args.force.alias).toBe('f')
   })
+
+  it('close --reason has alias -r', () => {
+    const args = closeCommand.args as Record<string, { alias?: string }>
+    expect(args.reason.alias).toBe('r')
+  })
 })
 
 describe('create command --ac flag', () => {
@@ -284,5 +289,42 @@ describe('create command interactive mode', () => {
     expect(exitSpy).toHaveBeenCalledWith(0)
 
     exitSpy.mockRestore()
+  })
+})
+
+describe('close command', () => {
+  const closeRun = (closeCommand as { run: (ctx: RunCtx) => void }).run
+  let closeTaskSpy: MockInstance<typeof taskModule.closeTask>
+
+  beforeEach(() => {
+    closeTaskSpy = vi.spyOn(taskModule, 'closeTask').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    closeTaskSpy.mockRestore()
+  })
+
+  it('passes reason to closeTask', () => {
+    closeRun({ args: { id: 'TEST-001', reason: 'duplicate' } })
+    expect(closeTaskSpy).toHaveBeenCalledWith(expect.any(String), 'TEST-001', 'duplicate')
+  })
+
+  it('passes undefined reason when not provided', () => {
+    closeRun({ args: { id: 'TEST-001' } })
+    expect(closeTaskSpy).toHaveBeenCalledWith(expect.any(String), 'TEST-001', undefined)
+  })
+
+  it('handles multiple positional IDs via args._', () => {
+    closeRun({ args: { id: 'TEST-001', _: ['TEST-001', 'TEST-002', 'TEST-003'], reason: 'batch close' } })
+    expect(closeTaskSpy).toHaveBeenCalledTimes(3)
+    expect(closeTaskSpy).toHaveBeenCalledWith(expect.any(String), 'TEST-001', 'batch close')
+    expect(closeTaskSpy).toHaveBeenCalledWith(expect.any(String), 'TEST-002', 'batch close')
+    expect(closeTaskSpy).toHaveBeenCalledWith(expect.any(String), 'TEST-003', 'batch close')
+  })
+
+  it('falls back to args.id when args._ is empty', () => {
+    closeRun({ args: { id: 'TEST-001', _: [] } })
+    expect(closeTaskSpy).toHaveBeenCalledTimes(1)
+    expect(closeTaskSpy).toHaveBeenCalledWith(expect.any(String), 'TEST-001', undefined)
   })
 })

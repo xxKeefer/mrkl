@@ -8,6 +8,7 @@ import {
   listTasks,
   archiveTask,
   closeTask,
+  resolveTaskId,
   normalizeTitle,
   parseCutoffDate,
   pruneTasks,
@@ -188,6 +189,48 @@ describe('task', () => {
     })
     it('throws if task ID not found', () => {
       expect(() => closeTask(tmp, 'TEST-999')).toThrow('Task TEST-999 not found')
+    })
+    it('writes closed reason to frontmatter when provided', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'with reason' })
+      closeTask(tmp, 'TEST-001', 'duplicate')
+      const archivePath = join(tmp, '.tasks', '.archive', 'TEST-001 feat - with reason.md')
+      const content = readFileSync(archivePath, 'utf-8')
+      expect(content).toContain('flag: duplicate')
+      expect(content).toContain('status: closed')
+    })
+    it('does not write closed field when no reason provided', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'no reason' })
+      closeTask(tmp, 'TEST-001')
+      const archivePath = join(tmp, '.tasks', '.archive', 'TEST-001 feat - no reason.md')
+      const content = readFileSync(archivePath, 'utf-8')
+      expect(content).not.toContain('flag:')
+    })
+    it('resolves numeric-only ID using project prefix', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'numeric id' })
+      closeTask(tmp, '1')
+      const archivePath = join(tmp, '.tasks', '.archive', 'TEST-001 feat - numeric id.md')
+      expect(existsSync(archivePath)).toBe(true)
+    })
+    it('resolves zero-padded numeric ID', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'padded id' })
+      closeTask(tmp, '001')
+      const archivePath = join(tmp, '.tasks', '.archive', 'TEST-001 feat - padded id.md')
+      expect(existsSync(archivePath)).toBe(true)
+    })
+  })
+
+  describe('resolveTaskId', () => {
+    it('prefixes numeric-only ID with config prefix', () => {
+      expect(resolveTaskId(tmp, '1')).toBe('TEST-001')
+    })
+    it('pads numeric ID to 3 digits', () => {
+      expect(resolveTaskId(tmp, '42')).toBe('TEST-042')
+    })
+    it('leaves already-padded numeric ID as-is', () => {
+      expect(resolveTaskId(tmp, '001')).toBe('TEST-001')
+    })
+    it('passes through full ID unchanged', () => {
+      expect(resolveTaskId(tmp, 'TEST-001')).toBe('TEST-001')
     })
   })
 

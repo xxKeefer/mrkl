@@ -68,6 +68,7 @@ mrkl c feat "dark mode"   # create
 mrkl ls --type fix         # list
 mrkl d PROJ-001            # done
 mrkl x PROJ-002            # close
+mrkl x 2 -r "duplicate"   # close with reason, numeric ID
 ```
 
 ## Commands 🛠️
@@ -78,7 +79,7 @@ mrkl x PROJ-002            # close
 | `create` | `c` | Create a new task |
 | `list` | `ls` | List active tasks |
 | `done` | `d` | Mark a task as done and archive it |
-| `close` | `x` | Close a task (won't do, duplicate, etc.) and archive it |
+| `close` | `x` | Close task(s) (won't do, duplicate, etc.) and archive them |
 | `prune` | `p` | Delete archived tasks created on or before a given date |
 | `migrate_prior_verbose` | — | Migrate legacy verbose-filename tasks to frontmatter-based format |
 | `install-skills` | — | Install bundled Claude Code skills |
@@ -144,15 +145,30 @@ Archives a completed task.
 
 Moves the task file to `.tasks/.archive/` and sets its status to `done`.
 
-### `mrkl close <id>`
+### `mrkl close <id...> [options]`
 
-Closes a task that won't be done — duplicates, out-of-scope work, etc.
+Closes one or more tasks that won't be done — duplicates, out-of-scope work, etc.
 
 | Argument | Description |
 |----------|-------------|
-| `id` | Task ID to close (e.g., `PROJ-002`) |
+| `id` | Task ID(s) to close — full (`PROJ-002`), numeric (`2`), or zero-padded (`002`) |
 
-Sets the task status to `closed` and moves it to `.tasks/.archive/`.
+| Option | Alias | Description |
+|--------|-------|-------------|
+| `--reason <text>` | `-r` | Reason for closing (e.g., `duplicate`, `won't do`) |
+
+Sets the task status to `closed`, writes the reason as a `flag` in frontmatter (if provided), and moves the file to `.tasks/.archive/`.
+
+```sh
+# Close a single task
+mrkl close PROJ-002
+
+# Close with just the number
+mrkl x 2
+
+# Close multiple tasks with a reason
+mrkl x 3 4 5 -r "out of scope"
+```
 
 ### `mrkl prune <date> [options]`
 
