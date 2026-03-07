@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.4.2...main
+
+[compare changes](https://github.com/xxKeefer/mrkl/compare/v0.4.2...main)
+
+### Added
+
+- Done cmd rework ([#28](https://github.com/xxKeefer/mrkl/pull/28))
+
+### Changed
+
+- Eslint + prettier ([#27](https://github.com/xxKeefer/mrkl/pull/27))
+
+### ❤️ Contributors
+
+- Daniel John Keefer <xxkeefer.code@gmail.com>
+
 ## v0.4.1...main
 
 [compare changes](https://github.com/xxKeefer/mrkl/compare/v0.4.1...main)
