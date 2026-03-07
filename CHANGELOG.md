@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.4.0...main
+
+[compare changes](https://github.com/xxKeefer/mrkl/compare/v0.4.0...main)
+
+### Added
+
+- List command overhaul (MRKL-037) ([#22](https://github.com/xxKeefer/mrkl/pull/22))
+
+### ❤️ Contributors
+
+- Daniel John Keefer <xxkeefer.code@gmail.com>
+
 ## v0.3.1...main
 
 [compare changes](https://github.com/xxKeefer/mrkl/compare/v0.3.1...main)
