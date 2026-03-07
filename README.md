@@ -66,6 +66,7 @@ mrkl done 1 2 3            # multiple tasks, numeric IDs
 
 # All commands have short aliases
 mrkl c feat "dark mode"   # create
+mrkl e 1                   # edit (numeric ID)
 mrkl ls --type fix         # list
 mrkl d 1                   # done (numeric ID)
 mrkl x PROJ-002            # close
@@ -78,7 +79,8 @@ mrkl x 2 -r "duplicate"   # close with reason, numeric ID
 | ----------------------- | ----- | ----------------------------------------------------------------- |
 | `init`                  | `i`   | Initialize mrkl in the current project                            |
 | `create`                | `c`   | Create a new task                                                 |
-| `list`                  | `ls`  | List active tasks                                                 |
+| `edit`                  | `e`   | Edit an existing task in an interactive TUI                       |
+| `list`                  | `ls`  | List active tasks (selecting a task opens the edit TUI)           |
 | `done`                  | `d`   | Mark task(s) as done and archive them                             |
 | `close`                 | `x`   | Close task(s) (won't do, duplicate, etc.) and archive them        |
 | `prune`                 | `p`   | Delete archived tasks created on or before a given date           |
@@ -126,6 +128,35 @@ mrkl create feat "search functionality" \
 
 Running `mrkl create` with no arguments enters **interactive mode**, prompting for type, title, description, and acceptance criteria.
 
+### `mrkl edit [id]`
+
+Opens an existing task in an interactive TUI form for editing type, status, title, description, and acceptance criteria.
+
+| Argument | Description                                                                     |
+| -------- | ------------------------------------------------------------------------------- |
+| `id`     | Task ID — full (`PROJ-001`), numeric (`1`), or zero-padded (`001`). Optional.   |
+
+When called without an ID, opens the list TUI to select a task first.
+
+```sh
+# Edit a specific task
+mrkl edit PROJ-001
+mrkl e 1
+
+# Pick from list, then edit
+mrkl edit
+```
+
+**TUI controls:**
+
+| Key       | Action                                  |
+| --------- | --------------------------------------- |
+| `↑` / `↓` | Navigate between fields                |
+| `←` / `→` | Cycle type/status, or move cursor      |
+| `Ctrl+N`  | Insert newline in text fields           |
+| `Enter`   | Submit (on last field) or next field    |
+| `Esc`     | Cancel without saving                   |
+
 ### `mrkl list [options]`
 
 Lists all active tasks.
@@ -134,8 +165,9 @@ Lists all active tasks.
 | ------------------- | ----- | ------------------------------------------------ |
 | `--type <type>`     | `-t`  | Filter by task type                              |
 | `--status <status>` | `-s`  | Filter by status (`todo`, `in-progress`, `done`) |
+| `--plain`           | `-p`  | Plain text output (no interactive TUI)            |
 
-Non-conforming markdown files in the tasks directory are silently skipped.
+In interactive mode (default when stdout is a TTY), selecting a task with `Enter` opens the edit TUI. Non-conforming markdown files in the tasks directory are silently skipped.
 
 ### `mrkl done <id...>`
 
@@ -289,7 +321,7 @@ With `verbose_files = true`, filenames include the type and title:
 .tasks/PROJ-001 feat - user authentication.md
 ```
 
-The `title` is always stored in frontmatter regardless of filename format. Edit task files directly when you need to update descriptions, change status, or check off criteria.
+The `title` is always stored in frontmatter regardless of filename format. Use `mrkl edit <id>` to update type, status, title, description, or acceptance criteria via an interactive TUI, or edit task files directly.
 
 ## Project Structure 🗂️
 
