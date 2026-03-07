@@ -3,49 +3,12 @@ import consola from "consola";
 import { createTask } from "../task.js";
 import { TASK_TYPES } from "../types.js";
 import type { TaskType, CreateTaskOpts } from "../types.js";
+import { interactiveCreate } from "../tui/create-tui.js";
 
 async function promptForTask(dir: string): Promise<CreateTaskOpts> {
-  const type = await consola.prompt("Task type", {
-    type: "select",
-    options: TASK_TYPES.map((t) => t),
-  });
-  if (typeof type === "symbol") process.exit(0);
-
-  const title = await consola.prompt("Task title", {
-    type: "text",
-    placeholder: "e.g. add user authentication",
-  });
-  if (typeof title === "symbol") process.exit(0);
-  if (!title.trim()) {
-    consola.error("❌ Title cannot be empty");
-    process.exit(1);
-  }
-
-  const desc = await consola.prompt("Description (optional, enter to skip)", {
-    type: "text",
-    placeholder: "Describe the task in detail",
-  });
-  if (typeof desc === "symbol") process.exit(0);
-
-  const criteria: string[] = [];
-  while (true) {
-    const ac = await consola.prompt(
-      criteria.length === 0
-        ? "Acceptance criterion (Esc to skip)"
-        : `Criterion #${criteria.length + 1} (Esc to finish)`,
-      { type: "text" },
-    );
-    if (typeof ac !== "string") break;
-    if (ac.trim()) criteria.push(ac.trim());
-  }
-
-  return {
-    dir,
-    type: type as TaskType,
-    title,
-    description: desc || undefined,
-    acceptance_criteria: criteria.length > 0 ? criteria : undefined,
-  };
+  const result = await interactiveCreate();
+  if (!result) process.exit(0);
+  return { dir, ...result };
 }
 
 export default defineCommand({

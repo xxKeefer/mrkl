@@ -6,6 +6,10 @@ vi.mock('citty', async (importOriginal) => {
   return { ...actual, runMain: vi.fn() }
 })
 
+vi.mock('../src/tui/create-tui.js', () => ({
+  interactiveCreate: vi.fn(),
+}))
+
 import { main } from '../src/cli.js'
 import initCommand from '../src/commands/init.js'
 import createCommand from '../src/commands/create.js'
@@ -14,6 +18,7 @@ import doneCommand from '../src/commands/done.js'
 import pruneCommand from '../src/commands/prune.js'
 import closeCommand from '../src/commands/close.js'
 import * as taskModule from '../src/task.js'
+import { interactiveCreate } from '../src/tui/create-tui.js'
 import consola from 'consola'
 
 type RunCtx = { args: Record<string, unknown> }
@@ -91,6 +96,11 @@ describe('flag aliases', () => {
     const args = pruneCommand.args as Record<string, { alias?: string }>
     expect(args.force.alias).toBe('f')
   })
+
+  it('close --reason has alias -r', () => {
+    const args = closeCommand.args as Record<string, { alias?: string }>
+    expect(args.reason.alias).toBe('r')
+  })
 })
 
 describe('create command --ac flag', () => {
@@ -140,31 +150,29 @@ describe('create command --ac flag', () => {
 
 describe('create command interactive mode', () => {
   let createTaskSpy: MockInstance<typeof taskModule.createTask>
-  let promptSpy: MockInstance<typeof consola.prompt>
+  const mockInteractiveCreate = vi.mocked(interactiveCreate)
 
   beforeEach(() => {
     createTaskSpy = vi.spyOn(taskModule, 'createTask').mockReturnValue({
       id: 'MRKL-999',
       title: 'test task',
     } as ReturnType<typeof taskModule.createTask>)
-    promptSpy = vi.spyOn(consola, 'prompt') as MockInstance<typeof consola.prompt>
   })
 
   afterEach(() => {
     createTaskSpy.mockRestore()
-    promptSpy.mockRestore()
+    mockInteractiveCreate.mockReset()
   })
 
   it('enters interactive mode when no positional args given', async () => {
-    promptSpy
-      .mockResolvedValueOnce('feat') // type
-      .mockResolvedValueOnce('test task') // title
-      .mockResolvedValueOnce('') // description
-      .mockResolvedValueOnce(Symbol('cancel') as any) // Esc to skip AC
+    mockInteractiveCreate.mockResolvedValueOnce({
+      type: 'feat',
+      title: 'test task',
+    })
 
     await run({ args: {} })
 
-    expect(promptSpy).toHaveBeenCalledTimes(4)
+    expect(mockInteractiveCreate).toHaveBeenCalledTimes(1)
     expect(createTaskSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'feat',
@@ -173,14 +181,13 @@ describe('create command interactive mode', () => {
     )
   })
 
-  it('collects multiple acceptance criteria until Esc', async () => {
-    promptSpy
-      .mockResolvedValueOnce('fix')
-      .mockResolvedValueOnce('broken login')
-      .mockResolvedValueOnce('Fix the auth flow')
-      .mockResolvedValueOnce('login works') // first AC
-      .mockResolvedValueOnce('tests pass') // second AC
-      .mockResolvedValueOnce(Symbol('cancel') as any) // Esc to finish
+  it('collects multiple acceptance criteria', async () => {
+    mockInteractiveCreate.mockResolvedValueOnce({
+      type: 'fix',
+      title: 'broken login',
+      description: 'Fix the auth flow',
+      acceptance_criteria: ['login works', 'tests pass'],
+    })
 
     await run({ args: {} })
 
@@ -195,11 +202,12 @@ describe('create command interactive mode', () => {
   })
 
   it('skips optional fields when left empty', async () => {
-    promptSpy
-      .mockResolvedValueOnce('chore')
-      .mockResolvedValueOnce('update deps')
-      .mockResolvedValueOnce('') // description
-      .mockResolvedValueOnce(Symbol('cancel') as any) // Esc to skip AC
+    mockInteractiveCreate.mockResolvedValueOnce({
+      type: 'chore',
+      title: 'update deps',
+      description: undefined,
+      acceptance_criteria: undefined,
+    })
 
     await run({ args: {} })
 
@@ -213,12 +221,13 @@ describe('create command interactive mode', () => {
     )
   })
 
-  it('handles undefined return (Escape) at first AC prompt with 0 ACs', async () => {
-    promptSpy
-      .mockResolvedValueOnce('feat')
-      .mockResolvedValueOnce('no criteria task')
-      .mockResolvedValueOnce('some description')
-      .mockResolvedValueOnce(undefined as any) // Escape returns undefined
+  it('passes description and criteria correctly', async () => {
+    mockInteractiveCreate.mockResolvedValueOnce({
+      type: 'feat',
+      title: 'no criteria task',
+      description: 'some description',
+      acceptance_criteria: undefined,
+    })
 
     await run({ args: {} })
 
@@ -232,13 +241,12 @@ describe('create command interactive mode', () => {
     )
   })
 
-  it('handles undefined return (Escape) after one AC', async () => {
-    promptSpy
-      .mockResolvedValueOnce('fix')
-      .mockResolvedValueOnce('one criterion task')
-      .mockResolvedValueOnce('')
-      .mockResolvedValueOnce('first criterion') // one AC
-      .mockResolvedValueOnce(undefined as any) // Escape returns undefined
+  it('passes single criterion correctly', async () => {
+    mockInteractiveCreate.mockResolvedValueOnce({
+      type: 'fix',
+      title: 'one criterion task',
+      acceptance_criteria: ['first criterion'],
+    })
 
     await run({ args: {} })
 
@@ -251,14 +259,13 @@ describe('create command interactive mode', () => {
     )
   })
 
-  it('handles undefined return (Escape) after two ACs', async () => {
-    promptSpy
-      .mockResolvedValueOnce('chore')
-      .mockResolvedValueOnce('two criteria task')
-      .mockResolvedValueOnce('a description')
-      .mockResolvedValueOnce('criterion one') // first AC
-      .mockResolvedValueOnce('criterion two') // second AC
-      .mockResolvedValueOnce(undefined as any) // Escape returns undefined
+  it('passes multiple criteria correctly', async () => {
+    mockInteractiveCreate.mockResolvedValueOnce({
+      type: 'chore',
+      title: 'two criteria task',
+      description: 'a description',
+      acceptance_criteria: ['criterion one', 'criterion two'],
+    })
 
     await run({ args: {} })
 
@@ -272,15 +279,52 @@ describe('create command interactive mode', () => {
     )
   })
 
-  it('exits gracefully on cancel (Ctrl+C)', async () => {
+  it('exits gracefully on cancel (returns null)', async () => {
     const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {
       throw new Error('process.exit')
     })
-    promptSpy.mockResolvedValueOnce(Symbol('clack:cancel') as any)
+    mockInteractiveCreate.mockResolvedValueOnce(null)
 
     await expect(run({ args: {} })).rejects.toThrow('process.exit')
     expect(exitSpy).toHaveBeenCalledWith(0)
 
     exitSpy.mockRestore()
+  })
+})
+
+describe('close command', () => {
+  const closeRun = (closeCommand as { run: (ctx: RunCtx) => void }).run
+  let closeTaskSpy: MockInstance<typeof taskModule.closeTask>
+
+  beforeEach(() => {
+    closeTaskSpy = vi.spyOn(taskModule, 'closeTask').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    closeTaskSpy.mockRestore()
+  })
+
+  it('passes reason to closeTask', () => {
+    closeRun({ args: { id: 'TEST-001', reason: 'duplicate' } })
+    expect(closeTaskSpy).toHaveBeenCalledWith(expect.any(String), 'TEST-001', 'duplicate')
+  })
+
+  it('passes undefined reason when not provided', () => {
+    closeRun({ args: { id: 'TEST-001' } })
+    expect(closeTaskSpy).toHaveBeenCalledWith(expect.any(String), 'TEST-001', undefined)
+  })
+
+  it('handles multiple positional IDs via args._', () => {
+    closeRun({ args: { id: 'TEST-001', _: ['TEST-001', 'TEST-002', 'TEST-003'], reason: 'batch close' } })
+    expect(closeTaskSpy).toHaveBeenCalledTimes(3)
+    expect(closeTaskSpy).toHaveBeenCalledWith(expect.any(String), 'TEST-001', 'batch close')
+    expect(closeTaskSpy).toHaveBeenCalledWith(expect.any(String), 'TEST-002', 'batch close')
+    expect(closeTaskSpy).toHaveBeenCalledWith(expect.any(String), 'TEST-003', 'batch close')
+  })
+
+  it('falls back to args.id when args._ is empty', () => {
+    closeRun({ args: { id: 'TEST-001', _: [] } })
+    expect(closeTaskSpy).toHaveBeenCalledTimes(1)
+    expect(closeTaskSpy).toHaveBeenCalledWith(expect.any(String), 'TEST-001', undefined)
   })
 })
