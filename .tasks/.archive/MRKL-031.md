@@ -2,8 +2,9 @@
 id: MRKL-031
 title: close with reason
 type: feat
-status: todo
+status: closed
 created: '2026-03-02'
+flag: implemented under feature/close-cmd-improvements
 ---
 ## Description
 

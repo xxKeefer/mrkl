@@ -28,6 +28,7 @@ export interface TaskData {
   type: TaskType;
   status: Status;
   created: string;
+  flag?: string;
   title: string;
   description: string;
   acceptance_criteria: string[];
