@@ -19,7 +19,7 @@ describe("config", () => {
     it("reads mrkl.toml and returns Config", () => {
       writeFileSync(join(tmp, "mrkl.toml"), 'prefix = "TEST"\ntasks_dir = ".tasks"\n');
       const config = loadConfig(tmp);
-      expect(config).toEqual({ prefix: "TEST", tasks_dir: ".tasks" });
+      expect(config).toEqual({ prefix: "TEST", tasks_dir: ".tasks", verbose_files: false });
     });
 
     it("prefers .config/mrkl/mrkl.toml over root", () => {
@@ -42,6 +42,16 @@ describe("config", () => {
       const config = loadConfig(tmp);
       expect(config.tasks_dir).toBe(".tasks");
     });
+    it("returns verbose_files true when set in toml", () => {
+      writeFileSync(join(tmp, "mrkl.toml"), 'prefix = "TEST"\nverbose_files = true\n');
+      const config = loadConfig(tmp);
+      expect(config.verbose_files).toBe(true);
+    });
+    it("defaults verbose_files to false", () => {
+      writeFileSync(join(tmp, "mrkl.toml"), 'prefix = "TEST"\n');
+      const config = loadConfig(tmp);
+      expect(config.verbose_files).toBe(false);
+    });
   });
 
   describe("initConfig", () => {
@@ -60,6 +70,11 @@ describe("config", () => {
       initConfig(tmp, { prefix: "FOO" });
       const counter = readFileSync(join(tmp, ".config", "mrkl", "mrkl_counter"), "utf-8");
       expect(counter).toBe("0");
+    });
+    it("writes verbose_files to config", () => {
+      initConfig(tmp, { prefix: "FOO", verbose_files: true });
+      const config = loadConfig(tmp);
+      expect(config.verbose_files).toBe(true);
     });
     it("is idempotent — does not overwrite existing config or reset counter", () => {
       initConfig(tmp, { prefix: "FOO" });

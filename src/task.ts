@@ -35,7 +35,9 @@ export function createTask(opts: CreateTaskOpts): TaskData {
     acceptance_criteria: opts.acceptance_criteria ?? [],
   }
 
-  const filename = `${id} ${task.type} - ${task.title}.md`
+  const filename = config.verbose_files
+    ? `${id} ${task.type} - ${task.title}.md`
+    : `${id}.md`
   const tasksDir = join(opts.dir, config.tasks_dir)
   writeFileSync(join(tasksDir, filename), render(task))
 

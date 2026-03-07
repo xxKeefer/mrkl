@@ -20,6 +20,7 @@ export type Status = (typeof STATUSES)[number];
 export interface Config {
   prefix: string;
   tasks_dir: string;
+  verbose_files: boolean;
 }
 
 export interface TaskData {
