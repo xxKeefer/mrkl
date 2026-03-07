@@ -59,8 +59,8 @@ export async function interactiveList(tasks: TaskData[], archivedTasks: TaskData
   function getFiltered(): FzfEntry[] {
     const entries = datasets[activeTab].entries
     if (!query) return entries
-    const fzf = new Fzf(entries, { selector: (e) => e.searchText })
-    return fzf.find(query).map((r) => r.item)
+    const fzf = new Fzf(entries, { selector: (e: FzfEntry) => e.searchText })
+    return fzf.find(query).map((r: { item: FzfEntry }) => r.item)
   }
 
   function getTermSize(): { cols: number; rows: number } {
