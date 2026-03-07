@@ -1,6 +1,6 @@
 import { defineCommand } from 'citty'
 import consola from 'consola'
-import { listTasks, listArchivedTasks } from '../task.js'
+import { listTasks, listArchivedTasks, updateTask } from '../task.js'
 import type { Status, TaskType } from '../types.js'
 
 const COL_ID = 14
@@ -51,7 +51,7 @@ export default defineCommand({
       const archivedTasks = listArchivedTasks(filter)
 
       if (tasks.length === 0 && archivedTasks.length === 0) {
-        consola.info('No tasks found')
+        consola.info('📭 No tasks found')
         return
       }
 
@@ -75,9 +75,18 @@ export default defineCommand({
       }
 
       const { interactiveList } = await import('../tui/list-tui.js')
-      await interactiveList(tasks, archivedTasks)
+      const selected = await interactiveList(tasks, archivedTasks)
+
+      if (selected) {
+        const { interactiveEdit } = await import('../tui/create-tui.js')
+        const result = await interactiveEdit(selected)
+        if (result) {
+          const updated = updateTask(dir, selected.id, result)
+          consola.success(`✏️  Updated ${updated.id}: ${updated.title}`)
+        }
+      }
     } catch (err) {
-      consola.error(String((err as Error).message))
+      consola.error(`❌ ${(err as Error).message}`)
       process.exit(1)
     }
   },

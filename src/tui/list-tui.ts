@@ -48,7 +48,7 @@ function buildEntries(tasks: TaskData[]): FzfEntry[] {
 export async function interactiveList(
   tasks: TaskData[],
   archivedTasks: TaskData[],
-): Promise<void> {
+): Promise<TaskData | null> {
   const { stdin, stdout } = process
 
   const datasets = [
@@ -274,7 +274,7 @@ export async function interactiveList(
 
   render()
 
-  return new Promise<void>((resolve) => {
+  return new Promise<TaskData | null>((resolve) => {
     function cleanup(): void {
       stdout.write(CURSOR_SHOW + ALT_SCREEN_OFF)
       if (stdin.isTTY) stdin.setRawMode(false)
@@ -311,14 +311,14 @@ export async function interactiveList(
           }
           // Plain Esc = exit
           cleanup()
-          resolve()
+          resolve(null)
           return
         }
 
         // Ctrl+C
         if (ch === '\x03') {
           cleanup()
-          resolve()
+          resolve(null)
           return
         }
 
@@ -335,12 +335,7 @@ export async function interactiveList(
         if (ch === '\r' || ch === '\n') {
           cleanup()
           const selected = getFiltered()[selectedIndex]
-          if (selected) {
-            process.stdout.write(
-              `\nSelected: ${selected.task.id} - ${selected.task.title}\n`,
-            )
-          }
-          resolve()
+          resolve(selected?.task ?? null)
           return
         }
 

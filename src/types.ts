@@ -49,6 +49,14 @@ export interface ListFilter {
   status?: Status
 }
 
+export interface EditTaskResult {
+  type: TaskType
+  status: Status
+  title: string
+  description?: string
+  acceptance_criteria?: string[]
+}
+
 export interface PruneResult {
   deleted: Array<{
     id: string

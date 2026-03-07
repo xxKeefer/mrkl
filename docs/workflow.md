@@ -164,6 +164,7 @@ mrkl list  # now shows newly planned tasks
 | Commit planning    | `git add .tasks/ .config/mrkl/mrkl_counter && git commit` |
 | Start feature work | `git checkout -b feature/MRKL-NNN_slug main`              |
 | Complete task      | `mrkl done MRKL-NNN`                                      |
+| Edit task          | `mrkl edit MRKL-NNN` or `mrkl e MRKL-NNN`                |
 | Ad-hoc task        | `git checkout -b planning/adhoc-YYYYMMDD main`            |
 | View tasks         | `mrkl list`                                               |
 | Sync with main     | `git rebase main`                                         |
