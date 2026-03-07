@@ -171,25 +171,38 @@ export function listArchivedTasks(filter: ListFilter): TaskData[] {
   return tasks
 }
 
-export function closeTask(dir: string, id: string): void {
+export function resolveTaskId(dir: string, id: string): string {
+  if (/^\d+$/.test(id)) {
+    const config = loadConfig(dir)
+    return `${config.prefix}-${id.padStart(3, '0')}`
+  }
+  return id
+}
+
+export function closeTask(dir: string, id: string, reason?: string): string {
   const config = loadConfig(dir)
   const tasksDir = join(dir, config.tasks_dir)
 
-  const idUpper = id.toUpperCase()
+  const resolved = resolveTaskId(dir, id)
+  const idUpper = resolved.toUpperCase()
   const file = readdirSync(tasksDir).find(
     (f) => f.endsWith('.md') && f.toUpperCase().startsWith(idUpper)
   )
 
   if (!file) {
-    throw new Error(`Task ${id} not found`)
+    throw new Error(`Task ${resolved} not found`)
   }
 
   const filePath = join(tasksDir, file)
   const content = readFileSync(filePath, 'utf-8')
   const task = parse(content, file)
   task.status = 'closed'
+  if (reason) {
+    task.flag = reason
+  }
 
   const archivePath = join(tasksDir, '.archive', file)
   writeFileSync(archivePath, render(task))
   unlinkSync(filePath)
+  return resolved
 }
