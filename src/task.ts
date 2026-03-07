@@ -146,6 +146,31 @@ export function executePrune(dir: string, filenames: string[]): void {
   }
 }
 
+export function listArchivedTasks(filter: ListFilter): TaskData[] {
+  const config = loadConfig(filter.dir)
+  const archiveDir = join(filter.dir, config.tasks_dir, '.archive')
+
+  if (!existsSync(archiveDir)) return []
+
+  const files = readdirSync(archiveDir).filter((f) => f.endsWith('.md') && !f.startsWith('.'))
+
+  let tasks = files.flatMap((f) => {
+    try {
+      const content = readFileSync(join(archiveDir, f), 'utf-8')
+      const task = parse(content, f)
+      if (!task.id || !task.type || !task.status) return []
+      return [task]
+    } catch {
+      return []
+    }
+  })
+
+  if (filter.type) tasks = tasks.filter((t) => t.type === filter.type)
+  if (filter.status) tasks = tasks.filter((t) => t.status === filter.status)
+
+  return tasks
+}
+
 export function closeTask(dir: string, id: string): void {
   const config = loadConfig(dir)
   const tasksDir = join(dir, config.tasks_dir)
