@@ -6,6 +6,7 @@ import listCommand from './commands/list.js'
 import doneCommand from './commands/done.js'
 import pruneCommand from './commands/prune.js'
 import closeCommand from './commands/close.js'
+import editCommand from './commands/edit.js'
 import migrateCommand from './commands/migrate.js'
 import installSkillsCommand from './commands/install-skills.js'
 
@@ -22,6 +23,8 @@ export const main = defineCommand({
     c: createCommand,
     list: listCommand,
     ls: listCommand,
+    edit: editCommand,
+    e: editCommand,
     done: doneCommand,
     d: doneCommand,
     prune: pruneCommand,

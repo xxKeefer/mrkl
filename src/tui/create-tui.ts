@@ -1,5 +1,5 @@
-import { TASK_TYPES } from '../types.js'
-import type { TaskType, CreateTaskOpts } from '../types.js'
+import { TASK_TYPES, STATUSES } from '../types.js'
+import type { TaskType, Status, CreateTaskOpts, TaskData, EditTaskResult } from '../types.js'
 import {
   ESC,
   ALT_SCREEN_ON,
@@ -16,8 +16,11 @@ import {
   FG_GRAY,
 } from './ansi.js'
 
+type FormMode = 'create' | 'edit'
+
 interface FormState {
   type: number
+  status: number
   title: string
   description: string
   criteria: string[]
@@ -25,10 +28,28 @@ interface FormState {
   activeField: number
   cursorPos: number
   error: string
+  mode: FormMode
+  taskId?: string
+}
+
+// Field indices differ by mode:
+// create: 0=type, 1=title, 2=description, 3..N=criteria, N+1=new criterion
+// edit:   0=type, 1=status, 2=title, 3=description, 4..N=criteria, N+1=new criterion
+
+function titleFieldIndex(state: FormState): number {
+  return state.mode === 'edit' ? 2 : 1
+}
+
+function descFieldIndex(state: FormState): number {
+  return state.mode === 'edit' ? 3 : 2
+}
+
+function criteriaStartIndex(state: FormState): number {
+  return state.mode === 'edit' ? 4 : 3
 }
 
 function totalFields(state: FormState): number {
-  return 3 + state.criteria.length + 1
+  return criteriaStartIndex(state) + state.criteria.length + 1
 }
 
 function clampField(state: FormState): void {
@@ -37,45 +58,105 @@ function clampField(state: FormState): void {
   if (state.activeField > max) state.activeField = max
 }
 
+function isTypeField(state: FormState): boolean {
+  return state.activeField === 0
+}
+
+function isStatusField(state: FormState): boolean {
+  return state.mode === 'edit' && state.activeField === 1
+}
+
+function isCycleField(state: FormState): boolean {
+  return isTypeField(state) || isStatusField(state)
+}
+
+function isTextField(state: FormState): boolean {
+  return state.activeField >= titleFieldIndex(state)
+}
+
 function getCurrentText(state: FormState): string {
-  if (state.activeField === 1) return state.title
-  if (state.activeField === 2) return state.description
-  if (state.activeField >= 3 && state.activeField < 3 + state.criteria.length) {
-    return state.criteria[state.activeField - 3]
+  const titleIdx = titleFieldIndex(state)
+  const descIdx = descFieldIndex(state)
+  const critStart = criteriaStartIndex(state)
+
+  if (state.activeField === titleIdx) return state.title
+  if (state.activeField === descIdx) return state.description
+  if (state.activeField >= critStart && state.activeField < critStart + state.criteria.length) {
+    return state.criteria[state.activeField - critStart]
   }
-  if (state.activeField === 3 + state.criteria.length)
+  if (state.activeField === critStart + state.criteria.length)
     return state.currentCriterion
   return ''
 }
 
 function setCurrentText(state: FormState, text: string): void {
-  if (state.activeField === 1) {
+  const titleIdx = titleFieldIndex(state)
+  const descIdx = descFieldIndex(state)
+  const critStart = criteriaStartIndex(state)
+
+  if (state.activeField === titleIdx) {
     state.title = text
     return
   }
-  if (state.activeField === 2) {
+  if (state.activeField === descIdx) {
     state.description = text
     return
   }
-  if (state.activeField >= 3 && state.activeField < 3 + state.criteria.length) {
-    state.criteria[state.activeField - 3] = text
+  if (state.activeField >= critStart && state.activeField < critStart + state.criteria.length) {
+    state.criteria[state.activeField - critStart] = text
     return
   }
-  if (state.activeField === 3 + state.criteria.length) {
+  if (state.activeField === critStart + state.criteria.length) {
     state.currentCriterion = text
     return
   }
 }
 
-function isTextField(state: FormState): boolean {
-  return state.activeField >= 1
+function getCurrentTextForField(state: FormState, fieldIndex: number): string {
+  const titleIdx = titleFieldIndex(state)
+  const descIdx = descFieldIndex(state)
+  const critStart = criteriaStartIndex(state)
+
+  if (fieldIndex === titleIdx) return state.title
+  if (fieldIndex === descIdx) return state.description
+  if (fieldIndex >= critStart && fieldIndex < critStart + state.criteria.length) {
+    return state.criteria[fieldIndex - critStart]
+  }
+  if (fieldIndex === critStart + state.criteria.length) return state.currentCriterion
+  return ''
+}
+
+interface FieldInfo {
+  label: string
+  index: number
+  kind: 'cycle' | 'text'
+}
+
+function buildFieldList(state: FormState): FieldInfo[] {
+  const critStart = criteriaStartIndex(state)
+  const fields: FieldInfo[] = [
+    { label: 'Task type:', index: 0, kind: 'cycle' },
+  ]
+  if (state.mode === 'edit') {
+    fields.push({ label: 'Status:', index: 1, kind: 'cycle' })
+  }
+  fields.push({ label: 'Title:', index: titleFieldIndex(state), kind: 'text' })
+  fields.push({ label: 'Description:', index: descFieldIndex(state), kind: 'text' })
+  for (let i = 0; i < state.criteria.length; i++) {
+    fields.push({ label: `Criterion ${i + 1}:`, index: critStart + i, kind: 'text' })
+  }
+  fields.push({ label: 'New criterion:', index: critStart + state.criteria.length, kind: 'text' })
+  return fields
 }
 
 function render(state: FormState, stdout: NodeJS.WriteStream): void {
   const buf: string[] = []
 
   buf.push('')
-  buf.push(`  ${BOLD}Create Task${RESET}`)
+  const header = state.mode === 'edit'
+    ? `Edit Task ${state.taskId ?? ''}`
+    : 'Create Task'
+  buf.push(`  ${BOLD}${header}${RESET}`)
   buf.push('')
 
   if (state.error) {
@@ -84,19 +165,20 @@ function render(state: FormState, stdout: NodeJS.WriteStream): void {
   }
 
   const fields = buildFieldList(state)
-  for (let i = 0; i < fields.length; i++) {
-    const f = fields[i]
-    const active = i === state.activeField
+  for (const f of fields) {
+    const active = f.index === state.activeField
     const pointer = active ? `${FG_CYAN}>${RESET}` : ' '
 
-    if (i === 0) {
-      const typeName = TASK_TYPES[state.type]
+    if (f.kind === 'cycle') {
+      const items: readonly string[] = f.index === 0 ? TASK_TYPES : STATUSES
+      const stateIndex = f.index === 0 ? state.type : state.status
+      const value = items[stateIndex]
       const display = active
-        ? `${FG_CYAN}< ${BOLD}${typeName}${RESET}${FG_CYAN} >${RESET}`
-        : `  ${typeName}  `
-      buf.push(`${pointer} ${DIM}Task type:${RESET}     ${display}`)
+        ? `${FG_CYAN}< ${BOLD}${value}${RESET}${FG_CYAN} >${RESET}`
+        : `  ${value}  `
+      buf.push(`${pointer} ${DIM}${f.label.padEnd(14)}${RESET} ${display}`)
     } else {
-      const text = getCurrentTextForField(state, i)
+      const text = getCurrentTextForField(state, f.index)
       const label = f.label.padEnd(14)
       if (active) {
         const before = text.slice(0, state.cursorPos)
@@ -113,57 +195,48 @@ function render(state: FormState, stdout: NodeJS.WriteStream): void {
   }
 
   buf.push('')
+  const cycleHint = state.mode === 'edit'
+    ? '←→ cycle type/status'
+    : '←→ cycle type'
   buf.push(
-    `  ${FG_GRAY}↑↓ navigate | ←→ cycle type | Enter submit | Esc quit${RESET}`,
+    `  ${FG_GRAY}↑↓ navigate | ${cycleHint} | Enter submit | Esc quit${RESET}`,
   )
   buf.push('')
 
   stdout.write(CLEAR_SCREEN + buf.join('\n'))
 }
 
-interface FieldInfo {
-  label: string
-  index: number
-}
-
-function buildFieldList(state: FormState): FieldInfo[] {
-  const fields: FieldInfo[] = [
-    { label: 'Task type:', index: 0 },
-    { label: 'Title:', index: 1 },
-    { label: 'Description:', index: 2 },
-  ]
-  for (let i = 0; i < state.criteria.length; i++) {
-    fields.push({ label: `Criterion ${i + 1}:`, index: 3 + i })
+interface FormOptions {
+  mode: FormMode
+  taskId?: string
+  initialValues?: {
+    type?: number
+    status?: number
+    title?: string
+    description?: string
+    criteria?: string[]
   }
-  fields.push({ label: 'New criterion:', index: 3 + state.criteria.length })
-  return fields
 }
 
-function getCurrentTextForField(state: FormState, fieldIndex: number): string {
-  if (fieldIndex === 1) return state.title
-  if (fieldIndex === 2) return state.description
-  if (fieldIndex >= 3 && fieldIndex < 3 + state.criteria.length) {
-    return state.criteria[fieldIndex - 3]
-  }
-  if (fieldIndex === 3 + state.criteria.length) return state.currentCriterion
-  return ''
-}
-
-export async function interactiveCreate(): Promise<Omit<
-  CreateTaskOpts,
-  'dir'
-> | null> {
+function runForm<T>(
+  opts: FormOptions,
+  buildResult: (state: FormState) => T,
+): Promise<T | null> {
   const { stdin, stdout } = process
 
+  const init = opts.initialValues ?? {}
   const state: FormState = {
-    type: 0,
-    title: '',
-    description: '',
-    criteria: [],
+    type: init.type ?? 0,
+    status: init.status ?? 0,
+    title: init.title ?? '',
+    description: init.description ?? '',
+    criteria: init.criteria ? [...init.criteria] : [],
     currentCriterion: '',
     activeField: 0,
     cursorPos: 0,
     error: '',
+    mode: opts.mode,
+    taskId: opts.taskId,
   }
 
   if (stdin.isTTY) stdin.setRawMode(true)
@@ -173,7 +246,7 @@ export async function interactiveCreate(): Promise<Omit<
 
   render(state, stdout)
 
-  return new Promise<Omit<CreateTaskOpts, 'dir'> | null>((resolve) => {
+  return new Promise<T | null>((resolve) => {
     function cleanup(): void {
       stdout.write(CURSOR_SHOW + ALT_SCREEN_OFF)
       if (stdin.isTTY) stdin.setRawMode(false)
@@ -192,25 +265,18 @@ export async function interactiveCreate(): Promise<Omit<
     function submit(): void {
       if (!state.title.trim()) {
         state.error = 'Title cannot be empty'
-        moveToField(1)
+        moveToField(titleFieldIndex(state))
         render(state, stdout)
         return
       }
       state.error = ''
       cleanup()
-      const criteria = [...state.criteria]
-      if (state.currentCriterion.trim()) {
-        criteria.push(state.currentCriterion.trim())
-      }
-      resolve({
-        type: TASK_TYPES[state.type] as TaskType,
-        title: state.title.trim(),
-        description: state.description.trim() || undefined,
-        acceptance_criteria: criteria.length > 0 ? criteria : undefined,
-      })
+      resolve(buildResult(state))
     }
 
     function onData(data: string): void {
+      const critStart = criteriaStartIndex(state)
+
       for (let i = 0; i < data.length; i++) {
         const ch = data[i]
 
@@ -218,21 +284,21 @@ export async function interactiveCreate(): Promise<Omit<
           if (data[i + 1] === '[') {
             const arrow = data[i + 2]
             if (arrow === 'A') {
-              // Up
               moveToField(state.activeField - 1)
               i += 2
               continue
             }
             if (arrow === 'B') {
-              // Down
               moveToField(state.activeField + 1)
               i += 2
               continue
             }
             if (arrow === 'C') {
               // Right
-              if (state.activeField === 0) {
+              if (isTypeField(state)) {
                 state.type = (state.type + 1) % TASK_TYPES.length
+              } else if (isStatusField(state)) {
+                state.status = (state.status + 1) % STATUSES.length
               } else if (isTextField(state)) {
                 const text = getCurrentText(state)
                 if (state.cursorPos < text.length) state.cursorPos++
@@ -242,9 +308,12 @@ export async function interactiveCreate(): Promise<Omit<
             }
             if (arrow === 'D') {
               // Left
-              if (state.activeField === 0) {
+              if (isTypeField(state)) {
                 state.type =
                   (state.type - 1 + TASK_TYPES.length) % TASK_TYPES.length
+              } else if (isStatusField(state)) {
+                state.status =
+                  (state.status - 1 + STATUSES.length) % STATUSES.length
               } else if (isTextField(state)) {
                 if (state.cursorPos > 0) state.cursorPos--
               }
@@ -269,17 +338,16 @@ export async function interactiveCreate(): Promise<Omit<
 
         // Enter
         if (ch === '\r' || ch === '\n') {
-          if (state.activeField === 0) {
-            // Move to next field
-            moveToField(1)
+          if (isCycleField(state)) {
+            moveToField(state.activeField + 1)
             continue
           }
-          const newCriterionField = 3 + state.criteria.length
+          const newCriterionField = critStart + state.criteria.length
           if (state.activeField === newCriterionField) {
             if (state.currentCriterion.trim()) {
               state.criteria.push(state.currentCriterion.trim())
               state.currentCriterion = ''
-              state.activeField = 3 + state.criteria.length
+              state.activeField = critStart + state.criteria.length
               state.cursorPos = 0
             } else {
               submit()
@@ -295,15 +363,13 @@ export async function interactiveCreate(): Promise<Omit<
         if (ch === '\x7f' || ch === '\b') {
           if (isTextField(state)) {
             const text = getCurrentText(state)
-            // If on an existing criterion and it's empty, remove it
             if (
-              state.activeField >= 3 &&
-              state.activeField < 3 + state.criteria.length &&
+              state.activeField >= critStart &&
+              state.activeField < critStart + state.criteria.length &&
               text.length === 0
             ) {
-              const criterionIndex = state.activeField - 3
+              const criterionIndex = state.activeField - critStart
               state.criteria.splice(criterionIndex, 1)
-              // Move up to previous field
               moveToField(state.activeField - 1)
               continue
             }
@@ -336,4 +402,57 @@ export async function interactiveCreate(): Promise<Omit<
     stdin.on('data', onData)
     stdout.on('resize', () => render(state, stdout))
   })
+}
+
+export async function interactiveCreate(): Promise<Omit<
+  CreateTaskOpts,
+  'dir'
+> | null> {
+  return runForm<Omit<CreateTaskOpts, 'dir'>>(
+    { mode: 'create' },
+    (state) => {
+      const criteria = [...state.criteria]
+      if (state.currentCriterion.trim()) {
+        criteria.push(state.currentCriterion.trim())
+      }
+      return {
+        type: TASK_TYPES[state.type] as TaskType,
+        title: state.title.trim(),
+        description: state.description.trim() || undefined,
+        acceptance_criteria: criteria.length > 0 ? criteria : undefined,
+      }
+    },
+  )
+}
+
+export async function interactiveEdit(task: TaskData): Promise<EditTaskResult | null> {
+  const typeIndex = TASK_TYPES.indexOf(task.type)
+  const statusIndex = STATUSES.indexOf(task.status)
+
+  return runForm<EditTaskResult>(
+    {
+      mode: 'edit',
+      taskId: task.id,
+      initialValues: {
+        type: typeIndex >= 0 ? typeIndex : 0,
+        status: statusIndex >= 0 ? statusIndex : 0,
+        title: task.title,
+        description: task.description,
+        criteria: [...task.acceptance_criteria],
+      },
+    },
+    (state) => {
+      const criteria = [...state.criteria]
+      if (state.currentCriterion.trim()) {
+        criteria.push(state.currentCriterion.trim())
+      }
+      return {
+        type: TASK_TYPES[state.type] as TaskType,
+        status: STATUSES[state.status] as Status,
+        title: state.title.trim(),
+        description: state.description.trim() || undefined,
+        acceptance_criteria: criteria.length > 0 ? criteria : undefined,
+      }
+    },
+  )
 }

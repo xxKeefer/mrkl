@@ -11,6 +11,7 @@ import { nextId } from './counter.js'
 import { render, parse } from './template.js'
 import type {
   CreateTaskOpts,
+  EditTaskResult,
   ListFilter,
   PruneResult,
   Status,
@@ -179,6 +180,72 @@ export function resolveTaskId(dir: string, id: string): string {
     return `${config.prefix}-${id.padStart(3, '0')}`
   }
   return id
+}
+
+export function findTaskFile(
+  dir: string,
+  id: string,
+): { filePath: string; task: TaskData; inArchive: boolean } {
+  const config = loadConfig(dir)
+  const tasksDir = join(dir, config.tasks_dir)
+  const archiveDir = join(tasksDir, '.archive')
+  const resolved = resolveTaskId(dir, id)
+  const idUpper = resolved.toUpperCase()
+
+  // Search active tasks first
+  const activeFiles = readdirSync(tasksDir).filter(
+    (f) => f.endsWith('.md') && f.toUpperCase().startsWith(idUpper),
+  )
+  if (activeFiles.length > 0) {
+    const filePath = join(tasksDir, activeFiles[0])
+    const content = readFileSync(filePath, 'utf-8')
+    return { filePath, task: parse(content, activeFiles[0]), inArchive: false }
+  }
+
+  // Search archive
+  if (existsSync(archiveDir)) {
+    const archiveFiles = readdirSync(archiveDir).filter(
+      (f) => f.endsWith('.md') && f.toUpperCase().startsWith(idUpper),
+    )
+    if (archiveFiles.length > 0) {
+      const filePath = join(archiveDir, archiveFiles[0])
+      const content = readFileSync(filePath, 'utf-8')
+      return { filePath, task: parse(content, archiveFiles[0]), inArchive: true }
+    }
+  }
+
+  throw new Error(`Task ${resolved} not found`)
+}
+
+export function updateTask(
+  dir: string,
+  id: string,
+  updates: EditTaskResult,
+): TaskData {
+  const config = loadConfig(dir)
+  const { filePath, task } = findTaskFile(dir, id)
+
+  // Preserve immutable fields (id, created, flag), apply updates
+  task.type = updates.type
+  task.status = updates.status
+  task.title = normalizeTitle(updates.title)
+  task.description = updates.description ?? ''
+  task.acceptance_criteria = updates.acceptance_criteria ?? []
+
+  // Handle filename change if verbose_files is enabled
+  if (config.verbose_files) {
+    const parentDir = filePath.substring(0, filePath.lastIndexOf('/'))
+    const newFilename = `${task.id} ${task.type} - ${task.title}.md`
+    const newPath = join(parentDir, newFilename)
+    if (newPath !== filePath) {
+      writeFileSync(newPath, render(task))
+      unlinkSync(filePath)
+      return task
+    }
+  }
+
+  writeFileSync(filePath, render(task))
+  return task
 }
 
 export function closeTask(
