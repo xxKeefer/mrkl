@@ -1,5 +1,25 @@
 # Changelog
 
+## v0.3.1...main
+
+[compare changes](https://github.com/xxKeefer/mrkl/compare/v0.3.1...main)
+
+### Added
+
+- Terse file names by default MRKL-029 ([#21](https://github.com/xxKeefer/mrkl/pull/21))
+
+### Fixed
+
+- Mrkl create interactive mode ([#20](https://github.com/xxKeefer/mrkl/pull/20))
+
+### Changed
+
+- Plan sprint three ([#19](https://github.com/xxKeefer/mrkl/pull/19))
+
+### ❤️ Contributors
+
+- Daniel John Keefer <xxkeefer.code@gmail.com>
+
 ## v0.3.0...main
 
 [compare changes](https://github.com/xxKeefer/mrkl/compare/v0.3.0...main)
