@@ -1,26 +1,37 @@
 import { defineCommand } from 'citty'
 import consola from 'consola'
-import { archiveTask } from '../task.js'
+import { closeTask } from '../task.js'
 
 export default defineCommand({
   meta: {
     name: 'done',
-    description: 'Mark a task as done and archive it',
+    description: 'Mark task(s) as done and archive them',
   },
   args: {
     id: {
       type: 'positional',
-      description: 'Task ID to mark as done (e.g., VON-001)',
+      description: 'Task ID(s) to mark as done (e.g., MRKL-001, 001, 1)',
       required: true,
     },
   },
   run({ args }) {
     const dir = process.cwd()
-    try {
-      archiveTask(dir, args.id)
-      consola.success(`✅ Archived ${args.id}`)
-    } catch (err) {
-      consola.error(String((err as Error).message))
+    const ids: string[] = (args._ as string[] | undefined)?.length
+      ? (args._ as string[])
+      : [args.id]
+
+    let failed = false
+    for (const id of ids) {
+      try {
+        const resolved = closeTask(dir, id, 'completed', 'done')
+        consola.success(` ✅ Done ${resolved} 🚩 completed`)
+      } catch (err) {
+        consola.error(`${id}: ${(err as Error).message}`)
+        failed = true
+      }
+    }
+
+    if (failed) {
       process.exit(1)
     }
   },

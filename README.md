@@ -60,13 +60,14 @@ mrkl list
 mrkl list --type fix
 mrkl list --status todo
 
-# Archive a completed task
+# Mark tasks as done and archive them
 mrkl done PROJ-001
+mrkl done 1 2 3            # multiple tasks, numeric IDs
 
 # All commands have short aliases
 mrkl c feat "dark mode"   # create
 mrkl ls --type fix         # list
-mrkl d PROJ-001            # done
+mrkl d 1                   # done (numeric ID)
 mrkl x PROJ-002            # close
 mrkl x 2 -r "duplicate"   # close with reason, numeric ID
 ```
@@ -78,7 +79,7 @@ mrkl x 2 -r "duplicate"   # close with reason, numeric ID
 | `init`                  | `i`   | Initialize mrkl in the current project                            |
 | `create`                | `c`   | Create a new task                                                 |
 | `list`                  | `ls`  | List active tasks                                                 |
-| `done`                  | `d`   | Mark a task as done and archive it                                |
+| `done`                  | `d`   | Mark task(s) as done and archive them                             |
 | `close`                 | `x`   | Close task(s) (won't do, duplicate, etc.) and archive them        |
 | `prune`                 | `p`   | Delete archived tasks created on or before a given date           |
 | `migrate_prior_verbose` | —     | Migrate legacy verbose-filename tasks to frontmatter-based format |
@@ -136,15 +137,23 @@ Lists all active tasks.
 
 Non-conforming markdown files in the tasks directory are silently skipped.
 
-### `mrkl done <id>`
+### `mrkl done <id...>`
 
-Archives a completed task.
+Marks one or more tasks as done and archives them.
 
-| Argument | Description                           |
-| -------- | ------------------------------------- |
-| `id`     | Task ID to archive (e.g., `PROJ-001`) |
+| Argument | Description                                                                    |
+| -------- | ------------------------------------------------------------------------------ |
+| `id`     | Task ID(s) to mark done — full (`PROJ-001`), numeric (`1`), or zero-padded (`001`) |
 
-Moves the task file to `.tasks/.archive/` and sets its status to `done`.
+Sets the task status to `done`, writes `flag: completed` in frontmatter, auto-checks all acceptance criteria (`- [x]`), and moves the file to `.tasks/.archive/`.
+
+```sh
+# Mark a single task as done
+mrkl done PROJ-001
+
+# Mark multiple tasks with numeric IDs
+mrkl d 1 2 3
+```
 
 ### `mrkl close <id...> [options]`
 
