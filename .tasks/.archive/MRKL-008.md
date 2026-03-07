@@ -2,7 +2,7 @@
 id: MRKL-008
 title: ammend command
 type: feat
-status: todo
+status: closed
 created: '2026-03-01'
 ---
 ## Description
