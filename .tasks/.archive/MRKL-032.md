@@ -2,7 +2,7 @@
 id: MRKL-032
 title: list command should do archive
 type: feat
-status: todo
+status: closed
 created: '2026-03-02'
 ---
 ## Description

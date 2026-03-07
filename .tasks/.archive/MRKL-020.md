@@ -2,7 +2,7 @@
 id: MRKL-020
 title: bulk actions through list cmd
 type: feat
-status: todo
+status: closed
 created: '2026-03-02'
 ---
 ## Description
