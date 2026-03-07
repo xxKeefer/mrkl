@@ -2,7 +2,7 @@
 id: MRKL-009
 title: section option
 type: feat
-status: todo
+status: closed
 created: '2026-03-01'
 ---
 ## Description

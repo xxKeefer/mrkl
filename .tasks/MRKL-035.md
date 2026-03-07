@@ -5,6 +5,7 @@ type: feat
 status: todo
 created: '2026-03-02'
 ---
+
 ## Description
 
 comand when provided with id cats the contents of task to the terminal
@@ -14,3 +15,5 @@ comand when provided with id cats the contents of task to the terminal
 - [ ] shoudl have syntax highlighting for markdown
 - [ ] should search all category folders (ie: .archive) to find it
 - [ ] should have a fuzzy find
+- [ ] command should allow edditing of the title, type and status frontmatters some how
+- [ ] command should allow of moving to .archive
