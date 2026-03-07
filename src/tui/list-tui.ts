@@ -72,14 +72,14 @@ export async function interactiveList(tasks: TaskData[], archivedTasks: TaskData
     const filtered = getFiltered()
     const buf: string[] = []
 
-    buf.push(CLEAR_SCREEN)
-
     // Tab bar
     const tabParts = datasets.map((ds, i) => {
-      const label = ` ${ds.label} `
-      return i === activeTab ? `${INVERSE}${BOLD}${label}${RESET}` : `${DIM}${label}${RESET}`
+      if (i === activeTab) {
+        return `${FG_CYAN}${BOLD}[${ds.label}]${RESET}`
+      }
+      return `${FG_GRAY} ${ds.label} ${RESET}`
     })
-    buf.push(`${tabParts.join('  ')}${' '.repeat(Math.max(0, cols - 30))}${FG_GRAY}Tab: switch  Esc: quit${RESET}`)
+    buf.push(tabParts.join('  '))
     buf.push('')
 
     // Search input
@@ -96,7 +96,7 @@ export async function interactiveList(tasks: TaskData[], archivedTasks: TaskData
     buf.push(`${FG_GRAY}${'─'.repeat(listWidth)}┼${'─'.repeat(previewWidth + 2)}${RESET}`)
 
     // Content area
-    const contentRows = rows - 7 // tab + blank + search + 2 separators + header + bottom
+    const contentRows = rows - 9 // tab + blank + search + 2 separators + header + bottom sep + count
     const maxVisible = Math.max(1, contentRows)
 
     // Clamp selected index
@@ -141,9 +141,9 @@ export async function interactiveList(tasks: TaskData[], archivedTasks: TaskData
     // Bottom bar
     buf.push(`${FG_GRAY}${'─'.repeat(listWidth)}┴${'─'.repeat(previewWidth + 2)}${RESET}`)
     const countInfo = `${filtered.length}/${datasets[activeTab].entries.length}`
-    buf.push(`${FG_GRAY}${countInfo} tasks  ↑↓: navigate  Enter: select  Type to search${RESET}`)
+    buf.push(`${FG_GRAY}${countInfo} tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search${RESET}`)
 
-    stdout.write(buf.join('\n'))
+    stdout.write(CLEAR_SCREEN + buf.join('\n'))
   }
 
   function formatRow(id: string, type: string, status: string, title: string, width: number): string {
@@ -197,17 +197,19 @@ export async function interactiveList(tasks: TaskData[], archivedTasks: TaskData
   function wrapText(text: string, width: number): string[] {
     if (width <= 0) return [text]
     const result: string[] = []
-    const words = text.split(' ')
-    let current = ''
-    for (const word of words) {
-      if (current.length + word.length + 1 > width && current.length > 0) {
-        result.push(current)
-        current = word
-      } else {
-        current = current ? `${current} ${word}` : word
+    for (const rawLine of text.split('\n')) {
+      const words = rawLine.split(' ')
+      let current = ''
+      for (const word of words) {
+        if (current.length + word.length + 1 > width && current.length > 0) {
+          result.push(current)
+          current = word
+        } else {
+          current = current ? `${current} ${word}` : word
+        }
       }
+      if (current) result.push(current)
     }
-    if (current) result.push(current)
     return result
   }
 
