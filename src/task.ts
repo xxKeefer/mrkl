@@ -1,15 +1,27 @@
-import { readdirSync, readFileSync, writeFileSync, unlinkSync, existsSync } from 'node:fs'
+import {
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+  unlinkSync,
+  existsSync,
+} from 'node:fs'
 import { join } from 'node:path'
 import { loadConfig } from './config.js'
 import { nextId } from './counter.js'
 import { render, parse } from './template.js'
-import type { CreateTaskOpts, ListFilter, PruneResult, TaskData } from './types.js'
+import type {
+  CreateTaskOpts,
+  ListFilter,
+  PruneResult,
+  TaskData,
+} from './types.js'
 
 export function normalizeTitle(raw: string): string {
   const result = raw
     .trim()
     .toLowerCase()
     .replace(/[/\\]/g, '-')
+    // eslint-disable-next-line no-control-regex
     .replace(/[<>:"|?*\x00-\x1f]/g, '')
     .replace(/-{2,}/g, '-')
     .replace(/ {2,}/g, ' ')
@@ -48,7 +60,9 @@ export function listTasks(filter: ListFilter): TaskData[] {
   const config = loadConfig(filter.dir)
   const tasksDir = join(filter.dir, config.tasks_dir)
 
-  const files = readdirSync(tasksDir).filter((f) => f.endsWith('.md') && !f.startsWith('.'))
+  const files = readdirSync(tasksDir).filter(
+    (f) => f.endsWith('.md') && !f.startsWith('.'),
+  )
 
   let tasks = files.flatMap((f) => {
     try {
@@ -73,7 +87,7 @@ export function archiveTask(dir: string, id: string): void {
 
   const idUpper = id.toUpperCase()
   const file = readdirSync(tasksDir).find(
-    (f) => f.endsWith('.md') && f.toUpperCase().startsWith(idUpper)
+    (f) => f.endsWith('.md') && f.toUpperCase().startsWith(idUpper),
   )
 
   if (!file) {
@@ -93,11 +107,17 @@ export function archiveTask(dir: string, id: string): void {
 export function parseCutoffDate(input: string): string {
   const normalized = input.replace(/^(\d{4})(\d{2})(\d{2})$/, '$1-$2-$3')
   if (!/^\d{4}-\d{2}-\d{2}$/.test(normalized)) {
-    throw new Error(`Invalid date format: "${input}". Expected YYYY-MM-DD or YYYYMMDD.`)
+    throw new Error(
+      `Invalid date format: "${input}". Expected YYYY-MM-DD or YYYYMMDD.`,
+    )
   }
   const [y, m, d] = normalized.split('-').map(Number)
   const date = new Date(y, m - 1, d)
-  if (date.getFullYear() !== y || date.getMonth() !== m - 1 || date.getDate() !== d) {
+  if (
+    date.getFullYear() !== y ||
+    date.getMonth() !== m - 1 ||
+    date.getDate() !== d
+  ) {
     throw new Error(`Invalid date: "${input}" is not a real calendar date.`)
   }
   return normalized
@@ -118,7 +138,9 @@ export function pruneTasks(dir: string, cutoff: string): PruneResult {
     return { deleted: [], total: 0 }
   }
 
-  const files = readdirSync(archiveDir).filter((f) => f.endsWith('.md') && !f.startsWith('.'))
+  const files = readdirSync(archiveDir).filter(
+    (f) => f.endsWith('.md') && !f.startsWith('.'),
+  )
 
   const deleted: PruneResult['deleted'] = []
 
@@ -152,7 +174,9 @@ export function listArchivedTasks(filter: ListFilter): TaskData[] {
 
   if (!existsSync(archiveDir)) return []
 
-  const files = readdirSync(archiveDir).filter((f) => f.endsWith('.md') && !f.startsWith('.'))
+  const files = readdirSync(archiveDir).filter(
+    (f) => f.endsWith('.md') && !f.startsWith('.'),
+  )
 
   let tasks = files.flatMap((f) => {
     try {
@@ -186,7 +210,7 @@ export function closeTask(dir: string, id: string, reason?: string): string {
   const resolved = resolveTaskId(dir, id)
   const idUpper = resolved.toUpperCase()
   const file = readdirSync(tasksDir).find(
-    (f) => f.endsWith('.md') && f.toUpperCase().startsWith(idUpper)
+    (f) => f.endsWith('.md') && f.toUpperCase().startsWith(idUpper),
   )
 
   if (!file) {

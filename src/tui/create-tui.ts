@@ -2,9 +2,18 @@ import { TASK_TYPES } from '../types.js'
 import type { TaskType, CreateTaskOpts } from '../types.js'
 import {
   ESC,
-  ALT_SCREEN_ON, ALT_SCREEN_OFF, CURSOR_HIDE, CURSOR_SHOW, CLEAR_SCREEN,
-  BOLD, DIM, RESET, INVERSE,
-  FG_CYAN, FG_YELLOW, FG_GREEN, FG_RED, FG_GRAY,
+  ALT_SCREEN_ON,
+  ALT_SCREEN_OFF,
+  CURSOR_HIDE,
+  CURSOR_SHOW,
+  CLEAR_SCREEN,
+  BOLD,
+  DIM,
+  RESET,
+  INVERSE,
+  FG_CYAN,
+  FG_RED,
+  FG_GRAY,
 } from './ansi.js'
 
 interface FormState {
@@ -34,18 +43,28 @@ function getCurrentText(state: FormState): string {
   if (state.activeField >= 3 && state.activeField < 3 + state.criteria.length) {
     return state.criteria[state.activeField - 3]
   }
-  if (state.activeField === 3 + state.criteria.length) return state.currentCriterion
+  if (state.activeField === 3 + state.criteria.length)
+    return state.currentCriterion
   return ''
 }
 
 function setCurrentText(state: FormState, text: string): void {
-  if (state.activeField === 1) { state.title = text; return }
-  if (state.activeField === 2) { state.description = text; return }
+  if (state.activeField === 1) {
+    state.title = text
+    return
+  }
+  if (state.activeField === 2) {
+    state.description = text
+    return
+  }
   if (state.activeField >= 3 && state.activeField < 3 + state.criteria.length) {
     state.criteria[state.activeField - 3] = text
     return
   }
-  if (state.activeField === 3 + state.criteria.length) { state.currentCriterion = text; return }
+  if (state.activeField === 3 + state.criteria.length) {
+    state.currentCriterion = text
+    return
+  }
 }
 
 function isTextField(state: FormState): boolean {
@@ -83,7 +102,9 @@ function render(state: FormState, stdout: NodeJS.WriteStream): void {
         const before = text.slice(0, state.cursorPos)
         const cursorChar = text[state.cursorPos] ?? ' '
         const after = text.slice(state.cursorPos + 1)
-        buf.push(`${pointer} ${DIM}${label}${RESET} [${before}${INVERSE}${cursorChar}${RESET}${after}]`)
+        buf.push(
+          `${pointer} ${DIM}${label}${RESET} [${before}${INVERSE}${cursorChar}${RESET}${after}]`,
+        )
       } else {
         const displayText = text || `${FG_GRAY}(empty)${RESET}`
         buf.push(`${pointer} ${DIM}${label}${RESET} [${displayText}]`)
@@ -92,7 +113,9 @@ function render(state: FormState, stdout: NodeJS.WriteStream): void {
   }
 
   buf.push('')
-  buf.push(`  ${FG_GRAY}↑↓ navigate | ←→ cycle type | Enter submit | Esc quit${RESET}`)
+  buf.push(
+    `  ${FG_GRAY}↑↓ navigate | ←→ cycle type | Enter submit | Esc quit${RESET}`,
+  )
   buf.push('')
 
   stdout.write(CLEAR_SCREEN + buf.join('\n'))
@@ -126,7 +149,10 @@ function getCurrentTextForField(state: FormState, fieldIndex: number): string {
   return ''
 }
 
-export async function interactiveCreate(): Promise<Omit<CreateTaskOpts, 'dir'> | null> {
+export async function interactiveCreate(): Promise<Omit<
+  CreateTaskOpts,
+  'dir'
+> | null> {
   const { stdin, stdout } = process
 
   const state: FormState = {
@@ -191,17 +217,20 @@ export async function interactiveCreate(): Promise<Omit<CreateTaskOpts, 'dir'> |
         if (ch === ESC) {
           if (data[i + 1] === '[') {
             const arrow = data[i + 2]
-            if (arrow === 'A') { // Up
+            if (arrow === 'A') {
+              // Up
               moveToField(state.activeField - 1)
               i += 2
               continue
             }
-            if (arrow === 'B') { // Down
+            if (arrow === 'B') {
+              // Down
               moveToField(state.activeField + 1)
               i += 2
               continue
             }
-            if (arrow === 'C') { // Right
+            if (arrow === 'C') {
+              // Right
               if (state.activeField === 0) {
                 state.type = (state.type + 1) % TASK_TYPES.length
               } else if (isTextField(state)) {
@@ -211,9 +240,11 @@ export async function interactiveCreate(): Promise<Omit<CreateTaskOpts, 'dir'> |
               i += 2
               continue
             }
-            if (arrow === 'D') { // Left
+            if (arrow === 'D') {
+              // Left
               if (state.activeField === 0) {
-                state.type = (state.type - 1 + TASK_TYPES.length) % TASK_TYPES.length
+                state.type =
+                  (state.type - 1 + TASK_TYPES.length) % TASK_TYPES.length
               } else if (isTextField(state)) {
                 if (state.cursorPos > 0) state.cursorPos--
               }
@@ -265,7 +296,11 @@ export async function interactiveCreate(): Promise<Omit<CreateTaskOpts, 'dir'> |
           if (isTextField(state)) {
             const text = getCurrentText(state)
             // If on an existing criterion and it's empty, remove it
-            if (state.activeField >= 3 && state.activeField < 3 + state.criteria.length && text.length === 0) {
+            if (
+              state.activeField >= 3 &&
+              state.activeField < 3 + state.criteria.length &&
+              text.length === 0
+            ) {
               const criterionIndex = state.activeField - 3
               state.criteria.splice(criterionIndex, 1)
               // Move up to previous field
@@ -273,7 +308,8 @@ export async function interactiveCreate(): Promise<Omit<CreateTaskOpts, 'dir'> |
               continue
             }
             if (state.cursorPos > 0) {
-              const newText = text.slice(0, state.cursorPos - 1) + text.slice(state.cursorPos)
+              const newText =
+                text.slice(0, state.cursorPos - 1) + text.slice(state.cursorPos)
               setCurrentText(state, newText)
               state.cursorPos--
             }
@@ -286,7 +322,8 @@ export async function interactiveCreate(): Promise<Omit<CreateTaskOpts, 'dir'> |
           if (isTextField(state)) {
             state.error = ''
             const text = getCurrentText(state)
-            const newText = text.slice(0, state.cursorPos) + ch + text.slice(state.cursorPos)
+            const newText =
+              text.slice(0, state.cursorPos) + ch + text.slice(state.cursorPos)
             setCurrentText(state, newText)
             state.cursorPos++
           }

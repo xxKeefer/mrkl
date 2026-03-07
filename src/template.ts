@@ -26,17 +26,17 @@ export function render(task: TaskData): string {
     sections.push(`- [ ] ${item}`)
   }
 
-  const body = sections.join('\n') + '\n'
+  const body = '\n' + sections.join('\n') + '\n'
   return matter.stringify(body, frontmatter)
 }
 
-export function parse(content: string, filename: string): TaskData {
+export function parse(content: string, _filename: string): TaskData {
   const { data, content: body } = matter(content)
 
   const title = data.title as string | undefined
   if (!title) {
     throw new Error(
-      "Task file missing title in frontmatter. Run 'mrkl migrate_prior_verbose' to fix."
+      "Task file missing title in frontmatter. Run 'mrkl migrate_prior_verbose' to fix.",
     )
   }
 
@@ -49,7 +49,9 @@ export function parse(content: string, filename: string): TaskData {
   }
 
   // Extract description: text between "## Description" and "## Acceptance Criteria"
-  const descMatch = body.match(/## Description\n\n([\s\S]*?)(?:\n\n## Acceptance Criteria|$)/)
+  const descMatch = body.match(
+    /## Description\n\n([\s\S]*?)(?:\n\n## Acceptance Criteria|$)/,
+  )
   const description = descMatch ? descMatch[1].trim() : ''
 
   return {

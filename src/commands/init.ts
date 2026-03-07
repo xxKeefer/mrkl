@@ -1,26 +1,26 @@
-import { defineCommand } from "citty";
-import consola from "consola";
-import { initConfig } from "../config.js";
+import { defineCommand } from 'citty'
+import consola from 'consola'
+import { initConfig } from '../config.js'
 
 export default defineCommand({
   meta: {
-    name: "init",
-    description: "Initialize mrkl in the current project",
+    name: 'init',
+    description: 'Initialize mrkl in the current project',
   },
   args: {
     prefix: {
-      type: "string",
-      description: "Project prefix for task IDs (e.g., VON)",
+      type: 'string',
+      description: 'Project prefix for task IDs (e.g., VON)',
     },
   },
   run({ args }) {
-    const dir = process.cwd();
+    const dir = process.cwd()
     try {
-      initConfig(dir, { prefix: args.prefix });
-      consola.success("🎉 mrkl initialized");
+      initConfig(dir, { prefix: args.prefix })
+      consola.success('🎉 mrkl initialized')
     } catch (err) {
-      consola.error(String((err as Error).message));
-      process.exit(1);
+      consola.error(String((err as Error).message))
+      process.exit(1)
     }
   },
-});
+})

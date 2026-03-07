@@ -1,5 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { mkdtempSync, existsSync, readFileSync, writeFileSync, rmSync } from 'node:fs'
+import {
+  mkdtempSync,
+  existsSync,
+  readFileSync,
+  writeFileSync,
+  rmSync,
+} from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { initConfig } from '../src/config.js'
@@ -78,16 +84,24 @@ describe('normalizeTitle', () => {
     expect(normalizeTitle('-hello-')).toBe('hello')
   })
   it('handles complex combined input', () => {
-    expect(normalizeTitle('  /Feat: <My> "Cool" | Title?*\\  ')).toBe('feat my cool title')
+    expect(normalizeTitle('  /Feat: <My> "Cool" | Title?*\\  ')).toBe(
+      'feat my cool title',
+    )
   })
   it('throws on empty string', () => {
-    expect(() => normalizeTitle('')).toThrow('Title is empty after normalisation')
+    expect(() => normalizeTitle('')).toThrow(
+      'Title is empty after normalisation',
+    )
   })
   it('throws on all-invalid characters', () => {
-    expect(() => normalizeTitle('<>:"|?*')).toThrow('Title is empty after normalisation')
+    expect(() => normalizeTitle('<>:"|?*')).toThrow(
+      'Title is empty after normalisation',
+    )
   })
   it('throws on whitespace-only', () => {
-    expect(() => normalizeTitle('   ')).toThrow('Title is empty after normalisation')
+    expect(() => normalizeTitle('   ')).toThrow(
+      'Title is empty after normalisation',
+    )
   })
 })
 
@@ -99,18 +113,23 @@ describe('task', () => {
       expect(task.type).toBe('feat')
       expect(task.title).toBe('add login')
       expect(task.status).toBe('todo')
-      expect(existsSync(join(tmp, '.tasks', 'TEST-001 feat - add login.md'))).toBe(true)
+      expect(
+        existsSync(join(tmp, '.tasks', 'TEST-001 feat - add login.md')),
+      ).toBe(true)
     })
 
     it('writes correct frontmatter and body', () => {
-      const task = createTask({
+      createTask({
         dir: tmp,
         type: 'fix',
         title: 'broken auth',
         description: 'Fix the login bug.',
         acceptance_criteria: ['login works', 'tests pass'],
       })
-      const content = readFileSync(join(tmp, '.tasks', 'TEST-001 fix - broken auth.md'), 'utf-8')
+      const content = readFileSync(
+        join(tmp, '.tasks', 'TEST-001 fix - broken auth.md'),
+        'utf-8',
+      )
       expect(content).toContain('id: TEST-001')
       expect(content).toContain('type: fix')
       expect(content).toContain('status: todo')
@@ -121,16 +140,18 @@ describe('task', () => {
     })
     it('normalises the title in the filename on disk', () => {
       createTask({ dir: tmp, type: 'feat', title: '  My <Cool> Title  ' })
-      expect(existsSync(join(tmp, '.tasks', 'TEST-001 feat - my cool title.md'))).toBe(true)
+      expect(
+        existsSync(join(tmp, '.tasks', 'TEST-001 feat - my cool title.md')),
+      ).toBe(true)
     })
     it('returns normalised title in TaskData', () => {
       const task = createTask({ dir: tmp, type: 'feat', title: 'Feat/Login' })
       expect(task.title).toBe('feat-login')
     })
     it('throws when title is empty after normalisation', () => {
-      expect(() => createTask({ dir: tmp, type: 'feat', title: '***' })).toThrow(
-        'Title is empty after normalisation'
-      )
+      expect(() =>
+        createTask({ dir: tmp, type: 'feat', title: '***' }),
+      ).toThrow('Title is empty after normalisation')
     })
     it('increments counter across creates', () => {
       const t1 = createTask({ dir: tmp, type: 'feat', title: 'first' })
@@ -163,7 +184,10 @@ describe('task', () => {
     })
     it('skips files that fail to parse', () => {
       createTask({ dir: tmp, type: 'feat', title: 'valid task' })
-      writeFileSync(join(tmp, '.tasks', 'not-a-task.md'), '# Just a README\nNo frontmatter here.')
+      writeFileSync(
+        join(tmp, '.tasks', 'not-a-task.md'),
+        '# Just a README\nNo frontmatter here.',
+      )
       const tasks = listTasks({ dir: tmp })
       expect(tasks).toHaveLength(1)
       expect(tasks[0].id).toBe('TEST-001')
@@ -175,8 +199,15 @@ describe('task', () => {
       createTask({ dir: tmp, type: 'feat', title: 'close me' })
       closeTask(tmp, 'TEST-001')
 
-      expect(existsSync(join(tmp, '.tasks', 'TEST-001 feat - close me.md'))).toBe(false)
-      const archivePath = join(tmp, '.tasks', '.archive', 'TEST-001 feat - close me.md')
+      expect(
+        existsSync(join(tmp, '.tasks', 'TEST-001 feat - close me.md')),
+      ).toBe(false)
+      const archivePath = join(
+        tmp,
+        '.tasks',
+        '.archive',
+        'TEST-001 feat - close me.md',
+      )
       expect(existsSync(archivePath)).toBe(true)
       const content = readFileSync(archivePath, 'utf-8')
       expect(content).toContain('status: closed')
@@ -184,16 +215,28 @@ describe('task', () => {
     it('accepts lowercase id', () => {
       createTask({ dir: tmp, type: 'feat', title: 'lower case' })
       closeTask(tmp, 'test-001')
-      const archivePath = join(tmp, '.tasks', '.archive', 'TEST-001 feat - lower case.md')
+      const archivePath = join(
+        tmp,
+        '.tasks',
+        '.archive',
+        'TEST-001 feat - lower case.md',
+      )
       expect(existsSync(archivePath)).toBe(true)
     })
     it('throws if task ID not found', () => {
-      expect(() => closeTask(tmp, 'TEST-999')).toThrow('Task TEST-999 not found')
+      expect(() => closeTask(tmp, 'TEST-999')).toThrow(
+        'Task TEST-999 not found',
+      )
     })
     it('writes closed reason to frontmatter when provided', () => {
       createTask({ dir: tmp, type: 'feat', title: 'with reason' })
       closeTask(tmp, 'TEST-001', 'duplicate')
-      const archivePath = join(tmp, '.tasks', '.archive', 'TEST-001 feat - with reason.md')
+      const archivePath = join(
+        tmp,
+        '.tasks',
+        '.archive',
+        'TEST-001 feat - with reason.md',
+      )
       const content = readFileSync(archivePath, 'utf-8')
       expect(content).toContain('flag: duplicate')
       expect(content).toContain('status: closed')
@@ -201,20 +244,35 @@ describe('task', () => {
     it('does not write closed field when no reason provided', () => {
       createTask({ dir: tmp, type: 'feat', title: 'no reason' })
       closeTask(tmp, 'TEST-001')
-      const archivePath = join(tmp, '.tasks', '.archive', 'TEST-001 feat - no reason.md')
+      const archivePath = join(
+        tmp,
+        '.tasks',
+        '.archive',
+        'TEST-001 feat - no reason.md',
+      )
       const content = readFileSync(archivePath, 'utf-8')
       expect(content).not.toContain('flag:')
     })
     it('resolves numeric-only ID using project prefix', () => {
       createTask({ dir: tmp, type: 'feat', title: 'numeric id' })
       closeTask(tmp, '1')
-      const archivePath = join(tmp, '.tasks', '.archive', 'TEST-001 feat - numeric id.md')
+      const archivePath = join(
+        tmp,
+        '.tasks',
+        '.archive',
+        'TEST-001 feat - numeric id.md',
+      )
       expect(existsSync(archivePath)).toBe(true)
     })
     it('resolves zero-padded numeric ID', () => {
       createTask({ dir: tmp, type: 'feat', title: 'padded id' })
       closeTask(tmp, '001')
-      const archivePath = join(tmp, '.tasks', '.archive', 'TEST-001 feat - padded id.md')
+      const archivePath = join(
+        tmp,
+        '.tasks',
+        '.archive',
+        'TEST-001 feat - padded id.md',
+      )
       expect(existsSync(archivePath)).toBe(true)
     })
   })
@@ -240,9 +298,16 @@ describe('task', () => {
       archiveTask(tmp, 'TEST-001')
 
       // Original gone from tasks dir
-      expect(existsSync(join(tmp, '.tasks', 'TEST-001 feat - archive me.md'))).toBe(false)
+      expect(
+        existsSync(join(tmp, '.tasks', 'TEST-001 feat - archive me.md')),
+      ).toBe(false)
       // Present in archive
-      const archivePath = join(tmp, '.tasks', '.archive', 'TEST-001 feat - archive me.md')
+      const archivePath = join(
+        tmp,
+        '.tasks',
+        '.archive',
+        'TEST-001 feat - archive me.md',
+      )
       expect(existsSync(archivePath)).toBe(true)
       // Status updated
       const content = readFileSync(archivePath, 'utf-8')
@@ -251,17 +316,29 @@ describe('task', () => {
     it('accepts lowercase id', () => {
       createTask({ dir: tmp, type: 'feat', title: 'lower case' })
       archiveTask(tmp, 'test-001')
-      const archivePath = join(tmp, '.tasks', '.archive', 'TEST-001 feat - lower case.md')
+      const archivePath = join(
+        tmp,
+        '.tasks',
+        '.archive',
+        'TEST-001 feat - lower case.md',
+      )
       expect(existsSync(archivePath)).toBe(true)
     })
     it('accepts mixed-case id', () => {
       createTask({ dir: tmp, type: 'fix', title: 'mixed case' })
       archiveTask(tmp, 'Test-001')
-      const archivePath = join(tmp, '.tasks', '.archive', 'TEST-001 fix - mixed case.md')
+      const archivePath = join(
+        tmp,
+        '.tasks',
+        '.archive',
+        'TEST-001 fix - mixed case.md',
+      )
       expect(existsSync(archivePath)).toBe(true)
     })
     it('throws if task ID not found', () => {
-      expect(() => archiveTask(tmp, 'TEST-999')).toThrow('Task TEST-999 not found')
+      expect(() => archiveTask(tmp, 'TEST-999')).toThrow(
+        'Task TEST-999 not found',
+      )
     })
   })
 
@@ -278,9 +355,15 @@ describe('task', () => {
     })
 
     it('produces non-verbose filename', () => {
-      const task = createTask({ dir: nonVerboseTmp, type: 'feat', title: 'add login' })
+      const task = createTask({
+        dir: nonVerboseTmp,
+        type: 'feat',
+        title: 'add login',
+      })
       expect(task.id).toBe('TEST-001')
-      expect(existsSync(join(nonVerboseTmp, '.tasks', 'TEST-001.md'))).toBe(true)
+      expect(existsSync(join(nonVerboseTmp, '.tasks', 'TEST-001.md'))).toBe(
+        true,
+      )
     })
 
     it('listTasks works with non-verbose filenames', () => {
@@ -294,16 +377,27 @@ describe('task', () => {
     it('archiveTask works with non-verbose filenames', () => {
       createTask({ dir: nonVerboseTmp, type: 'feat', title: 'archive me' })
       archiveTask(nonVerboseTmp, 'TEST-001')
-      expect(existsSync(join(nonVerboseTmp, '.tasks', 'TEST-001.md'))).toBe(false)
-      expect(existsSync(join(nonVerboseTmp, '.tasks', '.archive', 'TEST-001.md'))).toBe(true)
+      expect(existsSync(join(nonVerboseTmp, '.tasks', 'TEST-001.md'))).toBe(
+        false,
+      )
+      expect(
+        existsSync(join(nonVerboseTmp, '.tasks', '.archive', 'TEST-001.md')),
+      ).toBe(true)
     })
 
     it('closeTask works with non-verbose filenames', () => {
       createTask({ dir: nonVerboseTmp, type: 'feat', title: 'close me' })
       closeTask(nonVerboseTmp, 'TEST-001')
-      expect(existsSync(join(nonVerboseTmp, '.tasks', 'TEST-001.md'))).toBe(false)
-      expect(existsSync(join(nonVerboseTmp, '.tasks', '.archive', 'TEST-001.md'))).toBe(true)
-      const content = readFileSync(join(nonVerboseTmp, '.tasks', '.archive', 'TEST-001.md'), 'utf-8')
+      expect(existsSync(join(nonVerboseTmp, '.tasks', 'TEST-001.md'))).toBe(
+        false,
+      )
+      expect(
+        existsSync(join(nonVerboseTmp, '.tasks', '.archive', 'TEST-001.md')),
+      ).toBe(true)
+      const content = readFileSync(
+        join(nonVerboseTmp, '.tasks', '.archive', 'TEST-001.md'),
+        'utf-8',
+      )
       expect(content).toContain('status: closed')
     })
   })
@@ -321,8 +415,12 @@ describe('task', () => {
       expect(() => parseCutoffDate('not-a-date')).toThrow('Invalid date format')
     })
     it('rejects impossible dates', () => {
-      expect(() => parseCutoffDate('2026-02-30')).toThrow('not a real calendar date')
-      expect(() => parseCutoffDate('2026-13-01')).toThrow('not a real calendar date')
+      expect(() => parseCutoffDate('2026-02-30')).toThrow(
+        'not a real calendar date',
+      )
+      expect(() => parseCutoffDate('2026-13-01')).toThrow(
+        'not a real calendar date',
+      )
     })
   })
 
@@ -411,7 +509,10 @@ describe('task', () => {
         description: '',
         acceptance_criteria: [],
       })
-      writeFileSync(join(tmp, '.tasks', '.archive', 'garbage.md'), 'not valid frontmatter {{{')
+      writeFileSync(
+        join(tmp, '.tasks', '.archive', 'garbage.md'),
+        'not valid frontmatter {{{',
+      )
 
       const result = pruneTasks(tmp, '2026-12-31')
       expect(result.deleted).toHaveLength(1)
