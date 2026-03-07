@@ -116,7 +116,10 @@ describe('listArchivedTasks', () => {
       description: '',
       acceptance_criteria: [],
     })
-    writeFileSync(join(tmp, '.tasks', '.archive', 'garbage.md'), 'not valid {{{')
+    writeFileSync(
+      join(tmp, '.tasks', '.archive', 'garbage.md'),
+      'not valid {{{',
+    )
 
     const tasks = listArchivedTasks({ dir: tmp })
     expect(tasks).toHaveLength(1)

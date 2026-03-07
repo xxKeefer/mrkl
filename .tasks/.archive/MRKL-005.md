@@ -5,6 +5,7 @@ type: feat
 status: todo
 created: '2026-03-01'
 ---
+
 ## Description
 
 Wire up the CLI command implementations in `src/commands/` to call the real task module functions. Ensure `mrkl init`, `mrkl create`, `mrkl list`, and `mrkl done` work end-to-end. Add input validation for task types and clear error messages.

@@ -36,7 +36,11 @@ describe('template', () => {
       expect(output).toContain('- [ ] parse extracts fields')
     })
     it('handles empty description and empty acceptance criteria', () => {
-      const task: TaskData = { ...SAMPLE_TASK, description: '', acceptance_criteria: [] }
+      const task: TaskData = {
+        ...SAMPLE_TASK,
+        description: '',
+        acceptance_criteria: [],
+      }
       const output = render(task)
       expect(output).toContain('## Description')
       expect(output).toContain('## Acceptance Criteria')
@@ -47,7 +51,10 @@ describe('template', () => {
   describe('parse', () => {
     it('extracts frontmatter fields into TaskData', () => {
       const content = render(SAMPLE_TASK)
-      const result = parse(content, 'TEST-001 feat - implement template module.md')
+      const result = parse(
+        content,
+        'TEST-001 feat - implement template module.md',
+      )
       expect(result.id).toBe('TEST-001')
       expect(result.type).toBe('feat')
       expect(result.status).toBe('todo')
@@ -61,7 +68,7 @@ describe('template', () => {
     it('throws when no title in frontmatter', () => {
       const content = `---\nid: TEST-001\ntype: feat\nstatus: todo\ncreated: '2026-03-01'\n---\n\n## Description\n\n\n\n## Acceptance Criteria\n\n`
       expect(() => parse(content, 'TEST-001.md')).toThrow(
-        "Task file missing title in frontmatter. Run 'mrkl migrate_prior_verbose' to fix."
+        "Task file missing title in frontmatter. Run 'mrkl migrate_prior_verbose' to fix.",
       )
     })
     it('extracts acceptance criteria items', () => {

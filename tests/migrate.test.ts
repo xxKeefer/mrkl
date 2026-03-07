@@ -1,8 +1,14 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { mkdtempSync, mkdirSync, existsSync, readFileSync, writeFileSync, rmSync } from 'node:fs'
+import {
+  mkdtempSync,
+  existsSync,
+  readFileSync,
+  writeFileSync,
+  rmSync,
+} from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
-import { execFileSync } from 'node:child_process'
+
 import matter from 'gray-matter'
 import { initConfig } from '../src/config.js'
 
@@ -16,7 +22,12 @@ afterEach(() => {
   rmSync(tmp, { recursive: true, force: true })
 })
 
-function writeVerboseFile(dir: string, filename: string, frontmatter: Record<string, unknown>, body: string) {
+function writeVerboseFile(
+  dir: string,
+  filename: string,
+  frontmatter: Record<string, unknown>,
+  body: string,
+) {
   const content = matter.stringify(body, frontmatter)
   writeFileSync(join(dir, filename), content)
 }
@@ -44,7 +55,9 @@ async function runMigrate(dir: string) {
   for (const dirPath of [tasksDir, archiveDir]) {
     let files: string[]
     try {
-      files = readdirSync(dirPath).filter((f: string) => f.endsWith('.md') && !f.startsWith('.'))
+      files = readdirSync(dirPath).filter(
+        (f: string) => f.endsWith('.md') && !f.startsWith('.'),
+      )
     } catch {
       continue
     }
@@ -61,7 +74,9 @@ async function runMigrate(dir: string) {
       if (!match) continue
 
       const title = match[3]
-      const descMatch = bodyContent.match(/## Description\n\n([\s\S]*?)(?:\n\n## Acceptance Criteria|$)/)
+      const descMatch = bodyContent.match(
+        /## Description\n\n([\s\S]*?)(?:\n\n## Acceptance Criteria|$)/,
+      )
       const description = descMatch ? descMatch[1].trim() : ''
       const acRegex = /^- \[[ x]\] (.+)$/gm
       const acceptance_criteria: string[] = []
@@ -75,12 +90,15 @@ async function runMigrate(dir: string) {
         title,
         type: data.type as string,
         status: data.status as string,
-        created: data.created instanceof Date ? data.created.toISOString().slice(0, 10) : String(data.created),
+        created:
+          data.created instanceof Date
+            ? data.created.toISOString().slice(0, 10)
+            : String(data.created),
         description,
         acceptance_criteria,
       }
 
-      writeFileSync(filePath, render(task as any))
+      writeFileSync(filePath, render(task as Parameters<typeof render>[0]))
 
       if (!config.verbose_files) {
         const newName = `${data.id as string}.md`
@@ -96,12 +114,17 @@ describe('migrate', () => {
   it('adds title to frontmatter from verbose filename', async () => {
     initConfig(tmp, { prefix: 'TEST', verbose_files: false })
     const tasksDir = join(tmp, '.tasks')
-    writeVerboseFile(tasksDir, 'TEST-001 feat - add login.md', {
-      id: 'TEST-001',
-      type: 'feat',
-      status: 'todo',
-      created: '2026-03-01',
-    }, '\n## Description\n\nSome desc.\n\n## Acceptance Criteria\n\n- [ ] it works\n')
+    writeVerboseFile(
+      tasksDir,
+      'TEST-001 feat - add login.md',
+      {
+        id: 'TEST-001',
+        type: 'feat',
+        status: 'todo',
+        created: '2026-03-01',
+      },
+      '\n## Description\n\nSome desc.\n\n## Acceptance Criteria\n\n- [ ] it works\n',
+    )
 
     await runMigrate(tmp)
 
@@ -115,33 +138,50 @@ describe('migrate', () => {
   it('renames files to non-verbose when verbose_files is false', async () => {
     initConfig(tmp, { prefix: 'TEST', verbose_files: false })
     const tasksDir = join(tmp, '.tasks')
-    writeVerboseFile(tasksDir, 'TEST-001 feat - add login.md', {
-      id: 'TEST-001',
-      type: 'feat',
-      status: 'todo',
-      created: '2026-03-01',
-    }, '\n## Description\n\n\n\n## Acceptance Criteria\n\n')
+    writeVerboseFile(
+      tasksDir,
+      'TEST-001 feat - add login.md',
+      {
+        id: 'TEST-001',
+        type: 'feat',
+        status: 'todo',
+        created: '2026-03-01',
+      },
+      '\n## Description\n\n\n\n## Acceptance Criteria\n\n',
+    )
 
     await runMigrate(tmp)
 
     expect(existsSync(join(tasksDir, 'TEST-001.md'))).toBe(true)
-    expect(existsSync(join(tasksDir, 'TEST-001 feat - add login.md'))).toBe(false)
+    expect(existsSync(join(tasksDir, 'TEST-001 feat - add login.md'))).toBe(
+      false,
+    )
   })
 
   it('keeps verbose filenames when verbose_files is true', async () => {
     initConfig(tmp, { prefix: 'TEST', verbose_files: true })
     const tasksDir = join(tmp, '.tasks')
-    writeVerboseFile(tasksDir, 'TEST-001 feat - add login.md', {
-      id: 'TEST-001',
-      type: 'feat',
-      status: 'todo',
-      created: '2026-03-01',
-    }, '\n## Description\n\n\n\n## Acceptance Criteria\n\n')
+    writeVerboseFile(
+      tasksDir,
+      'TEST-001 feat - add login.md',
+      {
+        id: 'TEST-001',
+        type: 'feat',
+        status: 'todo',
+        created: '2026-03-01',
+      },
+      '\n## Description\n\n\n\n## Acceptance Criteria\n\n',
+    )
 
     await runMigrate(tmp)
 
-    expect(existsSync(join(tasksDir, 'TEST-001 feat - add login.md'))).toBe(true)
-    const content = readFileSync(join(tasksDir, 'TEST-001 feat - add login.md'), 'utf-8')
+    expect(existsSync(join(tasksDir, 'TEST-001 feat - add login.md'))).toBe(
+      true,
+    )
+    const content = readFileSync(
+      join(tasksDir, 'TEST-001 feat - add login.md'),
+      'utf-8',
+    )
     const { data } = matter(content)
     expect(data.title).toBe('add login')
   })
@@ -149,13 +189,18 @@ describe('migrate', () => {
   it('skips files that already have title in frontmatter', async () => {
     initConfig(tmp, { prefix: 'TEST', verbose_files: false })
     const tasksDir = join(tmp, '.tasks')
-    writeVerboseFile(tasksDir, 'TEST-001.md', {
-      id: 'TEST-001',
-      title: 'already has title',
-      type: 'feat',
-      status: 'todo',
-      created: '2026-03-01',
-    }, '\n## Description\n\n\n\n## Acceptance Criteria\n\n')
+    writeVerboseFile(
+      tasksDir,
+      'TEST-001.md',
+      {
+        id: 'TEST-001',
+        title: 'already has title',
+        type: 'feat',
+        status: 'todo',
+        created: '2026-03-01',
+      },
+      '\n## Description\n\n\n\n## Acceptance Criteria\n\n',
+    )
 
     await runMigrate(tmp)
 
@@ -171,19 +216,29 @@ describe('migrate', () => {
     const tasksDir = join(tmp, '.tasks')
     const archiveDir = join(tasksDir, '.archive')
 
-    writeVerboseFile(tasksDir, 'TEST-001 feat - active task.md', {
-      id: 'TEST-001',
-      type: 'feat',
-      status: 'todo',
-      created: '2026-03-01',
-    }, '\n## Description\n\n\n\n## Acceptance Criteria\n\n')
+    writeVerboseFile(
+      tasksDir,
+      'TEST-001 feat - active task.md',
+      {
+        id: 'TEST-001',
+        type: 'feat',
+        status: 'todo',
+        created: '2026-03-01',
+      },
+      '\n## Description\n\n\n\n## Acceptance Criteria\n\n',
+    )
 
-    writeVerboseFile(archiveDir, 'TEST-002 fix - archived task.md', {
-      id: 'TEST-002',
-      type: 'fix',
-      status: 'done',
-      created: '2026-02-01',
-    }, '\n## Description\n\n\n\n## Acceptance Criteria\n\n')
+    writeVerboseFile(
+      archiveDir,
+      'TEST-002 fix - archived task.md',
+      {
+        id: 'TEST-002',
+        type: 'fix',
+        status: 'done',
+        created: '2026-02-01',
+      },
+      '\n## Description\n\n\n\n## Acceptance Criteria\n\n',
+    )
 
     await runMigrate(tmp)
 
@@ -193,19 +248,26 @@ describe('migrate', () => {
     const active = matter(readFileSync(join(tasksDir, 'TEST-001.md'), 'utf-8'))
     expect(active.data.title).toBe('active task')
 
-    const archived = matter(readFileSync(join(archiveDir, 'TEST-002.md'), 'utf-8'))
+    const archived = matter(
+      readFileSync(join(archiveDir, 'TEST-002.md'), 'utf-8'),
+    )
     expect(archived.data.title).toBe('archived task')
   })
 
   it('skips files where title cannot be extracted from non-verbose filename', async () => {
     initConfig(tmp, { prefix: 'TEST', verbose_files: false })
     const tasksDir = join(tmp, '.tasks')
-    writeVerboseFile(tasksDir, 'TEST-001.md', {
-      id: 'TEST-001',
-      type: 'feat',
-      status: 'todo',
-      created: '2026-03-01',
-    }, '\n## Description\n\n\n\n## Acceptance Criteria\n\n')
+    writeVerboseFile(
+      tasksDir,
+      'TEST-001.md',
+      {
+        id: 'TEST-001',
+        type: 'feat',
+        status: 'todo',
+        created: '2026-03-01',
+      },
+      '\n## Description\n\n\n\n## Acceptance Criteria\n\n',
+    )
 
     // Should not throw, just skip
     await runMigrate(tmp)

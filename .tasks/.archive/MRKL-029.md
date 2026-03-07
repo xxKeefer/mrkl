@@ -5,6 +5,7 @@ type: feat
 status: closed
 created: '2026-03-02'
 ---
+
 ## Description
 
 i regret not making the title part of the frontmater and leaving it out of the filename

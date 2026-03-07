@@ -5,6 +5,7 @@ type: test
 status: done
 created: '2026-03-01'
 ---
+
 ## Description
 
 Implement the test suites for all core modules using vitest. Tests should use temporary directories for filesystem isolation. Follow TDD principles — each placeholder test in `tests/` should be filled in with real assertions verifying the module's public interface.

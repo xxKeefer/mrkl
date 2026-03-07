@@ -5,6 +5,7 @@ type: feat
 status: todo
 created: '2026-03-01'
 ---
+
 ## Description
 
 Implement the template module (`src/template.ts`) that renders `TaskData` objects to structured markdown strings with YAML frontmatter, and parses markdown content back into `TaskData` objects. Uses `gray-matter` for frontmatter handling.

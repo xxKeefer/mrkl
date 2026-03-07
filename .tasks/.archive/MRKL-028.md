@@ -5,6 +5,7 @@ type: fix
 status: closed
 created: '2026-03-02'
 ---
+
 ## Description
 
 Fix crash in interactive `mrkl create` when pressing Escape at the acceptance criteria prompt. `consola.prompt` returns `undefined` (not a Symbol) on Escape, but the AC loop only guarded against Symbol returns before calling `.trim()`, causing `Cannot read properties of undefined (reading 'trim')`.

@@ -73,26 +73,27 @@ mrkl x 2 -r "duplicate"   # close with reason, numeric ID
 
 ## Commands 🛠️
 
-| Command | Alias | Description |
-|---------|-------|-------------|
-| `init` | `i` | Initialize mrkl in the current project |
-| `create` | `c` | Create a new task |
-| `list` | `ls` | List active tasks |
-| `done` | `d` | Mark a task as done and archive it |
-| `close` | `x` | Close task(s) (won't do, duplicate, etc.) and archive them |
-| `prune` | `p` | Delete archived tasks created on or before a given date |
-| `migrate_prior_verbose` | — | Migrate legacy verbose-filename tasks to frontmatter-based format |
-| `install-skills` | — | Install bundled Claude Code skills |
+| Command                 | Alias | Description                                                       |
+| ----------------------- | ----- | ----------------------------------------------------------------- |
+| `init`                  | `i`   | Initialize mrkl in the current project                            |
+| `create`                | `c`   | Create a new task                                                 |
+| `list`                  | `ls`  | List active tasks                                                 |
+| `done`                  | `d`   | Mark a task as done and archive it                                |
+| `close`                 | `x`   | Close task(s) (won't do, duplicate, etc.) and archive them        |
+| `prune`                 | `p`   | Delete archived tasks created on or before a given date           |
+| `migrate_prior_verbose` | —     | Migrate legacy verbose-filename tasks to frontmatter-based format |
+| `install-skills`        | —     | Install bundled Claude Code skills                                |
 
 ### `mrkl init <prefix>`
 
 Initializes mrkl in the current directory.
 
-| Argument | Description |
-|----------|-------------|
+| Argument | Description                                              |
+| -------- | -------------------------------------------------------- |
 | `prefix` | Project prefix for task IDs (e.g., `PROJ`, `API`, `WEB`) |
 
 Creates:
+
 - `.config/mrkl/mrkl.toml` — project configuration
 - `.config/mrkl/mrkl_counter` — auto-incrementing ID tracker
 - `.tasks/` — active task directory
@@ -104,15 +105,15 @@ Safe to run multiple times — existing config and counter are preserved.
 
 Creates a new task file.
 
-| Argument | Description |
-|----------|-------------|
-| `type` | Task type (see [Task Types](#task-types)) |
-| `title` | Short description of the task |
+| Argument | Description                               |
+| -------- | ----------------------------------------- |
+| `type`   | Task type (see [Task Types](#task-types)) |
+| `title`  | Short description of the task             |
 
-| Option | Alias | Description |
-|--------|-------|-------------|
-| `--desc <text>` | `-d` | Detailed description |
-| `--ac <text>` | `-a` | Acceptance criterion (repeatable) |
+| Option          | Alias | Description                       |
+| --------------- | ----- | --------------------------------- |
+| `--desc <text>` | `-d`  | Detailed description              |
+| `--ac <text>`   | `-a`  | Acceptance criterion (repeatable) |
 
 ```sh
 mrkl create feat "search functionality" \
@@ -128,10 +129,10 @@ Running `mrkl create` with no arguments enters **interactive mode**, prompting f
 
 Lists all active tasks.
 
-| Option | Alias | Description |
-|--------|-------|-------------|
-| `--type <type>` | `-t` | Filter by task type |
-| `--status <status>` | `-s` | Filter by status (`todo`, `in-progress`, `done`) |
+| Option              | Alias | Description                                      |
+| ------------------- | ----- | ------------------------------------------------ |
+| `--type <type>`     | `-t`  | Filter by task type                              |
+| `--status <status>` | `-s`  | Filter by status (`todo`, `in-progress`, `done`) |
 
 Non-conforming markdown files in the tasks directory are silently skipped.
 
@@ -139,9 +140,9 @@ Non-conforming markdown files in the tasks directory are silently skipped.
 
 Archives a completed task.
 
-| Argument | Description |
-|----------|-------------|
-| `id` | Task ID to archive (e.g., `PROJ-001`) |
+| Argument | Description                           |
+| -------- | ------------------------------------- |
+| `id`     | Task ID to archive (e.g., `PROJ-001`) |
 
 Moves the task file to `.tasks/.archive/` and sets its status to `done`.
 
@@ -149,13 +150,13 @@ Moves the task file to `.tasks/.archive/` and sets its status to `done`.
 
 Closes one or more tasks that won't be done — duplicates, out-of-scope work, etc.
 
-| Argument | Description |
-|----------|-------------|
-| `id` | Task ID(s) to close — full (`PROJ-002`), numeric (`2`), or zero-padded (`002`) |
+| Argument | Description                                                                    |
+| -------- | ------------------------------------------------------------------------------ |
+| `id`     | Task ID(s) to close — full (`PROJ-002`), numeric (`2`), or zero-padded (`002`) |
 
-| Option | Alias | Description |
-|--------|-------|-------------|
-| `--reason <text>` | `-r` | Reason for closing (e.g., `duplicate`, `won't do`) |
+| Option            | Alias | Description                                        |
+| ----------------- | ----- | -------------------------------------------------- |
+| `--reason <text>` | `-r`  | Reason for closing (e.g., `duplicate`, `won't do`) |
 
 Sets the task status to `closed`, writes the reason as a `flag` in frontmatter (if provided), and moves the file to `.tasks/.archive/`.
 
@@ -174,13 +175,13 @@ mrkl x 3 4 5 -r "out of scope"
 
 Permanently deletes archived tasks created on or before a cutoff date.
 
-| Argument | Description |
-|----------|-------------|
-| `date` | Cutoff date (`YYYY-MM-DD` or `YYYYMMDD`) |
+| Argument | Description                              |
+| -------- | ---------------------------------------- |
+| `date`   | Cutoff date (`YYYY-MM-DD` or `YYYYMMDD`) |
 
-| Option | Alias | Description |
-|--------|-------|-------------|
-| `--force` | `-f` | Skip confirmation prompt |
+| Option    | Alias | Description              |
+| --------- | ----- | ------------------------ |
+| `--force` | `-f`  | Skip confirmation prompt |
 
 Shows a confirmation prompt listing tasks to be deleted unless `--force` is used.
 
@@ -224,26 +225,26 @@ mrkl install-skills
 
 Currently ships with:
 
-| Skill | Description |
-|-------|-------------|
+| Skill            | Description                                                    |
+| ---------------- | -------------------------------------------------------------- |
 | `plan-from-task` | Generate and execute implementation plans from mrkl task files |
 
 ## Task Types 🏷️
 
 mrkl uses [conventional commit](https://www.conventionalcommits.org/) types:
 
-| Type | Purpose |
-|------|---------|
-| `feat` | New feature |
-| `fix` | Bug fix |
-| `chore` | Maintenance |
-| `docs` | Documentation |
-| `perf` | Performance improvement |
-| `refactor` | Code restructuring |
-| `test` | Testing |
-| `ci` | CI/CD changes |
-| `build` | Build system changes |
-| `style` | Code style/formatting |
+| Type       | Purpose                 |
+| ---------- | ----------------------- |
+| `feat`     | New feature             |
+| `fix`      | Bug fix                 |
+| `chore`    | Maintenance             |
+| `docs`     | Documentation           |
+| `perf`     | Performance improvement |
+| `refactor` | Code restructuring      |
+| `test`     | Testing                 |
+| `ci`       | CI/CD changes           |
+| `build`    | Build system changes    |
+| `style`    | Code style/formatting   |
 
 ## Task File Format 📄
 
@@ -261,6 +262,7 @@ type: feat
 status: todo
 created: '2026-03-01'
 ---
+
 ## Description
 
 Implement user authentication with OAuth2.
@@ -332,11 +334,11 @@ tasks_dir = ".tasks"
 verbose_files = false
 ```
 
-| Key | Default | Description |
-|-----|---------|-------------|
-| `prefix` | *(required)* | Project prefix for task IDs |
-| `tasks_dir` | `".tasks"` | Directory for task files |
-| `verbose_files` | `false` | Use verbose filenames (`PROJ-001 feat - title.md` vs `PROJ-001.md`) |
+| Key             | Default      | Description                                                         |
+| --------------- | ------------ | ------------------------------------------------------------------- |
+| `prefix`        | _(required)_ | Project prefix for task IDs                                         |
+| `tasks_dir`     | `".tasks"`   | Directory for task files                                            |
+| `verbose_files` | `false`      | Use verbose filenames (`PROJ-001 feat - title.md` vs `PROJ-001.md`) |
 
 ## Development 🧑‍💻
 

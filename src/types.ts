@@ -1,55 +1,60 @@
 export const TASK_TYPES = [
-  "feat",
-  "fix",
-  "chore",
-  "docs",
-  "perf",
-  "refactor",
-  "test",
-  "ci",
-  "build",
-  "style",
-] as const;
+  'feat',
+  'fix',
+  'chore',
+  'docs',
+  'perf',
+  'refactor',
+  'test',
+  'ci',
+  'build',
+  'style',
+] as const
 
-export type TaskType = (typeof TASK_TYPES)[number];
+export type TaskType = (typeof TASK_TYPES)[number]
 
-export const STATUSES = ["todo", "in-progress", "done", "closed"] as const;
+export const STATUSES = ['todo', 'in-progress', 'done', 'closed'] as const
 
-export type Status = (typeof STATUSES)[number];
+export type Status = (typeof STATUSES)[number]
 
 export interface Config {
-  prefix: string;
-  tasks_dir: string;
-  verbose_files: boolean;
+  prefix: string
+  tasks_dir: string
+  verbose_files: boolean
 }
 
 export interface TaskData {
-  id: string;
-  type: TaskType;
-  status: Status;
-  created: string;
-  flag?: string;
-  title: string;
-  description: string;
-  acceptance_criteria: string[];
-  checked_criteria?: boolean;
+  id: string
+  type: TaskType
+  status: Status
+  created: string
+  flag?: string
+  title: string
+  description: string
+  acceptance_criteria: string[]
+  checked_criteria?: boolean
 }
 
 export interface CreateTaskOpts {
-  dir: string;
-  type: TaskType;
-  title: string;
-  description?: string;
-  acceptance_criteria?: string[];
+  dir: string
+  type: TaskType
+  title: string
+  description?: string
+  acceptance_criteria?: string[]
 }
 
 export interface ListFilter {
-  dir: string;
-  type?: TaskType;
-  status?: Status;
+  dir: string
+  type?: TaskType
+  status?: Status
 }
 
 export interface PruneResult {
-  deleted: Array<{ id: string; title: string; created: string; filename: string }>;
-  total: number;
+  deleted: Array<{
+    id: string
+    title: string
+    created: string
+    filename: string
+  }>
+  total: number
 }

@@ -5,6 +5,7 @@ type: feat
 status: todo
 created: '2026-03-01'
 ---
+
 ## Description
 
 Implement the task module (`src/task.ts`) that orchestrates config, counter, template, and filesystem operations. This is the core module that all CLI commands delegate to for CRUD operations on task files.
