@@ -1,5 +1,11 @@
 import { TASK_TYPES, STATUSES } from '../types.js'
-import type { TaskType, Status, CreateTaskOpts, TaskData, EditTaskResult } from '../types.js'
+import type {
+  TaskType,
+  Status,
+  CreateTaskOpts,
+  TaskData,
+  EditTaskResult,
+} from '../types.js'
 import {
   ESC,
   ALT_SCREEN_ON,
@@ -17,6 +23,10 @@ import {
 } from './ansi.js'
 
 type FormMode = 'create' | 'edit'
+
+const LABEL_WIDTH = 15
+// pointer(1) + space(1) + label(LABEL_WIDTH) + space(1)
+const GUTTER = 2 + LABEL_WIDTH + 1
 
 interface FormState {
   type: number
@@ -81,7 +91,10 @@ function getCurrentText(state: FormState): string {
 
   if (state.activeField === titleIdx) return state.title
   if (state.activeField === descIdx) return state.description
-  if (state.activeField >= critStart && state.activeField < critStart + state.criteria.length) {
+  if (
+    state.activeField >= critStart &&
+    state.activeField < critStart + state.criteria.length
+  ) {
     return state.criteria[state.activeField - critStart]
   }
   if (state.activeField === critStart + state.criteria.length)
@@ -102,7 +115,10 @@ function setCurrentText(state: FormState, text: string): void {
     state.description = text
     return
   }
-  if (state.activeField >= critStart && state.activeField < critStart + state.criteria.length) {
+  if (
+    state.activeField >= critStart &&
+    state.activeField < critStart + state.criteria.length
+  ) {
     state.criteria[state.activeField - critStart] = text
     return
   }
@@ -112,17 +128,21 @@ function setCurrentText(state: FormState, text: string): void {
   }
 }
 
-function getCurrentTextForField(state: FormState, fieldIndex: number): string {
+function getTextForField(state: FormState, fieldIndex: number): string {
   const titleIdx = titleFieldIndex(state)
   const descIdx = descFieldIndex(state)
   const critStart = criteriaStartIndex(state)
 
   if (fieldIndex === titleIdx) return state.title
   if (fieldIndex === descIdx) return state.description
-  if (fieldIndex >= critStart && fieldIndex < critStart + state.criteria.length) {
+  if (
+    fieldIndex >= critStart &&
+    fieldIndex < critStart + state.criteria.length
+  ) {
     return state.criteria[fieldIndex - critStart]
   }
-  if (fieldIndex === critStart + state.criteria.length) return state.currentCriterion
+  if (fieldIndex === critStart + state.criteria.length)
+    return state.currentCriterion
   return ''
 }
 
@@ -134,72 +154,190 @@ interface FieldInfo {
 
 function buildFieldList(state: FormState): FieldInfo[] {
   const critStart = criteriaStartIndex(state)
-  const fields: FieldInfo[] = [
-    { label: 'Task type:', index: 0, kind: 'cycle' },
-  ]
+  const fields: FieldInfo[] = [{ label: 'Type', index: 0, kind: 'cycle' }]
   if (state.mode === 'edit') {
-    fields.push({ label: 'Status:', index: 1, kind: 'cycle' })
+    fields.push({ label: 'Status', index: 1, kind: 'cycle' })
   }
-  fields.push({ label: 'Title:', index: titleFieldIndex(state), kind: 'text' })
-  fields.push({ label: 'Description:', index: descFieldIndex(state), kind: 'text' })
+  fields.push({
+    label: 'Title',
+    index: titleFieldIndex(state),
+    kind: 'text',
+  })
+  fields.push({
+    label: 'Description',
+    index: descFieldIndex(state),
+    kind: 'text',
+  })
   for (let i = 0; i < state.criteria.length; i++) {
-    fields.push({ label: `Criterion ${i + 1}:`, index: critStart + i, kind: 'text' })
+    fields.push({
+      label: `Criterion ${i + 1}`,
+      index: critStart + i,
+      kind: 'text',
+    })
   }
-  fields.push({ label: 'New criterion:', index: critStart + state.criteria.length, kind: 'text' })
+  fields.push({
+    label: '+ Add',
+    index: critStart + state.criteria.length,
+    kind: 'text',
+  })
   return fields
 }
 
+/**
+ * Split text into visual lines, respecting hard newlines and soft wrapping.
+ * When cursorPos is provided, returns cursor position within the visual lines.
+ */
+function textToVisualLines(
+  text: string,
+  contentWidth: number,
+  cursorPos: number | null,
+): { lines: string[]; cursorLine: number; cursorCol: number } {
+  const lines: string[] = []
+  let cursorLine = -1
+  let cursorCol = -1
+  let flatIdx = 0
+
+  const logicalLines = text.split('\n')
+  for (let li = 0; li < logicalLines.length; li++) {
+    const logical = logicalLines[li]
+
+    if (logical.length === 0) {
+      // Empty logical line
+      if (cursorPos !== null && flatIdx === cursorPos) {
+        cursorLine = lines.length
+        cursorCol = 0
+      }
+      lines.push('')
+      flatIdx++ // account for the \n (or end of string)
+      continue
+    }
+
+    // Wrap this logical line into visual chunks
+    let offset = 0
+    while (offset < logical.length) {
+      const chunk = logical.slice(offset, offset + contentWidth)
+      const visualLineIdx = lines.length
+
+      // Check if cursor falls within this chunk
+      if (cursorPos !== null && cursorLine < 0) {
+        const chunkStart = flatIdx + offset
+        const chunkEnd = chunkStart + chunk.length
+        if (cursorPos >= chunkStart && cursorPos < chunkEnd) {
+          cursorLine = visualLineIdx
+          cursorCol = cursorPos - chunkStart
+        }
+      }
+
+      lines.push(chunk)
+      offset += chunk.length
+    }
+
+    flatIdx += logical.length
+    // Account for the \n between logical lines (not after the last one)
+    if (li < logicalLines.length - 1) {
+      // Cursor might be on the \n character itself (shows at start of next line)
+      if (cursorPos !== null && cursorLine < 0 && cursorPos === flatIdx) {
+        cursorLine = lines.length // will be the next line added
+        cursorCol = 0
+      }
+      flatIdx++
+    }
+  }
+
+  // Cursor at the very end of text
+  if (cursorPos !== null && cursorLine < 0) {
+    const lastIdx = lines.length - 1
+    cursorLine = lastIdx >= 0 ? lastIdx : 0
+    cursorCol = lastIdx >= 0 ? lines[lastIdx].length : 0
+  }
+
+  if (lines.length === 0) lines.push('')
+
+  return { lines, cursorLine, cursorCol }
+}
+
 function render(state: FormState, stdout: NodeJS.WriteStream): void {
+  const cols = stdout.columns || 80
+  const contentWidth = Math.max(10, cols - GUTTER - 2)
+  const sepWidth = Math.min(cols - 4, 60)
   const buf: string[] = []
 
   buf.push('')
-  const header = state.mode === 'edit'
-    ? `Edit Task ${state.taskId ?? ''}`
-    : 'Create Task'
+  const header =
+    state.mode === 'edit'
+      ? `Edit Task ${state.taskId ?? ''}`
+      : 'Create Task'
   buf.push(`  ${BOLD}${header}${RESET}`)
-  buf.push('')
+  buf.push(`  ${FG_GRAY}${'─'.repeat(sepWidth)}${RESET}`)
 
   if (state.error) {
     buf.push(`  ${FG_RED}${state.error}${RESET}`)
-    buf.push('')
   }
 
   const fields = buildFieldList(state)
+  const pad = ' '.repeat(GUTTER)
+
   for (const f of fields) {
     const active = f.index === state.activeField
-    const pointer = active ? `${FG_CYAN}>${RESET}` : ' '
+    const pointer = active ? `${FG_CYAN}›${RESET}` : ' '
+    const labelColor = active ? FG_CYAN : DIM
+    const label = `${labelColor}${f.label.padEnd(LABEL_WIDTH)}${RESET}`
 
     if (f.kind === 'cycle') {
-      const items: readonly string[] = f.index === 0 ? TASK_TYPES : STATUSES
+      const items: readonly string[] =
+        f.index === 0 ? TASK_TYPES : STATUSES
       const stateIndex = f.index === 0 ? state.type : state.status
       const value = items[stateIndex]
       const display = active
-        ? `${FG_CYAN}< ${BOLD}${value}${RESET}${FG_CYAN} >${RESET}`
-        : `  ${value}  `
-      buf.push(`${pointer} ${DIM}${f.label.padEnd(14)}${RESET} ${display}`)
+        ? `${FG_CYAN}◂ ${BOLD}${value}${RESET}${FG_CYAN} ▸${RESET}`
+        : `  ${value}`
+      buf.push(`${pointer} ${label} ${display}`)
     } else {
-      const text = getCurrentTextForField(state, f.index)
-      const label = f.label.padEnd(14)
+      const text = getTextForField(state, f.index)
+
       if (active) {
-        const before = text.slice(0, state.cursorPos)
-        const cursorChar = text[state.cursorPos] ?? ' '
-        const after = text.slice(state.cursorPos + 1)
-        buf.push(
-          `${pointer} ${DIM}${label}${RESET} [${before}${INVERSE}${cursorChar}${RESET}${after}]`,
+        const { lines, cursorLine, cursorCol } = textToVisualLines(
+          text,
+          contentWidth,
+          state.cursorPos,
         )
+
+        for (let li = 0; li < lines.length; li++) {
+          const lineText = lines[li]
+          const prefix = li === 0 ? `${pointer} ${label} ` : pad
+
+          if (li === cursorLine) {
+            const before = lineText.slice(0, cursorCol)
+            const cursorChar = lineText[cursorCol] ?? ' '
+            const after = lineText.slice(cursorCol + 1)
+            buf.push(
+              `${prefix}${before}${INVERSE}${cursorChar}${RESET}${after}`,
+            )
+          } else {
+            buf.push(`${prefix}${lineText}`)
+          }
+        }
       } else {
-        const displayText = text || `${FG_GRAY}(empty)${RESET}`
-        buf.push(`${pointer} ${DIM}${label}${RESET} [${displayText}]`)
+        if (text) {
+          const { lines } = textToVisualLines(text, contentWidth, null)
+          for (let li = 0; li < lines.length; li++) {
+            const prefix = li === 0 ? `${pointer} ${label} ` : pad
+            buf.push(`${prefix}${lines[li]}`)
+          }
+        } else {
+          buf.push(
+            `${pointer} ${label} ${FG_GRAY}${'·'.repeat(Math.min(20, contentWidth))}${RESET}`,
+          )
+        }
       }
     }
   }
 
-  buf.push('')
-  const cycleHint = state.mode === 'edit'
-    ? '←→ cycle type/status'
-    : '←→ cycle type'
+  buf.push(`  ${FG_GRAY}${'─'.repeat(sepWidth)}${RESET}`)
+  const cycleHint =
+    state.mode === 'edit' ? '←→ cycle type/status' : '←→ cycle type'
   buf.push(
-    `  ${FG_GRAY}↑↓ navigate | ${cycleHint} | Enter submit | Esc quit${RESET}`,
+    `  ${FG_GRAY}↑↓ navigate  ${cycleHint}  Ctrl+N newline  Enter submit  Esc quit${RESET}`,
   )
   buf.push('')
 
@@ -274,6 +412,16 @@ function runForm<T>(
       resolve(buildResult(state))
     }
 
+    function insertChar(ch: string): void {
+      if (!isTextField(state)) return
+      state.error = ''
+      const text = getCurrentText(state)
+      const newText =
+        text.slice(0, state.cursorPos) + ch + text.slice(state.cursorPos)
+      setCurrentText(state, newText)
+      state.cursorPos += ch.length
+    }
+
     function onData(data: string): void {
       const critStart = criteriaStartIndex(state)
 
@@ -281,6 +429,29 @@ function runForm<T>(
         const ch = data[i]
 
         if (ch === ESC) {
+          // Alt+Enter: ESC followed by \r or \n — insert newline
+          if (
+            (data[i + 1] === '\r' || data[i + 1] === '\n') &&
+            isTextField(state)
+          ) {
+            insertChar('\n')
+            i += 1
+            continue
+          }
+
+          // CSI 27;{mod};13~ — xterm modifyOtherKeys Enter sequences
+          // Matches Shift+Enter, Ctrl+Enter, etc. in modern terminals
+          if (
+            data.slice(i + 1, i + 7) === '[27;2~' ||
+            data.slice(i + 1, i + 9) === '[27;2;13~'
+          ) {
+            if (isTextField(state)) insertChar('\n')
+            // skip rest of sequence
+            const tilde = data.indexOf('~', i + 1)
+            i = tilde >= 0 ? tilde : i + 6
+            continue
+          }
+
           if (data[i + 1] === '[') {
             const arrow = data[i + 2]
             if (arrow === 'A') {
@@ -294,7 +465,6 @@ function runForm<T>(
               continue
             }
             if (arrow === 'C') {
-              // Right
               if (isTypeField(state)) {
                 state.type = (state.type + 1) % TASK_TYPES.length
               } else if (isStatusField(state)) {
@@ -307,7 +477,6 @@ function runForm<T>(
               continue
             }
             if (arrow === 'D') {
-              // Left
               if (isTypeField(state)) {
                 state.type =
                   (state.type - 1 + TASK_TYPES.length) % TASK_TYPES.length
@@ -334,6 +503,12 @@ function runForm<T>(
           cleanup()
           resolve(null)
           return
+        }
+
+        // Ctrl+N — insert newline (reliable cross-terminal fallback)
+        if (ch === '\x0e') {
+          if (isTextField(state)) insertChar('\n')
+          continue
         }
 
         // Enter
@@ -375,7 +550,8 @@ function runForm<T>(
             }
             if (state.cursorPos > 0) {
               const newText =
-                text.slice(0, state.cursorPos - 1) + text.slice(state.cursorPos)
+                text.slice(0, state.cursorPos - 1) +
+                text.slice(state.cursorPos)
               setCurrentText(state, newText)
               state.cursorPos--
             }
@@ -385,14 +561,7 @@ function runForm<T>(
 
         // Printable characters
         if (ch >= ' ' && ch <= '~') {
-          if (isTextField(state)) {
-            state.error = ''
-            const text = getCurrentText(state)
-            const newText =
-              text.slice(0, state.cursorPos) + ch + text.slice(state.cursorPos)
-            setCurrentText(state, newText)
-            state.cursorPos++
-          }
+          insertChar(ch)
         }
       }
 
@@ -408,24 +577,23 @@ export async function interactiveCreate(): Promise<Omit<
   CreateTaskOpts,
   'dir'
 > | null> {
-  return runForm<Omit<CreateTaskOpts, 'dir'>>(
-    { mode: 'create' },
-    (state) => {
-      const criteria = [...state.criteria]
-      if (state.currentCriterion.trim()) {
-        criteria.push(state.currentCriterion.trim())
-      }
-      return {
-        type: TASK_TYPES[state.type] as TaskType,
-        title: state.title.trim(),
-        description: state.description.trim() || undefined,
-        acceptance_criteria: criteria.length > 0 ? criteria : undefined,
-      }
-    },
-  )
+  return runForm<Omit<CreateTaskOpts, 'dir'>>({ mode: 'create' }, (state) => {
+    const criteria = [...state.criteria]
+    if (state.currentCriterion.trim()) {
+      criteria.push(state.currentCriterion.trim())
+    }
+    return {
+      type: TASK_TYPES[state.type] as TaskType,
+      title: state.title.trim(),
+      description: state.description.trim() || undefined,
+      acceptance_criteria: criteria.length > 0 ? criteria : undefined,
+    }
+  })
 }
 
-export async function interactiveEdit(task: TaskData): Promise<EditTaskResult | null> {
+export async function interactiveEdit(
+  task: TaskData,
+): Promise<EditTaskResult | null> {
   const typeIndex = TASK_TYPES.indexOf(task.type)
   const statusIndex = STATUSES.indexOf(task.status)
 
