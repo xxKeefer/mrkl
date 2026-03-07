@@ -2,7 +2,7 @@
 id: MRKL-029
 title: verbose filenames
 type: feat
-status: todo
+status: closed
 created: '2026-03-02'
 ---
 ## Description
