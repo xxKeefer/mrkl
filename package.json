@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "unbuild",
-    "dev": "node --import tsx src/cli.ts",
+    "dev": "npx tsx src/cli.ts",
     "test": "vitest run",
     "changelog": "changelogen --output",
     "changelog:preview": "changelogen --no-output"
