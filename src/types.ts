@@ -32,6 +32,7 @@ export interface TaskData {
   title: string;
   description: string;
   acceptance_criteria: string[];
+  checked_criteria?: boolean;
 }
 
 export interface CreateTaskOpts {

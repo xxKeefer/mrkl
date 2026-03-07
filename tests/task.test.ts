@@ -6,7 +6,6 @@ import { initConfig } from '../src/config.js'
 import {
   createTask,
   listTasks,
-  archiveTask,
   closeTask,
   resolveTaskId,
   normalizeTitle,
@@ -234,34 +233,49 @@ describe('task', () => {
     })
   })
 
-  describe('archiveTask', () => {
-    it('moves task to .archive and updates status to done', () => {
-      createTask({ dir: tmp, type: 'feat', title: 'archive me' })
-      archiveTask(tmp, 'TEST-001')
+  describe('closeTask with status=done', () => {
+    it('moves task to .archive with status done and flag completed', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'done me' })
+      closeTask(tmp, 'TEST-001', 'completed', 'done')
 
-      // Original gone from tasks dir
-      expect(existsSync(join(tmp, '.tasks', 'TEST-001 feat - archive me.md'))).toBe(false)
-      // Present in archive
-      const archivePath = join(tmp, '.tasks', '.archive', 'TEST-001 feat - archive me.md')
+      expect(existsSync(join(tmp, '.tasks', 'TEST-001 feat - done me.md'))).toBe(false)
+      const archivePath = join(tmp, '.tasks', '.archive', 'TEST-001 feat - done me.md')
       expect(existsSync(archivePath)).toBe(true)
-      // Status updated
       const content = readFileSync(archivePath, 'utf-8')
       expect(content).toContain('status: done')
+      expect(content).toContain('flag: completed')
     })
-    it('accepts lowercase id', () => {
-      createTask({ dir: tmp, type: 'feat', title: 'lower case' })
-      archiveTask(tmp, 'test-001')
-      const archivePath = join(tmp, '.tasks', '.archive', 'TEST-001 feat - lower case.md')
+    it('checks acceptance criteria when status is done', () => {
+      createTask({
+        dir: tmp,
+        type: 'feat',
+        title: 'with acs',
+        acceptance_criteria: ['login works', 'tests pass'],
+      })
+      closeTask(tmp, 'TEST-001', 'completed', 'done')
+      const archivePath = join(tmp, '.tasks', '.archive', 'TEST-001 feat - with acs.md')
+      const content = readFileSync(archivePath, 'utf-8')
+      expect(content).toContain('- [x] login works')
+      expect(content).toContain('- [x] tests pass')
+      expect(content).not.toContain('- [ ]')
+    })
+    it('does not check criteria when status is closed', () => {
+      createTask({
+        dir: tmp,
+        type: 'feat',
+        title: 'closed acs',
+        acceptance_criteria: ['should stay unchecked'],
+      })
+      closeTask(tmp, 'TEST-001', 'duplicate')
+      const archivePath = join(tmp, '.tasks', '.archive', 'TEST-001 feat - closed acs.md')
+      const content = readFileSync(archivePath, 'utf-8')
+      expect(content).toContain('- [ ] should stay unchecked')
+    })
+    it('resolves numeric ID', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'numeric done' })
+      closeTask(tmp, '1', 'completed', 'done')
+      const archivePath = join(tmp, '.tasks', '.archive', 'TEST-001 feat - numeric done.md')
       expect(existsSync(archivePath)).toBe(true)
-    })
-    it('accepts mixed-case id', () => {
-      createTask({ dir: tmp, type: 'fix', title: 'mixed case' })
-      archiveTask(tmp, 'Test-001')
-      const archivePath = join(tmp, '.tasks', '.archive', 'TEST-001 fix - mixed case.md')
-      expect(existsSync(archivePath)).toBe(true)
-    })
-    it('throws if task ID not found', () => {
-      expect(() => archiveTask(tmp, 'TEST-999')).toThrow('Task TEST-999 not found')
     })
   })
 
@@ -291,11 +305,13 @@ describe('task', () => {
       expect(tasks.map((t) => t.id)).toEqual(['TEST-001', 'TEST-002'])
     })
 
-    it('archiveTask works with non-verbose filenames', () => {
-      createTask({ dir: nonVerboseTmp, type: 'feat', title: 'archive me' })
-      archiveTask(nonVerboseTmp, 'TEST-001')
+    it('closeTask with done status works with non-verbose filenames', () => {
+      createTask({ dir: nonVerboseTmp, type: 'feat', title: 'done me' })
+      closeTask(nonVerboseTmp, 'TEST-001', 'completed', 'done')
       expect(existsSync(join(nonVerboseTmp, '.tasks', 'TEST-001.md'))).toBe(false)
       expect(existsSync(join(nonVerboseTmp, '.tasks', '.archive', 'TEST-001.md'))).toBe(true)
+      const content = readFileSync(join(nonVerboseTmp, '.tasks', '.archive', 'TEST-001.md'), 'utf-8')
+      expect(content).toContain('status: done')
     })
 
     it('closeTask works with non-verbose filenames', () => {

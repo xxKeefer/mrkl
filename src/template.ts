@@ -23,7 +23,7 @@ export function render(task: TaskData): string {
   sections.push('## Acceptance Criteria')
   sections.push('')
   for (const item of task.acceptance_criteria) {
-    sections.push(`- [ ] ${item}`)
+    sections.push(`- [${task.checked_criteria ? 'x' : ' '}] ${item}`)
   }
 
   const body = sections.join('\n') + '\n'

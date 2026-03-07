@@ -3,7 +3,7 @@ import { mkdtempSync, writeFileSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { initConfig } from '../src/config.js'
-import { createTask, listArchivedTasks, archiveTask } from '../src/task.js'
+import { createTask, listArchivedTasks, closeTask } from '../src/task.js'
 import { render } from '../src/template.js'
 import type { TaskData } from '../src/types.js'
 
@@ -96,9 +96,9 @@ describe('listArchivedTasks', () => {
     expect(listArchivedTasks({ dir: tmp, status: 'todo' })).toHaveLength(0)
   })
 
-  it('works with archiveTask integration', () => {
+  it('works with closeTask done integration', () => {
     createTask({ dir: tmp, type: 'feat', title: 'to archive' })
-    archiveTask(tmp, 'TEST-001')
+    closeTask(tmp, 'TEST-001', 'completed', 'done')
 
     const tasks = listArchivedTasks({ dir: tmp })
     expect(tasks).toHaveLength(1)

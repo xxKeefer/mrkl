@@ -3,7 +3,7 @@ import { join } from 'node:path'
 import { loadConfig } from './config.js'
 import { nextId } from './counter.js'
 import { render, parse } from './template.js'
-import type { CreateTaskOpts, ListFilter, PruneResult, TaskData } from './types.js'
+import type { CreateTaskOpts, ListFilter, PruneResult, Status, TaskData } from './types.js'
 
 export function normalizeTitle(raw: string): string {
   const result = raw
@@ -65,29 +65,6 @@ export function listTasks(filter: ListFilter): TaskData[] {
   if (filter.status) tasks = tasks.filter((t) => t.status === filter.status)
 
   return tasks
-}
-
-export function archiveTask(dir: string, id: string): void {
-  const config = loadConfig(dir)
-  const tasksDir = join(dir, config.tasks_dir)
-
-  const idUpper = id.toUpperCase()
-  const file = readdirSync(tasksDir).find(
-    (f) => f.endsWith('.md') && f.toUpperCase().startsWith(idUpper)
-  )
-
-  if (!file) {
-    throw new Error(`Task ${id} not found`)
-  }
-
-  const filePath = join(tasksDir, file)
-  const content = readFileSync(filePath, 'utf-8')
-  const task = parse(content, file)
-  task.status = 'done'
-
-  const archivePath = join(tasksDir, '.archive', file)
-  writeFileSync(archivePath, render(task))
-  unlinkSync(filePath)
 }
 
 export function parseCutoffDate(input: string): string {
@@ -179,7 +156,7 @@ export function resolveTaskId(dir: string, id: string): string {
   return id
 }
 
-export function closeTask(dir: string, id: string, reason?: string): string {
+export function closeTask(dir: string, id: string, reason?: string, status: Status = 'closed'): string {
   const config = loadConfig(dir)
   const tasksDir = join(dir, config.tasks_dir)
 
@@ -196,9 +173,12 @@ export function closeTask(dir: string, id: string, reason?: string): string {
   const filePath = join(tasksDir, file)
   const content = readFileSync(filePath, 'utf-8')
   const task = parse(content, file)
-  task.status = 'closed'
+  task.status = status
   if (reason) {
     task.flag = reason
+  }
+  if (status === 'done' && task.acceptance_criteria.length > 0) {
+    task.checked_criteria = true
   }
 
   const archivePath = join(tasksDir, '.archive', file)
