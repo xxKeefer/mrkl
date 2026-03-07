@@ -2,7 +2,7 @@
 id: MRKL-033
 title: list command should have scrolling table
 type: feat
-status: todo
+status: closed
 created: '2026-03-02'
 ---
 ## Description
