@@ -2,7 +2,7 @@
 id: MRKL-045
 title: create interactive add editting
 type: feat
-status: todo
+status: done
 created: '2026-03-07'
 ---
 ## Description
