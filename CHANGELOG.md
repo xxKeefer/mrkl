@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.4.3...main
+
+[compare changes](https://github.com/xxKeefer/mrkl/compare/v0.4.3...main)
+
+### Added
+
+- Edit cmd ([#29](https://github.com/xxKeefer/mrkl/pull/29))
+
+### ❤️ Contributors
+
+- Daniel John Keefer <xxkeefer.code@gmail.com>
+
 ## v0.4.2...main
 
 [compare changes](https://github.com/xxKeefer/mrkl/compare/v0.4.2...main)
