@@ -213,6 +213,65 @@ describe('create command interactive mode', () => {
     )
   })
 
+  it('handles undefined return (Escape) at first AC prompt with 0 ACs', async () => {
+    promptSpy
+      .mockResolvedValueOnce('feat')
+      .mockResolvedValueOnce('no criteria task')
+      .mockResolvedValueOnce('some description')
+      .mockResolvedValueOnce(undefined as any) // Escape returns undefined
+
+    await run({ args: {} })
+
+    expect(createTaskSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'feat',
+        title: 'no criteria task',
+        description: 'some description',
+        acceptance_criteria: undefined,
+      })
+    )
+  })
+
+  it('handles undefined return (Escape) after one AC', async () => {
+    promptSpy
+      .mockResolvedValueOnce('fix')
+      .mockResolvedValueOnce('one criterion task')
+      .mockResolvedValueOnce('')
+      .mockResolvedValueOnce('first criterion') // one AC
+      .mockResolvedValueOnce(undefined as any) // Escape returns undefined
+
+    await run({ args: {} })
+
+    expect(createTaskSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'fix',
+        title: 'one criterion task',
+        acceptance_criteria: ['first criterion'],
+      })
+    )
+  })
+
+  it('handles undefined return (Escape) after two ACs', async () => {
+    promptSpy
+      .mockResolvedValueOnce('chore')
+      .mockResolvedValueOnce('two criteria task')
+      .mockResolvedValueOnce('a description')
+      .mockResolvedValueOnce('criterion one') // first AC
+      .mockResolvedValueOnce('criterion two') // second AC
+      .mockResolvedValueOnce(undefined as any) // Escape returns undefined
+
+    await run({ args: {} })
+
+    expect(createTaskSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'chore',
+        title: 'two criteria task',
+        description: 'a description',
+        acceptance_criteria: ['criterion one', 'criterion two'],
+      })
+    )
+  })
+
   it('exits gracefully on cancel (Ctrl+C)', async () => {
     const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {
       throw new Error('process.exit')

@@ -35,7 +35,7 @@ async function promptForTask(dir: string): Promise<CreateTaskOpts> {
         : `Criterion #${criteria.length + 1} (Esc to finish)`,
       { type: "text" },
     );
-    if (typeof ac === "symbol") break;
+    if (typeof ac !== "string") break;
     if (ac.trim()) criteria.push(ac.trim());
   }
 
