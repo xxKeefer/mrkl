@@ -1,7 +1,9 @@
 import consola from 'consola'
 import { EMOJI, type EmojiKey } from './emoji.js'
 
-const LEVEL_MAP: Record<EmojiKey, 'success' | 'error' | 'warn' | 'info'> = {
+type Level = 'success' | 'error' | 'warn' | 'info'
+
+const LEVEL_MAP: Record<EmojiKey, Level> = {
   success: 'success',
   error: 'error',
   warn: 'warn',
@@ -22,6 +24,13 @@ const LEVEL_MAP: Record<EmojiKey, 'success' | 'error' | 'warn' | 'info'> = {
   flag: 'info',
 }
 
+const LEVEL_EMOJI: Record<Level, string> = {
+  success: EMOJI.success,
+  error: EMOJI.error,
+  warn: EMOJI.warn,
+  info: EMOJI.info,
+}
+
 type LogMethod = (message: string, ...args: unknown[]) => void
 
 type Logger = Record<EmojiKey, LogMethod> & {
@@ -32,8 +41,14 @@ type Logger = Record<EmojiKey, LogMethod> & {
 function createLogger(): Logger {
   const methods = {} as Record<EmojiKey, LogMethod>
   for (const key of Object.keys(EMOJI) as EmojiKey[]) {
+    const level = LEVEL_MAP[key]
+    const badge = LEVEL_EMOJI[level]
+    const isBaseLevel = key === level
     methods[key] = (message, ...args) => {
-      consola[LEVEL_MAP[key]](`${EMOJI[key]} ${message}`, ...args)
+      const prefix = isBaseLevel
+        ? `${badge} — ${message}`
+        : `${badge} — ${EMOJI[key]} ${message}`
+      consola.log(prefix, ...args)
     }
   }
   return {

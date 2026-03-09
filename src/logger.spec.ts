@@ -15,7 +15,9 @@ import consola from 'consola'
 import { logger } from './logger.js'
 import { EMOJI, type EmojiKey } from './emoji.js'
 
-const LEVEL_MAP: Record<EmojiKey, 'success' | 'error' | 'warn' | 'info'> = {
+type Level = 'success' | 'error' | 'warn' | 'info'
+
+const LEVEL_MAP: Record<EmojiKey, Level> = {
   success: 'success',
   error: 'error',
   warn: 'warn',
@@ -36,6 +38,21 @@ const LEVEL_MAP: Record<EmojiKey, 'success' | 'error' | 'warn' | 'info'> = {
   flag: 'info',
 }
 
+const LEVEL_EMOJI: Record<Level, string> = {
+  success: EMOJI.success,
+  error: EMOJI.error,
+  warn: EMOJI.warn,
+  info: EMOJI.info,
+}
+
+function expectedPrefix(key: EmojiKey): string {
+  const level = LEVEL_MAP[key]
+  const badge = LEVEL_EMOJI[level]
+  return key === level
+    ? `${badge} — `
+    : `${badge} — ${EMOJI[key]} `
+}
+
 describe('logger', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -43,16 +60,14 @@ describe('logger', () => {
 
   const keys = Object.keys(EMOJI) as EmojiKey[]
 
-  it.each(keys)('%s — calls consola.%s with emoji prefix', (key) => {
-    const level = LEVEL_MAP[key]
+  it.each(keys)('%s — logs with level badge and emoji prefix', (key) => {
     logger[key]('test message')
-    expect(consola[level]).toHaveBeenCalledWith(`${EMOJI[key]} test message`)
+    expect(consola.log).toHaveBeenCalledWith(`${expectedPrefix(key)}test message`)
   })
 
   it.each(keys)('%s — forwards extra arguments', (key) => {
-    const level = LEVEL_MAP[key]
     logger[key]('msg', 42, { x: 1 })
-    expect(consola[level]).toHaveBeenCalledWith(`${EMOJI[key]} msg`, 42, { x: 1 })
+    expect(consola.log).toHaveBeenCalledWith(`${expectedPrefix(key)}msg`, 42, { x: 1 })
   })
 
   it('log — passes through to consola.log without emoji', () => {
