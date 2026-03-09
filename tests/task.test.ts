@@ -162,6 +162,114 @@ describe('task', () => {
       expect(t1.id).toBe('TEST-001')
       expect(t2.id).toBe('TEST-002')
     })
+
+    it('creates task with valid parent in frontmatter', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'epic' })
+      const child = createTask({
+        dir: tmp,
+        type: 'feat',
+        title: 'child',
+        parent: 'TEST-001',
+      })
+      expect(child.parent).toBe('TEST-001')
+      const content = readFileSync(
+        join(tmp, '.tasks', 'TEST-002 feat - child.md'),
+        'utf-8',
+      )
+      expect(content).toContain('parent: TEST-001')
+    })
+
+    it('creates task with valid blocks in frontmatter', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'blocked task' })
+      const blocker = createTask({
+        dir: tmp,
+        type: 'fix',
+        title: 'blocker',
+        blocks: ['TEST-001'],
+      })
+      expect(blocker.blocks).toEqual(['TEST-001'])
+      const content = readFileSync(
+        join(tmp, '.tasks', 'TEST-002 fix - blocker.md'),
+        'utf-8',
+      )
+      expect(content).toContain('blocks:')
+      expect(content).toContain('TEST-001')
+    })
+
+    it('rejects nonexistent parent', () => {
+      expect(() =>
+        createTask({
+          dir: tmp,
+          type: 'feat',
+          title: 'orphan',
+          parent: 'TEST-999',
+        }),
+      ).toThrow('not found')
+    })
+
+    it('rejects archived parent', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'soon archived' })
+      closeTask(tmp, 'TEST-001')
+      expect(() =>
+        createTask({
+          dir: tmp,
+          type: 'feat',
+          title: 'child of archived',
+          parent: 'TEST-001',
+        }),
+      ).toThrow('not found')
+    })
+
+    it('rejects parent that already has a parent (no nested epics)', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'grandparent' })
+      createTask({
+        dir: tmp,
+        type: 'feat',
+        title: 'parent',
+        parent: 'TEST-001',
+      })
+      expect(() =>
+        createTask({
+          dir: tmp,
+          type: 'feat',
+          title: 'grandchild',
+          parent: 'TEST-002',
+        }),
+      ).toThrow('already has a parent')
+    })
+
+    it('resolves numeric IDs for parent', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'epic' })
+      const child = createTask({
+        dir: tmp,
+        type: 'feat',
+        title: 'child',
+        parent: '1',
+      })
+      expect(child.parent).toBe('TEST-001')
+    })
+
+    it('resolves numeric IDs for blocks', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'blocked' })
+      const blocker = createTask({
+        dir: tmp,
+        type: 'fix',
+        title: 'blocker',
+        blocks: ['1'],
+      })
+      expect(blocker.blocks).toEqual(['TEST-001'])
+    })
+
+    it('rejects nonexistent blocks target', () => {
+      expect(() =>
+        createTask({
+          dir: tmp,
+          type: 'feat',
+          title: 'bad blocker',
+          blocks: ['TEST-999'],
+        }),
+      ).toThrow('not found')
+    })
   })
 
   describe('listTasks', () => {

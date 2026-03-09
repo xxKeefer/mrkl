@@ -39,6 +39,25 @@ export function createTask(opts: CreateTaskOpts): TaskData {
   const id = `${config.prefix}-${String(num).padStart(3, '0')}`
   const today = new Date().toISOString().slice(0, 10)
 
+  const resolvedParent = opts.parent
+    ? resolveTaskId(opts.dir, opts.parent)
+    : undefined
+  const resolvedBlocks = opts.blocks?.map((b) => resolveTaskId(opts.dir, b))
+
+  if (resolvedParent || resolvedBlocks?.length) {
+    const activeTasks = listTasks({ dir: opts.dir })
+
+    if (resolvedParent) {
+      const result = validateParent(activeTasks, resolvedParent)
+      if (!result.valid) throw new Error(result.reason)
+    }
+
+    if (resolvedBlocks?.length) {
+      const result = validateBlocks(activeTasks, resolvedBlocks)
+      if (!result.valid) throw new Error(result.reason)
+    }
+  }
+
   const task: TaskData = {
     id,
     type: opts.type,
@@ -47,6 +66,8 @@ export function createTask(opts: CreateTaskOpts): TaskData {
     title: normalizeTitle(opts.title),
     description: opts.description ?? '',
     acceptance_criteria: opts.acceptance_criteria ?? [],
+    ...(resolvedParent && { parent: resolvedParent }),
+    ...(resolvedBlocks?.length && { blocks: resolvedBlocks }),
   }
 
   const filename = config.verbose_files

@@ -108,6 +108,16 @@ describe('flag aliases', () => {
     const args = closeCommand.args as Record<string, { alias?: string }>
     expect(args.reason.alias).toBe('r')
   })
+
+  it('create --parent has alias -p', () => {
+    const args = createCommand.args as Record<string, { alias?: string }>
+    expect(args.parent.alias).toBe('p')
+  })
+
+  it('create --blocks has alias -b', () => {
+    const args = createCommand.args as Record<string, { alias?: string }>
+    expect(args.blocks.alias).toBe('b')
+  })
 })
 
 describe('create command --ac flag', () => {
@@ -152,6 +162,61 @@ describe('create command --ac flag', () => {
     expect(createTaskSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         acceptance_criteria: undefined,
+      }),
+    )
+  })
+
+  it('passes --parent to createTask', async () => {
+    await run({ args: { type: 'feat', title: 'test', parent: 'TEST-001' } })
+
+    expect(createTaskSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        parent: 'TEST-001',
+      }),
+    )
+  })
+
+  it('passes --blocks as array when comma-separated', async () => {
+    await run({
+      args: { type: 'feat', title: 'test', blocks: 'TEST-001,TEST-002' },
+    })
+
+    expect(createTaskSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        blocks: ['TEST-001', 'TEST-002'],
+      }),
+    )
+  })
+
+  it('passes --blocks as array when already an array (repeated flag)', async () => {
+    await run({
+      args: { type: 'feat', title: 'test', blocks: ['TEST-001', 'TEST-002'] },
+    })
+
+    expect(createTaskSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        blocks: ['TEST-001', 'TEST-002'],
+      }),
+    )
+  })
+
+  it('wraps single --blocks value in array', async () => {
+    await run({ args: { type: 'feat', title: 'test', blocks: 'TEST-001' } })
+
+    expect(createTaskSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        blocks: ['TEST-001'],
+      }),
+    )
+  })
+
+  it('passes undefined parent/blocks when not provided', async () => {
+    await run({ args: { type: 'feat', title: 'test' } })
+
+    expect(createTaskSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        parent: undefined,
+        blocks: undefined,
       }),
     )
   })
