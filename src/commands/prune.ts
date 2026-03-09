@@ -1,5 +1,5 @@
 import { defineCommand } from 'citty'
-import consola from 'consola'
+import { logger } from '../logger.js'
 import { parseCutoffDate, pruneTasks, executePrune } from '../task.js'
 
 export default defineCommand({
@@ -27,28 +27,28 @@ export default defineCommand({
     try {
       cutoff = parseCutoffDate(args.date)
     } catch (err) {
-      consola.error(String((err as Error).message))
+      logger.error(String((err as Error).message))
       process.exit(1)
     }
 
     const result = pruneTasks(dir, cutoff)
 
     if (result.deleted.length === 0) {
-      consola.info(`📭 No archived tasks found on or before ${cutoff}`)
+      logger.empty(`No archived tasks found on or before ${cutoff}`)
       return
     }
 
-    consola.info(`🔍 Found ${result.deleted.length} task(s) to prune:`)
+    logger.found(`Found ${result.deleted.length} task(s) to prune:`)
     for (const task of result.deleted) {
-      consola.log(`  ${task.id} — ${task.title} (${task.created})`)
+      logger.log(`  ${task.id} — ${task.title} (${task.created})`)
     }
 
     if (!args.force) {
-      const confirm = await consola.prompt('Delete these tasks?', {
+      const confirm = await logger.prompt('Delete these tasks?', {
         type: 'confirm',
       })
       if (typeof confirm === 'symbol' || !confirm) {
-        consola.info('👋 Aborted')
+        logger.quit('Aborted')
         return
       }
     }
@@ -57,6 +57,6 @@ export default defineCommand({
       dir,
       result.deleted.map((t) => t.filename),
     )
-    consola.success(`🧹 Pruned ${result.deleted.length} archived task(s)`)
+    logger.delete(`Pruned ${result.deleted.length} archived task(s)`)
   },
 })

@@ -1,5 +1,5 @@
 import { defineCommand } from 'citty'
-import consola from 'consola'
+import { logger } from '../logger.js'
 import { createTask, listTasks } from '../task.js'
 import { TASK_TYPES } from '../types.js'
 import type { TaskType, CreateTaskOpts } from '../types.js'
@@ -24,8 +24,8 @@ function toOptionalString(value: unknown): string | undefined {
 function toTaskType(value: unknown): TaskType {
   const str = String(value)
   if (!TASK_TYPES.includes(str as TaskType)) {
-    consola.error(
-      `❌ Invalid type "${str}". Must be one of: ${TASK_TYPES.join(', ')}`,
+    logger.error(
+      `Invalid type "${str}". Must be one of: ${TASK_TYPES.join(', ')}`,
     )
     process.exit(1)
   }
@@ -84,8 +84,8 @@ export default defineCommand({
     const interactive = !args.type && !args.title
 
     if (!interactive && (!args.type || !args.title)) {
-      consola.error(
-        '❌ Both type and title are required, or omit both for interactive mode',
+      logger.error(
+        'Both type and title are required, or omit both for interactive mode',
       )
       process.exit(1)
     }
@@ -104,9 +104,9 @@ export default defineCommand({
           }
 
       const task = createTask(opts)
-      consola.success(`📝 Created ${task.id}: ${task.title}`)
+      logger.create(`Created ${task.id}: ${task.title}`)
     } catch (err) {
-      consola.error(String((err as Error).message))
+      logger.error(String((err as Error).message))
       process.exit(1)
     }
   },

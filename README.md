@@ -381,6 +381,31 @@ verbose_files = false
 | `tasks_dir`     | `".tasks"`   | Directory for task files                                            |
 | `verbose_files` | `false`      | Use verbose filenames (`PROJ-001 feat - title.md` vs `PROJ-001.md`) |
 
+## Emoji Keys 🎨
+
+All CLI output uses a centralized emoji map (`src/emoji.ts`) via a custom logger. Each key maps to a consola log level and auto-prefixes messages with the corresponding emoji.
+
+| Emoji | Key          | Level     |
+| ----- | ------------ | --------- |
+| 🟢    | `success`    | `success` |
+| 🔴    | `error`      | `error`   |
+| ⚠️    | `warn`       | `warn`    |
+| ℹ️    | `info`       | `info`    |
+| ✅    | `done`       | `success` |
+| ❌    | `closed`     | `info`    |
+| 🚧    | `blocks`     | `info`    |
+| 🛑    | `blocked_by` | `info`    |
+| 📝    | `create`     | `success` |
+| ✏️    | `update`     | `success` |
+| 🧹    | `delete`     | `success` |
+| 📭    | `empty`      | `info`    |
+| 🎉    | `celebrate`  | `success` |
+| 🧩    | `module`     | `success` |
+| ✌️    | `quit`       | `info`    |
+| 🔎    | `found`      | `info`    |
+| ❓    | `not_found`  | `info`    |
+| 🚩    | `flag`       | `info`    |
+
 ## Development 🧑‍💻
 
 ```sh
