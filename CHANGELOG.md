@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.5.0...main
+
+[compare changes](https://github.com/xxKeefer/mrkl/compare/v0.5.0...main)
+
+### Changed
+
+- Colocate all tests as *.spec.ts siblings (MRKL-059) ([#34](https://github.com/xxKeefer/mrkl/pull/34))
+
+### ❤️ Contributors
+
+- Daniel John Keefer <xxkeefer.code@gmail.com>
+
 ## v0.4.4...main
 
 [compare changes](https://github.com/xxKeefer/mrkl/compare/v0.4.4...main)
