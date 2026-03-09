@@ -22,6 +22,38 @@ import {
   FG_GRAY,
 } from './ansi.js'
 
+export interface AutocompleteCandidate {
+  id: string
+  label: string
+}
+
+export function buildParentCandidates(tasks: TaskData[]): AutocompleteCandidate[] {
+  return tasks
+    .filter((t) => !t.parent)
+    .map((t) => ({ id: t.id, label: `${t.id} - ${t.title}` }))
+}
+
+function buildBlockCandidates(tasks: TaskData[]): AutocompleteCandidate[] {
+  return tasks.map((t) => ({ id: t.id, label: `${t.id} - ${t.title}` }))
+}
+
+export function filterCandidates(
+  input: string,
+  candidates: AutocompleteCandidate[],
+  exclude?: Set<string>,
+  limit: number = 5,
+): AutocompleteCandidate[] {
+  let filtered = candidates
+  if (exclude) {
+    filtered = filtered.filter((c) => !exclude.has(c.id))
+  }
+  if (input) {
+    const lower = input.toLowerCase()
+    filtered = filtered.filter((c) => c.label.toLowerCase().includes(lower))
+  }
+  return filtered.slice(0, limit)
+}
+
 type FormMode = 'create' | 'edit'
 
 const LABEL_WIDTH = 15
@@ -33,6 +65,14 @@ interface FormState {
   status: number
   title: string
   description: string
+  parent: string
+  parentInput: string
+  parentCandidates: AutocompleteCandidate[]
+  parentHighlight: number
+  blocks: string[]
+  currentBlock: string
+  blockCandidates: AutocompleteCandidate[]
+  blockHighlight: number
   criteria: string[]
   currentCriterion: string
   activeField: number
@@ -42,9 +82,9 @@ interface FormState {
   taskId?: string
 }
 
-// Field indices differ by mode:
-// create: 0=type, 1=title, 2=description, 3..N=criteria, N+1=new criterion
-// edit:   0=type, 1=status, 2=title, 3=description, 4..N=criteria, N+1=new criterion
+// Field layout:
+// create: 0=type, 1=title, 2=description, 3=parent, 4..M=block entries, M+1=+Block, M+2..N=criteria, N+1=+Add
+// edit:   0=type, 1=status, 2=title, 3=description, 4=parent, 5..M=block entries, M+1=+Block, M+2..N=criteria, N+1=+Add
 
 function titleFieldIndex(state: FormState): number {
   return state.mode === 'edit' ? 2 : 1
@@ -54,8 +94,20 @@ function descFieldIndex(state: FormState): number {
   return state.mode === 'edit' ? 3 : 2
 }
 
+function parentFieldIndex(state: FormState): number {
+  return descFieldIndex(state) + 1
+}
+
+function blocksStartIndex(state: FormState): number {
+  return parentFieldIndex(state) + 1
+}
+
+function blocksAddIndex(state: FormState): number {
+  return blocksStartIndex(state) + state.blocks.length
+}
+
 function criteriaStartIndex(state: FormState): number {
-  return state.mode === 'edit' ? 4 : 3
+  return blocksAddIndex(state) + 1
 }
 
 function totalFields(state: FormState): number {
@@ -84,41 +136,71 @@ function isTextField(state: FormState): boolean {
   return state.activeField >= titleFieldIndex(state)
 }
 
+function isAutocompleteField(state: FormState): boolean {
+  return state.activeField === parentFieldIndex(state) ||
+    state.activeField === blocksAddIndex(state)
+}
+
+function isParentField(state: FormState): boolean {
+  return state.activeField === parentFieldIndex(state)
+}
+
+function isBlocksAddField(state: FormState): boolean {
+  return state.activeField === blocksAddIndex(state)
+}
+
+function isBlockEntryField(state: FormState): boolean {
+  const start = blocksStartIndex(state)
+  return state.activeField >= start && state.activeField < start + state.blocks.length
+}
+
 function getCurrentText(state: FormState): string {
   const titleIdx = titleFieldIndex(state)
   const descIdx = descFieldIndex(state)
+  const parentIdx = parentFieldIndex(state)
+  const blkStart = blocksStartIndex(state)
+  const blkAddIdx = blocksAddIndex(state)
   const critStart = criteriaStartIndex(state)
 
   if (state.activeField === titleIdx) return state.title
   if (state.activeField === descIdx) return state.description
-  if (
-    state.activeField >= critStart &&
-    state.activeField < critStart + state.criteria.length
-  ) {
+  if (state.activeField === parentIdx) return state.parentInput
+  if (state.activeField >= blkStart && state.activeField < blkStart + state.blocks.length) {
+    return state.blocks[state.activeField - blkStart]
+  }
+  if (state.activeField === blkAddIdx) return state.currentBlock
+  if (state.activeField >= critStart && state.activeField < critStart + state.criteria.length) {
     return state.criteria[state.activeField - critStart]
   }
-  if (state.activeField === critStart + state.criteria.length)
-    return state.currentCriterion
+  if (state.activeField === critStart + state.criteria.length) return state.currentCriterion
   return ''
 }
 
 function setCurrentText(state: FormState, text: string): void {
   const titleIdx = titleFieldIndex(state)
   const descIdx = descFieldIndex(state)
+  const parentIdx = parentFieldIndex(state)
+  const blkStart = blocksStartIndex(state)
+  const blkAddIdx = blocksAddIndex(state)
   const critStart = criteriaStartIndex(state)
 
-  if (state.activeField === titleIdx) {
-    state.title = text
+  if (state.activeField === titleIdx) { state.title = text; return }
+  if (state.activeField === descIdx) { state.description = text; return }
+  if (state.activeField === parentIdx) {
+    state.parentInput = text
+    state.parentHighlight = 0
     return
   }
-  if (state.activeField === descIdx) {
-    state.description = text
+  if (state.activeField >= blkStart && state.activeField < blkStart + state.blocks.length) {
+    state.blocks[state.activeField - blkStart] = text
     return
   }
-  if (
-    state.activeField >= critStart &&
-    state.activeField < critStart + state.criteria.length
-  ) {
+  if (state.activeField === blkAddIdx) {
+    state.currentBlock = text
+    state.blockHighlight = 0
+    return
+  }
+  if (state.activeField >= critStart && state.activeField < critStart + state.criteria.length) {
     state.criteria[state.activeField - critStart] = text
     return
   }
@@ -131,55 +213,54 @@ function setCurrentText(state: FormState, text: string): void {
 function getTextForField(state: FormState, fieldIndex: number): string {
   const titleIdx = titleFieldIndex(state)
   const descIdx = descFieldIndex(state)
+  const parentIdx = parentFieldIndex(state)
+  const blkStart = blocksStartIndex(state)
+  const blkAddIdx = blocksAddIndex(state)
   const critStart = criteriaStartIndex(state)
 
   if (fieldIndex === titleIdx) return state.title
   if (fieldIndex === descIdx) return state.description
-  if (
-    fieldIndex >= critStart &&
-    fieldIndex < critStart + state.criteria.length
-  ) {
+  if (fieldIndex === parentIdx) return state.parentInput
+  if (fieldIndex >= blkStart && fieldIndex < blkStart + state.blocks.length) {
+    return state.blocks[fieldIndex - blkStart]
+  }
+  if (fieldIndex === blkAddIdx) return state.currentBlock
+  if (fieldIndex >= critStart && fieldIndex < critStart + state.criteria.length) {
     return state.criteria[fieldIndex - critStart]
   }
-  if (fieldIndex === critStart + state.criteria.length)
-    return state.currentCriterion
+  if (fieldIndex === critStart + state.criteria.length) return state.currentCriterion
   return ''
 }
 
 interface FieldInfo {
   label: string
   index: number
-  kind: 'cycle' | 'text'
+  kind: 'cycle' | 'text' | 'autocomplete'
 }
 
 function buildFieldList(state: FormState): FieldInfo[] {
+  const blkStart = blocksStartIndex(state)
+  const blkAddIdx = blocksAddIndex(state)
   const critStart = criteriaStartIndex(state)
+
   const fields: FieldInfo[] = [{ label: 'Type', index: 0, kind: 'cycle' }]
   if (state.mode === 'edit') {
     fields.push({ label: 'Status', index: 1, kind: 'cycle' })
   }
-  fields.push({
-    label: 'Title',
-    index: titleFieldIndex(state),
-    kind: 'text',
-  })
-  fields.push({
-    label: 'Description',
-    index: descFieldIndex(state),
-    kind: 'text',
-  })
-  for (let i = 0; i < state.criteria.length; i++) {
-    fields.push({
-      label: `Criterion ${i + 1}`,
-      index: critStart + i,
-      kind: 'text',
-    })
+  fields.push({ label: 'Title', index: titleFieldIndex(state), kind: 'text' })
+  fields.push({ label: 'Description', index: descFieldIndex(state), kind: 'text' })
+  fields.push({ label: 'Parent', index: parentFieldIndex(state), kind: 'autocomplete' })
+
+  for (let i = 0; i < state.blocks.length; i++) {
+    fields.push({ label: `Blocks ${i + 1}`, index: blkStart + i, kind: 'text' })
   }
-  fields.push({
-    label: '+ Add',
-    index: critStart + state.criteria.length,
-    kind: 'text',
-  })
+  fields.push({ label: '+ Block', index: blkAddIdx, kind: 'autocomplete' })
+
+  for (let i = 0; i < state.criteria.length; i++) {
+    fields.push({ label: `Criterion ${i + 1}`, index: critStart + i, kind: 'text' })
+  }
+  fields.push({ label: '+ Add', index: critStart + state.criteria.length, kind: 'text' })
+
   return fields
 }
 
@@ -202,23 +283,20 @@ function textToVisualLines(
     const logical = logicalLines[li]
 
     if (logical.length === 0) {
-      // Empty logical line
       if (cursorPos !== null && flatIdx === cursorPos) {
         cursorLine = lines.length
         cursorCol = 0
       }
       lines.push('')
-      flatIdx++ // account for the \n (or end of string)
+      flatIdx++
       continue
     }
 
-    // Wrap this logical line into visual chunks
     let offset = 0
     while (offset < logical.length) {
       const chunk = logical.slice(offset, offset + contentWidth)
       const visualLineIdx = lines.length
 
-      // Check if cursor falls within this chunk
       if (cursorPos !== null && cursorLine < 0) {
         const chunkStart = flatIdx + offset
         const chunkEnd = chunkStart + chunk.length
@@ -233,18 +311,15 @@ function textToVisualLines(
     }
 
     flatIdx += logical.length
-    // Account for the \n between logical lines (not after the last one)
     if (li < logicalLines.length - 1) {
-      // Cursor might be on the \n character itself (shows at start of next line)
       if (cursorPos !== null && cursorLine < 0 && cursorPos === flatIdx) {
-        cursorLine = lines.length // will be the next line added
+        cursorLine = lines.length
         cursorCol = 0
       }
       flatIdx++
     }
   }
 
-  // Cursor at the very end of text
   if (cursorPos !== null && cursorLine < 0) {
     const lastIdx = lines.length - 1
     cursorLine = lastIdx >= 0 ? lastIdx : 0
@@ -254,6 +329,20 @@ function textToVisualLines(
   if (lines.length === 0) lines.push('')
 
   return { lines, cursorLine, cursorCol }
+}
+
+function getFilteredSuggestions(state: FormState): AutocompleteCandidate[] {
+  if (isParentField(state)) {
+    return filterCandidates(state.parentInput, state.parentCandidates)
+  }
+  if (isBlocksAddField(state)) {
+    return filterCandidates(
+      state.currentBlock,
+      state.blockCandidates,
+      new Set(state.blocks),
+    )
+  }
+  return []
 }
 
 function render(state: FormState, stdout: NodeJS.WriteStream): void {
@@ -317,6 +406,17 @@ function render(state: FormState, stdout: NodeJS.WriteStream): void {
             buf.push(`${prefix}${lineText}`)
           }
         }
+
+        // Render autocomplete dropdown for active autocomplete fields
+        if (f.kind === 'autocomplete') {
+          const suggestions = getFilteredSuggestions(state)
+          const highlight = isParentField(state) ? state.parentHighlight : state.blockHighlight
+          for (let si = 0; si < suggestions.length; si++) {
+            const arrow = si === highlight ? '→' : ' '
+            const style = si === highlight ? `${FG_CYAN}${BOLD}` : FG_GRAY
+            buf.push(`${pad}  ${arrow} ${style}${suggestions[si].label}${RESET}`)
+          }
+        }
       } else {
         if (text) {
           const { lines } = textToVisualLines(text, contentWidth, null)
@@ -325,8 +425,11 @@ function render(state: FormState, stdout: NodeJS.WriteStream): void {
             buf.push(`${prefix}${lines[li]}`)
           }
         } else {
+          const placeholder = f.kind === 'autocomplete'
+            ? 'type to search...'
+            : '·'.repeat(Math.min(20, contentWidth))
           buf.push(
-            `${pointer} ${label} ${FG_GRAY}${'·'.repeat(Math.min(20, contentWidth))}${RESET}`,
+            `${pointer} ${label} ${FG_GRAY}${placeholder}${RESET}`,
           )
         }
       }
@@ -347,11 +450,14 @@ function render(state: FormState, stdout: NodeJS.WriteStream): void {
 interface FormOptions {
   mode: FormMode
   taskId?: string
+  tasks?: TaskData[]
   initialValues?: {
     type?: number
     status?: number
     title?: string
     description?: string
+    parent?: string
+    blocks?: string[]
     criteria?: string[]
   }
 }
@@ -363,11 +469,29 @@ function runForm<T>(
   const { stdin, stdout } = process
 
   const init = opts.initialValues ?? {}
+  const tasks = opts.tasks ?? []
+
+  const parentCandidates = buildParentCandidates(tasks)
+  const blockCandidates = buildBlockCandidates(tasks)
+
+  // Resolve initial parent display text
+  const initialParentInput = init.parent
+    ? (parentCandidates.find((c) => c.id === init.parent)?.label ?? init.parent)
+    : ''
+
   const state: FormState = {
     type: init.type ?? 0,
     status: init.status ?? 0,
     title: init.title ?? '',
     description: init.description ?? '',
+    parent: init.parent ?? '',
+    parentInput: initialParentInput,
+    parentCandidates,
+    parentHighlight: 0,
+    blocks: init.blocks ? [...init.blocks] : [],
+    currentBlock: '',
+    blockCandidates,
+    blockHighlight: 0,
     criteria: init.criteria ? [...init.criteria] : [],
     currentCriterion: '',
     activeField: 0,
@@ -422,8 +546,72 @@ function runForm<T>(
       state.cursorPos += ch.length
     }
 
+    function handleAutocompleteEnter(): boolean {
+      if (isParentField(state)) {
+        const suggestions = getFilteredSuggestions(state)
+        if (state.parentHighlight >= 0 && state.parentHighlight < suggestions.length) {
+          const selected = suggestions[state.parentHighlight]
+          state.parent = selected.id
+          state.parentInput = selected.label
+          state.cursorPos = selected.label.length
+        } else if (state.parentInput.trim() === '') {
+          state.parent = ''
+        } else {
+          state.parent = state.parentInput.trim()
+        }
+        moveToField(state.activeField + 1)
+        return true
+      }
+
+      if (isBlocksAddField(state)) {
+        const suggestions = getFilteredSuggestions(state)
+        if (state.blockHighlight >= 0 && state.blockHighlight < suggestions.length) {
+          state.blocks.push(suggestions[state.blockHighlight].id)
+          state.currentBlock = ''
+          state.blockHighlight = 0
+          // Stay on the +Block field (its index shifts because blocks grew)
+          state.activeField = blocksAddIndex(state)
+          state.cursorPos = 0
+          return true
+        }
+        if (state.currentBlock.trim() === '') {
+          // Empty input on +Block = move to criteria / submit
+          submit()
+          return true
+        }
+        // Non-empty text but no highlight match — use raw text as ID
+        state.blocks.push(state.currentBlock.trim())
+        state.currentBlock = ''
+        state.blockHighlight = 0
+        state.activeField = blocksAddIndex(state)
+        state.cursorPos = 0
+        return true
+      }
+
+      return false
+    }
+
+    function cycleHighlight(direction: 1 | -1): boolean {
+      if (isParentField(state)) {
+        const suggestions = getFilteredSuggestions(state)
+        if (suggestions.length > 0) {
+          state.parentHighlight = (state.parentHighlight + direction + suggestions.length) % suggestions.length
+        }
+        return true
+      }
+      if (isBlocksAddField(state)) {
+        const suggestions = getFilteredSuggestions(state)
+        if (suggestions.length > 0) {
+          state.blockHighlight = (state.blockHighlight + direction + suggestions.length) % suggestions.length
+        }
+        return true
+      }
+      return false
+    }
+
     function onData(data: string): void {
       const critStart = criteriaStartIndex(state)
+      const blkStart = blocksStartIndex(state)
 
       for (let i = 0; i < data.length; i++) {
         const ch = data[i]
@@ -432,7 +620,8 @@ function runForm<T>(
           // Alt+Enter: ESC followed by \r or \n — insert newline
           if (
             (data[i + 1] === '\r' || data[i + 1] === '\n') &&
-            isTextField(state)
+            isTextField(state) &&
+            !isAutocompleteField(state)
           ) {
             insertChar('\n')
             i += 1
@@ -440,13 +629,11 @@ function runForm<T>(
           }
 
           // CSI 27;{mod};13~ — xterm modifyOtherKeys Enter sequences
-          // Matches Shift+Enter, Ctrl+Enter, etc. in modern terminals
           if (
             data.slice(i + 1, i + 7) === '[27;2~' ||
             data.slice(i + 1, i + 9) === '[27;2;13~'
           ) {
-            if (isTextField(state)) insertChar('\n')
-            // skip rest of sequence
+            if (isTextField(state) && !isAutocompleteField(state)) insertChar('\n')
             const tilde = data.indexOf('~', i + 1)
             i = tilde >= 0 ? tilde : i + 6
             continue
@@ -465,7 +652,9 @@ function runForm<T>(
               continue
             }
             if (arrow === 'C') {
-              if (isTypeField(state)) {
+              if (isAutocompleteField(state)) {
+                cycleHighlight(1)
+              } else if (isTypeField(state)) {
                 state.type = (state.type + 1) % TASK_TYPES.length
               } else if (isStatusField(state)) {
                 state.status = (state.status + 1) % STATUSES.length
@@ -477,7 +666,9 @@ function runForm<T>(
               continue
             }
             if (arrow === 'D') {
-              if (isTypeField(state)) {
+              if (isAutocompleteField(state)) {
+                cycleHighlight(-1)
+              } else if (isTypeField(state)) {
                 state.type =
                   (state.type - 1 + TASK_TYPES.length) % TASK_TYPES.length
               } else if (isStatusField(state)) {
@@ -507,7 +698,7 @@ function runForm<T>(
 
         // Ctrl+N — insert newline (reliable cross-terminal fallback)
         if (ch === '\x0e') {
-          if (isTextField(state)) insertChar('\n')
+          if (isTextField(state) && !isAutocompleteField(state)) insertChar('\n')
           continue
         }
 
@@ -517,12 +708,18 @@ function runForm<T>(
             moveToField(state.activeField + 1)
             continue
           }
+
+          if (handleAutocompleteEnter()) {
+            render(state, stdout)
+            continue
+          }
+
           const newCriterionField = critStart + state.criteria.length
           if (state.activeField === newCriterionField) {
             if (state.currentCriterion.trim()) {
               state.criteria.push(state.currentCriterion.trim())
               state.currentCriterion = ''
-              state.activeField = critStart + state.criteria.length
+              state.activeField = criteriaStartIndex(state) + state.criteria.length
               state.cursorPos = 0
             } else {
               submit()
@@ -538,6 +735,16 @@ function runForm<T>(
         if (ch === '\x7f' || ch === '\b') {
           if (isTextField(state)) {
             const text = getCurrentText(state)
+
+            // Delete empty block entry
+            if (isBlockEntryField(state) && text.length === 0) {
+              const blockIndex = state.activeField - blkStart
+              state.blocks.splice(blockIndex, 1)
+              moveToField(state.activeField - 1)
+              continue
+            }
+
+            // Delete empty criterion entry
             if (
               state.activeField >= critStart &&
               state.activeField < critStart + state.criteria.length &&
@@ -548,6 +755,7 @@ function runForm<T>(
               moveToField(state.activeField - 1)
               continue
             }
+
             if (state.cursorPos > 0) {
               const newText =
                 text.slice(0, state.cursorPos - 1) +
@@ -573,26 +781,31 @@ function runForm<T>(
   })
 }
 
-export async function interactiveCreate(): Promise<Omit<
-  CreateTaskOpts,
-  'dir'
-> | null> {
-  return runForm<Omit<CreateTaskOpts, 'dir'>>({ mode: 'create' }, (state) => {
-    const criteria = [...state.criteria]
-    if (state.currentCriterion.trim()) {
-      criteria.push(state.currentCriterion.trim())
-    }
-    return {
-      type: TASK_TYPES[state.type] as TaskType,
-      title: state.title.trim(),
-      description: state.description.trim() || undefined,
-      acceptance_criteria: criteria.length > 0 ? criteria : undefined,
-    }
-  })
+export async function interactiveCreate(
+  tasks: TaskData[] = [],
+): Promise<Omit<CreateTaskOpts, 'dir'> | null> {
+  return runForm<Omit<CreateTaskOpts, 'dir'>>(
+    { mode: 'create', tasks },
+    (state) => {
+      const criteria = [...state.criteria]
+      if (state.currentCriterion.trim()) {
+        criteria.push(state.currentCriterion.trim())
+      }
+      return {
+        type: TASK_TYPES[state.type] as TaskType,
+        title: state.title.trim(),
+        description: state.description.trim() || undefined,
+        acceptance_criteria: criteria.length > 0 ? criteria : undefined,
+        parent: state.parent || undefined,
+        blocks: state.blocks.length > 0 ? [...state.blocks] : undefined,
+      }
+    },
+  )
 }
 
 export async function interactiveEdit(
   task: TaskData,
+  tasks: TaskData[] = [],
 ): Promise<EditTaskResult | null> {
   const typeIndex = TASK_TYPES.indexOf(task.type)
   const statusIndex = STATUSES.indexOf(task.status)
@@ -601,11 +814,14 @@ export async function interactiveEdit(
     {
       mode: 'edit',
       taskId: task.id,
+      tasks,
       initialValues: {
         type: typeIndex >= 0 ? typeIndex : 0,
         status: statusIndex >= 0 ? statusIndex : 0,
         title: task.title,
         description: task.description,
+        parent: task.parent,
+        blocks: task.blocks,
         criteria: [...task.acceptance_criteria],
       },
     },
@@ -620,6 +836,8 @@ export async function interactiveEdit(
         title: state.title.trim(),
         description: state.description.trim() || undefined,
         acceptance_criteria: criteria.length > 0 ? criteria : undefined,
+        parent: state.parent || undefined,
+        blocks: state.blocks.length > 0 ? [...state.blocks] : undefined,
       }
     },
   )

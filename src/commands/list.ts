@@ -79,7 +79,7 @@ export default defineCommand({
 
       if (selected) {
         const { interactiveEdit } = await import('../tui/create-tui.js')
-        const result = await interactiveEdit(selected)
+        const result = await interactiveEdit(selected, tasks)
         if (result) {
           const updated = updateTask(dir, selected.id, result)
           consola.success(`✏️  Updated ${updated.id}: ${updated.title}`)

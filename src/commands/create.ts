@@ -1,6 +1,6 @@
 import { defineCommand } from 'citty'
 import consola from 'consola'
-import { createTask } from '../task.js'
+import { createTask, listTasks } from '../task.js'
 import { TASK_TYPES } from '../types.js'
 import type { TaskType, CreateTaskOpts } from '../types.js'
 import { interactiveCreate } from '../tui/create-tui.js'
@@ -33,7 +33,8 @@ function toTaskType(value: unknown): TaskType {
 }
 
 async function promptForTask(dir: string): Promise<CreateTaskOpts> {
-  const result = await interactiveCreate()
+  const tasks = listTasks({ dir })
+  const result = await interactiveCreate(tasks)
   if (!result) process.exit(0)
   return { dir, ...result }
 }
