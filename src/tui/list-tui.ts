@@ -1,5 +1,6 @@
 import { Fzf } from 'fzf'
 import type { TaskData } from '../types.js'
+import { groupByEpic, getChildren, getBlockedBy } from '../task.js'
 import {
   ESC,
   ALT_SCREEN_ON,
@@ -21,6 +22,9 @@ import {
 interface FzfEntry {
   task: TaskData
   searchText: string
+  indent: number
+  blocksIndicator: string | null
+  blockedByIndicator: string | null
 }
 
 function statusColor(status: string): string {
@@ -39,9 +43,13 @@ function statusColor(status: string): string {
 }
 
 function buildEntries(tasks: TaskData[]): FzfEntry[] {
-  return tasks.map((task) => ({
-    task,
-    searchText: `${task.id} ${task.type} ${task.status} ${task.title} ${task.description}`,
+  const grouped = groupByEpic(tasks)
+  return grouped.map((g) => ({
+    task: g.task,
+    searchText: `${g.task.id} ${g.task.type} ${g.task.status} ${g.task.title} ${g.task.description} ${g.task.parent ?? ''} ${g.task.blocks?.join(' ') ?? ''}`,
+    indent: g.indent,
+    blocksIndicator: g.blocksIndicator,
+    blockedByIndicator: g.blockedByIndicator,
   }))
 }
 
@@ -125,7 +133,8 @@ export async function interactiveList(
 
     // Build preview lines
     const selectedTask = filtered[selectedIndex]?.task
-    const previewLines = buildPreviewLines(selectedTask, previewWidth)
+    const currentTasks = activeTab === 0 ? tasks : archivedTasks
+    const previewLines = buildPreviewLines(selectedTask, previewWidth, currentTasks)
 
     // Render rows
     for (let i = 0; i < maxVisible; i++) {
@@ -137,25 +146,34 @@ export async function interactiveList(
         leftPart = ' '.repeat(listWidth)
       } else {
         const isSelected = taskIdx === selectedIndex
+        const treePrefix = entry.indent === 1 ? '├─' : ''
+        const prefixWidth = treePrefix ? 3 : 0
+        const rowWidth = listWidth - prefixWidth
+        const indicators: string[] = []
+        if (entry.blocksIndicator) indicators.push(entry.blocksIndicator)
+        if (entry.blockedByIndicator) indicators.push(entry.blockedByIndicator)
+        const indicatorSuffix = indicators.length > 0 ? ` ${indicators.join(' ')}` : ''
+
         const row = formatRow(
           entry.task.id,
           entry.task.type,
           entry.task.status,
           entry.task.title,
-          listWidth,
+          rowWidth,
         )
         if (isSelected) {
-          leftPart = `${INVERSE}${row}${RESET}`
+          leftPart = `${treePrefix ? `${FG_GRAY}${treePrefix}${RESET}` : ''}${INVERSE}${row}${RESET}${indicatorSuffix ? `${FG_RED}${indicatorSuffix}${RESET}` : ''}`
         } else {
           const sc = statusColor(entry.task.status)
-          leftPart = colorizeRow(
+          const coloredRow = colorizeRow(
             entry.task.id,
             entry.task.type,
             entry.task.status,
             entry.task.title,
-            listWidth,
+            rowWidth,
             sc,
           )
+          leftPart = `${treePrefix ? `${FG_GRAY}${treePrefix}${RESET}` : ''}${coloredRow}${indicatorSuffix ? `${FG_RED}${indicatorSuffix}${RESET}` : ''}`
         }
       }
 
@@ -217,6 +235,7 @@ export async function interactiveList(
   function buildPreviewLines(
     task: TaskData | undefined,
     width: number,
+    allTasks: TaskData[],
   ): string[] {
     if (!task) return []
     const lines: string[] = []
@@ -231,6 +250,28 @@ export async function interactiveList(
       lines.push(`${UNDERLINE}Description${RESET}`)
       for (const line of wrapText(task.description, width)) {
         lines.push(line)
+      }
+      lines.push('')
+    }
+
+    // Relationships section
+    const children = getChildren(allTasks, task.id)
+    const blockedBy = getBlockedBy(allTasks, task.id)
+    const hasRelationships = task.parent || children.length > 0 || (task.blocks && task.blocks.length > 0) || blockedBy.length > 0
+
+    if (hasRelationships) {
+      lines.push(`${UNDERLINE}Relationships${RESET}`)
+      if (task.parent) {
+        lines.push(`  Parent: ${FG_CYAN}${task.parent}${RESET}`)
+      }
+      if (children.length > 0) {
+        lines.push(`  Children: ${FG_CYAN}${children.map((c) => c.id).join(', ')}${RESET}`)
+      }
+      if (task.blocks && task.blocks.length > 0) {
+        lines.push(`  Blocks: ${FG_RED}${task.blocks.join(', ')}${RESET}`)
+      }
+      if (blockedBy.length > 0) {
+        lines.push(`  Blocked by: ${FG_RED}${blockedBy.map((t) => t.id).join(', ')}${RESET}`)
       }
       lines.push('')
     }

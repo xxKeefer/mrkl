@@ -19,12 +19,12 @@ export default defineCommand({
 
     try {
       let task
+      const tasks = listTasks({ dir })
 
       if (args.id) {
         const found = findTaskFile(dir, args.id as string)
         task = found.task
       } else {
-        const tasks = listTasks({ dir })
         const archivedTasks = listArchivedTasks({ dir })
 
         if (tasks.length === 0 && archivedTasks.length === 0) {
@@ -39,7 +39,7 @@ export default defineCommand({
       }
 
       const { interactiveEdit } = await import('../tui/create-tui.js')
-      const result = await interactiveEdit(task)
+      const result = await interactiveEdit(task, tasks)
       if (!result) return
 
       const updated = updateTask(dir, task.id, result)

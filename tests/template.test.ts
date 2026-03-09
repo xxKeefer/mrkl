@@ -12,6 +12,18 @@ const SAMPLE_TASK: TaskData = {
   acceptance_criteria: ['render produces frontmatter', 'parse extracts fields'],
 }
 
+const SAMPLE_TASK_WITH_RELATIONSHIPS: TaskData = {
+  id: 'TEST-001',
+  type: 'feat',
+  status: 'todo',
+  created: '2026-03-01',
+  parent: 'TEST-000',
+  blocks: ['TEST-002', 'TEST-003'],
+  title: 'implement template module',
+  description: 'Build the template rendering system.',
+  acceptance_criteria: ['render produces frontmatter', 'parse extracts fields'],
+}
+
 describe('template', () => {
   describe('render', () => {
     it('produces correct YAML frontmatter', () => {
@@ -34,6 +46,18 @@ describe('template', () => {
       expect(output).toContain('## Acceptance Criteria')
       expect(output).toContain('- [ ] render produces frontmatter')
       expect(output).toContain('- [ ] parse extracts fields')
+    })
+    it('includes parent and blocks in frontmatter when set', () => {
+      const output = render(SAMPLE_TASK_WITH_RELATIONSHIPS)
+      expect(output).toContain('parent: TEST-000')
+      expect(output).toContain('blocks:')
+      expect(output).toContain('  - TEST-002')
+      expect(output).toContain('  - TEST-003')
+    })
+    it('omits parent and blocks when not set', () => {
+      const output = render(SAMPLE_TASK)
+      expect(output).not.toContain('parent:')
+      expect(output).not.toContain('blocks:')
     })
     it('handles empty description and empty acceptance criteria', () => {
       const task: TaskData = {
@@ -83,6 +107,17 @@ describe('template', () => {
       const content = render(SAMPLE_TASK)
       const result = parse(content, 'TEST-001.md')
       expect(result).toEqual(SAMPLE_TASK)
+    })
+    it('extracts parent and blocks from frontmatter', () => {
+      const content = render(SAMPLE_TASK_WITH_RELATIONSHIPS)
+      const result = parse(content, 'TEST-001.md')
+      expect(result.parent).toBe('TEST-000')
+      expect(result.blocks).toEqual(['TEST-002', 'TEST-003'])
+    })
+    it('round-trips with relationships', () => {
+      const content = render(SAMPLE_TASK_WITH_RELATIONSHIPS)
+      const result = parse(content, 'TEST-001.md')
+      expect(result).toEqual(SAMPLE_TASK_WITH_RELATIONSHIPS)
     })
   })
 })

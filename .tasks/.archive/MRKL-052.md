@@ -2,8 +2,9 @@
 id: MRKL-052
 title: add parent and blocks fields to interactive create tui
 type: feat
-status: todo
+status: done
 created: '2026-03-08'
+flag: completed
 ---
 
 ## Description
@@ -12,7 +13,7 @@ Add a fuzzy-find autocomplete text field for parent and a multi-entry fuzzy-find
 
 ## Acceptance Criteria
 
-- [ ] parent field shows fuzzy-filtered list of active task IDs and titles
-- [ ] blocks field allows adding multiple task IDs via fuzzy-find
-- [ ] only non-archived tasks appear in autocomplete
-- [ ] tasks that already have a parent are excluded from parent autocomplete
+- [x] parent field shows fuzzy-filtered list of active task IDs and titles
+- [x] blocks field allows adding multiple task IDs via fuzzy-find
+- [x] only non-archived tasks appear in autocomplete
+- [x] tasks that already have a parent are excluded from parent autocomplete

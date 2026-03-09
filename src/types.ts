@@ -29,6 +29,8 @@ export interface TaskData {
   status: Status
   created: string
   flag?: string
+  parent?: string
+  blocks?: string[]
   title: string
   description: string
   acceptance_criteria: string[]
@@ -41,6 +43,8 @@ export interface CreateTaskOpts {
   title: string
   description?: string
   acceptance_criteria?: string[]
+  parent?: string
+  blocks?: string[]
 }
 
 export interface ListFilter {
@@ -55,6 +59,15 @@ export interface EditTaskResult {
   title: string
   description?: string
   acceptance_criteria?: string[]
+  parent?: string
+  blocks?: string[]
+}
+
+export interface GroupedTask {
+  task: TaskData
+  indent: number // 0 = top-level, 1 = child of epic
+  blocksIndicator: string | null // e.g. "⛔► MRKL-010, MRKL-012"
+  blockedByIndicator: string | null // e.g. "◄⛔ MRKL-005"
 }
 
 export interface PruneResult {

@@ -1,12 +1,40 @@
 import { defineCommand } from 'citty'
 import consola from 'consola'
-import { createTask } from '../task.js'
+import { createTask, listTasks } from '../task.js'
 import { TASK_TYPES } from '../types.js'
 import type { TaskType, CreateTaskOpts } from '../types.js'
 import { interactiveCreate } from '../tui/create-tui.js'
 
+function toStringArray(
+  value: unknown,
+  splitCommas = false,
+): string[] | undefined {
+  if (!value) return undefined
+  if (Array.isArray(value)) return value.map(String)
+  const str = String(value)
+  if (splitCommas && str.includes(','))
+    return str.split(',').map((s) => s.trim())
+  return [str]
+}
+
+function toOptionalString(value: unknown): string | undefined {
+  return value ? String(value) : undefined
+}
+
+function toTaskType(value: unknown): TaskType {
+  const str = String(value)
+  if (!TASK_TYPES.includes(str as TaskType)) {
+    consola.error(
+      `❌ Invalid type "${str}". Must be one of: ${TASK_TYPES.join(', ')}`,
+    )
+    process.exit(1)
+  }
+  return str as TaskType
+}
+
 async function promptForTask(dir: string): Promise<CreateTaskOpts> {
-  const result = await interactiveCreate()
+  const tasks = listTasks({ dir })
+  const result = await interactiveCreate(tasks)
   if (!result) process.exit(0)
   return { dir, ...result }
 }
@@ -38,6 +66,17 @@ export default defineCommand({
       alias: 'a',
       description: 'Acceptance criterion (can be specified multiple times)',
     },
+    parent: {
+      type: 'string',
+      alias: 'p',
+      description: 'Parent task ID (epic)',
+    },
+    blocks: {
+      type: 'string',
+      alias: 'b',
+      description:
+        'Task ID(s) this blocks (comma-separated or repeated)',
+    },
   },
   async run({ args }) {
     const dir = process.cwd()
@@ -56,22 +95,12 @@ export default defineCommand({
         ? await promptForTask(dir)
         : {
             dir,
-            type: (() => {
-              if (!TASK_TYPES.includes(args.type as TaskType)) {
-                consola.error(
-                  `❌ Invalid type "${args.type}". Must be one of: ${TASK_TYPES.join(', ')}`,
-                )
-                process.exit(1)
-              }
-              return args.type as TaskType
-            })(),
-            title: args.title as string,
-            description: args.desc,
-            acceptance_criteria: args.ac
-              ? Array.isArray(args.ac)
-                ? args.ac
-                : [args.ac]
-              : undefined,
+            type: toTaskType(args.type),
+            title: String(args.title),
+            description: toOptionalString(args.desc),
+            acceptance_criteria: toStringArray(args.ac),
+            parent: toOptionalString(args.parent),
+            blocks: toStringArray(args.blocks, true),
           }
 
       const task = createTask(opts)

@@ -12,6 +12,7 @@ import { render, parse } from './template.js'
 import type {
   CreateTaskOpts,
   EditTaskResult,
+  GroupedTask,
   ListFilter,
   PruneResult,
   Status,
@@ -39,6 +40,25 @@ export function createTask(opts: CreateTaskOpts): TaskData {
   const id = `${config.prefix}-${String(num).padStart(3, '0')}`
   const today = new Date().toISOString().slice(0, 10)
 
+  const resolvedParent = opts.parent
+    ? resolveTaskId(opts.dir, opts.parent)
+    : undefined
+  const resolvedBlocks = opts.blocks?.map((b) => resolveTaskId(opts.dir, b))
+
+  if (resolvedParent || resolvedBlocks?.length) {
+    const activeTasks = listTasks({ dir: opts.dir })
+
+    if (resolvedParent) {
+      const result = validateParent(activeTasks, resolvedParent)
+      if (!result.valid) throw new Error(result.reason)
+    }
+
+    if (resolvedBlocks?.length) {
+      const result = validateBlocks(activeTasks, resolvedBlocks)
+      if (!result.valid) throw new Error(result.reason)
+    }
+  }
+
   const task: TaskData = {
     id,
     type: opts.type,
@@ -47,6 +67,8 @@ export function createTask(opts: CreateTaskOpts): TaskData {
     title: normalizeTitle(opts.title),
     description: opts.description ?? '',
     acceptance_criteria: opts.acceptance_criteria ?? [],
+    ...(resolvedParent && { parent: resolvedParent }),
+    ...(resolvedBlocks?.length && { blocks: resolvedBlocks }),
   }
 
   const filename = config.verbose_files
@@ -172,6 +194,140 @@ export function listArchivedTasks(filter: ListFilter): TaskData[] {
   if (filter.status) tasks = tasks.filter((t) => t.status === filter.status)
 
   return tasks
+}
+
+export function getChildren(tasks: TaskData[], epicId: string): TaskData[] {
+  return tasks.filter((t) => t.parent === epicId)
+}
+
+export function getActiveChildren(dir: string, taskId: string): TaskData[] {
+  const tasks = listTasks({ dir })
+  return getChildren(tasks, taskId)
+}
+
+export function orphanChildren(dir: string, parentId: string): void {
+  const children = getActiveChildren(dir, parentId)
+  for (const child of children) {
+    const { filePath, task } = findTaskFile(dir, child.id)
+    delete task.parent
+    const orphanMarker = `<orphan of ${parentId}>`
+    task.flag = task.flag ? `${task.flag} ${orphanMarker}` : orphanMarker
+    writeFileSync(filePath, render(task))
+  }
+}
+
+export function cascadeClose(dir: string, parentId: string, status: Status): void {
+  const children = getActiveChildren(dir, parentId)
+  for (const child of children) {
+    closeTask(dir, child.id, undefined, status)
+  }
+}
+
+export function getBlockedBy(tasks: TaskData[], taskId: string): TaskData[] {
+  return tasks.filter((t) => t.blocks?.includes(taskId))
+}
+
+export function validateParent(
+  tasks: TaskData[],
+  parentId: string,
+): { valid: boolean; reason?: string } {
+  const target = tasks.find((t) => t.id === parentId)
+  if (!target) return { valid: false, reason: `Task ${parentId} not found` }
+  if (target.parent)
+    return {
+      valid: false,
+      reason: `Task ${parentId} already has a parent — only one level of nesting allowed`,
+    }
+  return { valid: true }
+}
+
+export function validateBlocks(
+  tasks: TaskData[],
+  blockIds: string[],
+): { valid: boolean; reason?: string } {
+  const ids = new Set(tasks.map((t) => t.id))
+  const missing = blockIds.filter((id) => !ids.has(id))
+  if (missing.length > 0)
+    return { valid: false, reason: `Tasks not found: ${missing.join(', ')}` }
+  return { valid: true }
+}
+
+export function buildRelationshipIndicators(
+  tasks: TaskData[],
+  task: TaskData,
+): { blocksDisplay: string | null; blockedByDisplay: string | null } {
+  const blocksDisplay =
+    task.blocks && task.blocks.length > 0
+      ? `⛔► ${task.blocks.join(', ')}`
+      : null
+
+  const blockedBy = getBlockedBy(tasks, task.id)
+  const blockedByDisplay =
+    blockedBy.length > 0
+      ? `◄⛔ ${blockedBy.map((t) => t.id).join(', ')}`
+      : null
+
+  return { blocksDisplay, blockedByDisplay }
+}
+
+export function groupByEpic(tasks: TaskData[]): GroupedTask[] {
+  const parentIds = new Set(
+    tasks.filter((t) => t.parent).map((t) => t.parent!),
+  )
+  // Epics: tasks that have children in this list
+  const epics = tasks.filter((t) => parentIds.has(t.id))
+  const epicIds = new Set(epics.map((t) => t.id))
+
+  // Children grouped by parent (only if parent is in the list)
+  const childrenByParent = new Map<string, TaskData[]>()
+  for (const t of tasks) {
+    if (t.parent && epicIds.has(t.parent)) {
+      const children = childrenByParent.get(t.parent) ?? []
+      children.push(t)
+      childrenByParent.set(t.parent, children)
+    }
+  }
+
+  // Standalone: not an epic and not a child (or orphan child whose parent isn't in list)
+  const childTaskIds = new Set(
+    [...childrenByParent.values()].flat().map((t) => t.id),
+  )
+  const standalone = tasks.filter(
+    (t) => !epicIds.has(t.id) && !childTaskIds.has(t.id),
+  )
+
+  const result: GroupedTask[] = []
+
+  for (const epic of epics) {
+    const indicators = buildRelationshipIndicators(tasks, epic)
+    result.push({
+      task: epic,
+      indent: 0,
+      blocksIndicator: indicators.blocksDisplay,
+      blockedByIndicator: indicators.blockedByDisplay,
+    })
+    for (const child of childrenByParent.get(epic.id) ?? []) {
+      const childIndicators = buildRelationshipIndicators(tasks, child)
+      result.push({
+        task: child,
+        indent: 1,
+        blocksIndicator: childIndicators.blocksDisplay,
+        blockedByIndicator: childIndicators.blockedByDisplay,
+      })
+    }
+  }
+
+  for (const t of standalone) {
+    const indicators = buildRelationshipIndicators(tasks, t)
+    result.push({
+      task: t,
+      indent: 0,
+      blocksIndicator: indicators.blocksDisplay,
+      blockedByIndicator: indicators.blockedByDisplay,
+    })
+  }
+
+  return result
 }
 
 export function resolveTaskId(dir: string, id: string): string {

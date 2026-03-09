@@ -18,6 +18,10 @@ import {
   parseCutoffDate,
   pruneTasks,
   executePrune,
+  getChildren,
+  getBlockedBy,
+  validateParent,
+  validateBlocks,
 } from '../src/task.js'
 import { render } from '../src/template.js'
 import type { TaskData } from '../src/types.js'
@@ -157,6 +161,114 @@ describe('task', () => {
       const t2 = createTask({ dir: tmp, type: 'fix', title: 'second' })
       expect(t1.id).toBe('TEST-001')
       expect(t2.id).toBe('TEST-002')
+    })
+
+    it('creates task with valid parent in frontmatter', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'epic' })
+      const child = createTask({
+        dir: tmp,
+        type: 'feat',
+        title: 'child',
+        parent: 'TEST-001',
+      })
+      expect(child.parent).toBe('TEST-001')
+      const content = readFileSync(
+        join(tmp, '.tasks', 'TEST-002 feat - child.md'),
+        'utf-8',
+      )
+      expect(content).toContain('parent: TEST-001')
+    })
+
+    it('creates task with valid blocks in frontmatter', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'blocked task' })
+      const blocker = createTask({
+        dir: tmp,
+        type: 'fix',
+        title: 'blocker',
+        blocks: ['TEST-001'],
+      })
+      expect(blocker.blocks).toEqual(['TEST-001'])
+      const content = readFileSync(
+        join(tmp, '.tasks', 'TEST-002 fix - blocker.md'),
+        'utf-8',
+      )
+      expect(content).toContain('blocks:')
+      expect(content).toContain('TEST-001')
+    })
+
+    it('rejects nonexistent parent', () => {
+      expect(() =>
+        createTask({
+          dir: tmp,
+          type: 'feat',
+          title: 'orphan',
+          parent: 'TEST-999',
+        }),
+      ).toThrow('not found')
+    })
+
+    it('rejects archived parent', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'soon archived' })
+      closeTask(tmp, 'TEST-001')
+      expect(() =>
+        createTask({
+          dir: tmp,
+          type: 'feat',
+          title: 'child of archived',
+          parent: 'TEST-001',
+        }),
+      ).toThrow('not found')
+    })
+
+    it('rejects parent that already has a parent (no nested epics)', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'grandparent' })
+      createTask({
+        dir: tmp,
+        type: 'feat',
+        title: 'parent',
+        parent: 'TEST-001',
+      })
+      expect(() =>
+        createTask({
+          dir: tmp,
+          type: 'feat',
+          title: 'grandchild',
+          parent: 'TEST-002',
+        }),
+      ).toThrow('already has a parent')
+    })
+
+    it('resolves numeric IDs for parent', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'epic' })
+      const child = createTask({
+        dir: tmp,
+        type: 'feat',
+        title: 'child',
+        parent: '1',
+      })
+      expect(child.parent).toBe('TEST-001')
+    })
+
+    it('resolves numeric IDs for blocks', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'blocked' })
+      const blocker = createTask({
+        dir: tmp,
+        type: 'fix',
+        title: 'blocker',
+        blocks: ['1'],
+      })
+      expect(blocker.blocks).toEqual(['TEST-001'])
+    })
+
+    it('rejects nonexistent blocks target', () => {
+      expect(() =>
+        createTask({
+          dir: tmp,
+          type: 'feat',
+          title: 'bad blocker',
+          blocks: ['TEST-999'],
+        }),
+      ).toThrow('not found')
     })
   })
 
@@ -539,6 +651,139 @@ describe('task', () => {
       const result = pruneTasks(tmp, '2026-12-31')
       expect(result.deleted).toHaveLength(1)
       expect(result.total).toBe(2)
+    })
+  })
+
+  describe('relationship helpers', () => {
+    const makeTasks = (): TaskData[] => [
+      {
+        id: 'TEST-001',
+        type: 'feat',
+        status: 'todo',
+        created: '2026-01-01',
+        title: 'epic task',
+        description: '',
+        acceptance_criteria: [],
+      },
+      {
+        id: 'TEST-002',
+        type: 'feat',
+        status: 'todo',
+        created: '2026-01-02',
+        parent: 'TEST-001',
+        title: 'child one',
+        description: '',
+        acceptance_criteria: [],
+      },
+      {
+        id: 'TEST-003',
+        type: 'fix',
+        status: 'todo',
+        created: '2026-01-03',
+        parent: 'TEST-001',
+        blocks: ['TEST-002'],
+        title: 'child two blocks child one',
+        description: '',
+        acceptance_criteria: [],
+      },
+      {
+        id: 'TEST-004',
+        type: 'chore',
+        status: 'todo',
+        created: '2026-01-04',
+        blocks: ['TEST-002', 'TEST-003'],
+        title: 'standalone blocker',
+        description: '',
+        acceptance_criteria: [],
+      },
+    ]
+
+    describe('getChildren', () => {
+      it('returns tasks whose parent matches epicId', () => {
+        const tasks = makeTasks()
+        const children = getChildren(tasks, 'TEST-001')
+        expect(children).toHaveLength(2)
+        expect(children.map((t) => t.id)).toEqual(['TEST-002', 'TEST-003'])
+      })
+
+      it('returns empty array when no children exist', () => {
+        const tasks = makeTasks()
+        expect(getChildren(tasks, 'TEST-004')).toEqual([])
+      })
+
+      it('returns empty array for nonexistent epicId', () => {
+        const tasks = makeTasks()
+        expect(getChildren(tasks, 'TEST-999')).toEqual([])
+      })
+    })
+
+    describe('getBlockedBy', () => {
+      it('returns tasks that include taskId in their blocks array', () => {
+        const tasks = makeTasks()
+        const blockers = getBlockedBy(tasks, 'TEST-002')
+        expect(blockers).toHaveLength(2)
+        expect(blockers.map((t) => t.id)).toEqual(['TEST-003', 'TEST-004'])
+      })
+
+      it('returns empty array when nothing blocks the task', () => {
+        const tasks = makeTasks()
+        expect(getBlockedBy(tasks, 'TEST-001')).toEqual([])
+      })
+
+      it('returns empty array for nonexistent taskId', () => {
+        const tasks = makeTasks()
+        expect(getBlockedBy(tasks, 'TEST-999')).toEqual([])
+      })
+    })
+
+    describe('validateParent', () => {
+      it('returns valid for an existing task with no parent', () => {
+        const tasks = makeTasks()
+        const result = validateParent(tasks, 'TEST-001')
+        expect(result).toEqual({ valid: true })
+      })
+
+      it('returns invalid when parent does not exist', () => {
+        const tasks = makeTasks()
+        const result = validateParent(tasks, 'TEST-999')
+        expect(result.valid).toBe(false)
+        expect(result.reason).toContain('not found')
+      })
+
+      it('returns invalid when parent is itself a child', () => {
+        const tasks = makeTasks()
+        const result = validateParent(tasks, 'TEST-002')
+        expect(result.valid).toBe(false)
+        expect(result.reason).toContain('parent')
+      })
+    })
+
+    describe('validateBlocks', () => {
+      it('returns valid when all block targets exist', () => {
+        const tasks = makeTasks()
+        const result = validateBlocks(tasks, ['TEST-001', 'TEST-002'])
+        expect(result).toEqual({ valid: true })
+      })
+
+      it('returns invalid when a block target is missing', () => {
+        const tasks = makeTasks()
+        const result = validateBlocks(tasks, ['TEST-001', 'TEST-999'])
+        expect(result.valid).toBe(false)
+        expect(result.reason).toContain('TEST-999')
+      })
+
+      it('returns valid for empty array', () => {
+        const tasks = makeTasks()
+        expect(validateBlocks(tasks, [])).toEqual({ valid: true })
+      })
+    })
+
+    it('demonstrates resolveTaskId usage before calling helpers', () => {
+      const tasks = makeTasks()
+      const resolvedId = resolveTaskId(tmp, '1')
+      expect(resolvedId).toBe('TEST-001')
+      const children = getChildren(tasks, resolvedId)
+      expect(children).toHaveLength(2)
     })
   })
 
