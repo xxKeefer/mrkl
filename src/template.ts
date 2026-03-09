@@ -2,7 +2,7 @@ import matter from 'gray-matter'
 import type { TaskData, TaskType, Status } from './types.js'
 
 export function render(task: TaskData): string {
-  const frontmatter: Record<string, string> = {
+  const frontmatter: Record<string, string | string[]> = {
     id: task.id,
     title: task.title,
     type: task.type,
@@ -11,6 +11,12 @@ export function render(task: TaskData): string {
   }
   if (task.flag) {
     frontmatter.flag = task.flag
+  }
+  if (task.parent) {
+    frontmatter.parent = task.parent
+  }
+  if (task.blocks && task.blocks.length > 0) {
+    frontmatter.blocks = task.blocks
   }
 
   const sections: string[] = []
@@ -60,6 +66,8 @@ export function parse(content: string, _filename: string): TaskData {
     status: data.status as Status,
     created: data.created as string,
     ...(data.flag ? { flag: data.flag as string } : {}),
+    ...(data.parent ? { parent: data.parent as string } : {}),
+    ...(data.blocks ? { blocks: data.blocks as string[] } : {}),
     title,
     description,
     acceptance_criteria,
