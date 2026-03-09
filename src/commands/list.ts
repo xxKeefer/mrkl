@@ -1,6 +1,6 @@
 import { defineCommand } from 'citty'
 import consola from 'consola'
-import { listTasks, listArchivedTasks, updateTask } from '../task.js'
+import { listTasks, listArchivedTasks, updateTask, groupByEpic } from '../task.js'
 import type { Status, TaskType } from '../types.js'
 
 const COL_ID = 14
@@ -60,8 +60,30 @@ export default defineCommand({
       if (usePlain) {
         consola.log(formatRow('ID', 'TYPE', 'STATUS', 'TITLE'))
         consola.log('─'.repeat(60))
-        for (const task of tasks) {
-          consola.log(formatRow(task.id, task.type, task.status, task.title))
+        const grouped = groupByEpic(tasks)
+        const childrenByParent = new Map<string, typeof grouped>()
+        for (const entry of grouped) {
+          if (entry.indent === 1) {
+            const parentId = entry.task.parent!
+            const list = childrenByParent.get(parentId) ?? []
+            list.push(entry)
+            childrenByParent.set(parentId, list)
+          }
+        }
+        for (const entry of grouped) {
+          const indicators: string[] = []
+          if (entry.blocksIndicator) indicators.push(entry.blocksIndicator)
+          if (entry.blockedByIndicator) indicators.push(entry.blockedByIndicator)
+          const suffix = indicators.length > 0 ? ` ${indicators.join(' ')}` : ''
+
+          if (entry.indent === 1) {
+            const siblings = childrenByParent.get(entry.task.parent!) ?? []
+            const isLast = siblings[siblings.length - 1] === entry
+            const prefix = isLast ? '  └─ ' : '  ├─ '
+            consola.log(`${prefix}${formatRow(entry.task.id, entry.task.type, entry.task.status, entry.task.title)}${suffix}`)
+          } else {
+            consola.log(`${formatRow(entry.task.id, entry.task.type, entry.task.status, entry.task.title)}${suffix}`)
+          }
         }
         if (archivedTasks.length > 0) {
           consola.log('')

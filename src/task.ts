@@ -12,6 +12,7 @@ import { render, parse } from './template.js'
 import type {
   CreateTaskOpts,
   EditTaskResult,
+  GroupedTask,
   ListFilter,
   PruneResult,
   Status,
@@ -249,6 +250,84 @@ export function validateBlocks(
   if (missing.length > 0)
     return { valid: false, reason: `Tasks not found: ${missing.join(', ')}` }
   return { valid: true }
+}
+
+export function buildRelationshipIndicators(
+  tasks: TaskData[],
+  task: TaskData,
+): { blocksDisplay: string | null; blockedByDisplay: string | null } {
+  const blocksDisplay =
+    task.blocks && task.blocks.length > 0
+      ? `⛔► ${task.blocks.join(', ')}`
+      : null
+
+  const blockedBy = getBlockedBy(tasks, task.id)
+  const blockedByDisplay =
+    blockedBy.length > 0
+      ? `◄⛔ ${blockedBy.map((t) => t.id).join(', ')}`
+      : null
+
+  return { blocksDisplay, blockedByDisplay }
+}
+
+export function groupByEpic(tasks: TaskData[]): GroupedTask[] {
+  const parentIds = new Set(
+    tasks.filter((t) => t.parent).map((t) => t.parent!),
+  )
+  // Epics: tasks that have children in this list
+  const epics = tasks.filter((t) => parentIds.has(t.id))
+  const epicIds = new Set(epics.map((t) => t.id))
+
+  // Children grouped by parent (only if parent is in the list)
+  const childrenByParent = new Map<string, TaskData[]>()
+  for (const t of tasks) {
+    if (t.parent && epicIds.has(t.parent)) {
+      const children = childrenByParent.get(t.parent) ?? []
+      children.push(t)
+      childrenByParent.set(t.parent, children)
+    }
+  }
+
+  // Standalone: not an epic and not a child (or orphan child whose parent isn't in list)
+  const childTaskIds = new Set(
+    [...childrenByParent.values()].flat().map((t) => t.id),
+  )
+  const standalone = tasks.filter(
+    (t) => !epicIds.has(t.id) && !childTaskIds.has(t.id),
+  )
+
+  const result: GroupedTask[] = []
+
+  for (const epic of epics) {
+    const indicators = buildRelationshipIndicators(tasks, epic)
+    result.push({
+      task: epic,
+      indent: 0,
+      blocksIndicator: indicators.blocksDisplay,
+      blockedByIndicator: indicators.blockedByDisplay,
+    })
+    for (const child of childrenByParent.get(epic.id) ?? []) {
+      const childIndicators = buildRelationshipIndicators(tasks, child)
+      result.push({
+        task: child,
+        indent: 1,
+        blocksIndicator: childIndicators.blocksDisplay,
+        blockedByIndicator: childIndicators.blockedByDisplay,
+      })
+    }
+  }
+
+  for (const t of standalone) {
+    const indicators = buildRelationshipIndicators(tasks, t)
+    result.push({
+      task: t,
+      indent: 0,
+      blocksIndicator: indicators.blocksDisplay,
+      blockedByIndicator: indicators.blockedByDisplay,
+    })
+  }
+
+  return result
 }
 
 export function resolveTaskId(dir: string, id: string): string {

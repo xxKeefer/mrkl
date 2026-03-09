@@ -63,6 +63,13 @@ export interface EditTaskResult {
   blocks?: string[]
 }
 
+export interface GroupedTask {
+  task: TaskData
+  indent: number // 0 = top-level, 1 = child of epic
+  blocksIndicator: string | null // e.g. "⛔► MRKL-010, MRKL-012"
+  blockedByIndicator: string | null // e.g. "◄⛔ MRKL-005"
+}
+
 export interface PruneResult {
   deleted: Array<{
     id: string
