@@ -14,19 +14,19 @@ vi.mock('citty', async (importOriginal) => {
   return { ...actual, runMain: vi.fn() }
 })
 
-vi.mock('../src/tui/create-tui.js', () => ({
+vi.mock('./tui/create-tui.js', () => ({
   interactiveCreate: vi.fn(),
 }))
 
-import { main } from '../src/cli.js'
-import initCommand from '../src/commands/init.js'
-import createCommand from '../src/commands/create.js'
-import listCommand from '../src/commands/list.js'
-import doneCommand from '../src/commands/done.js'
-import pruneCommand from '../src/commands/prune.js'
-import closeCommand from '../src/commands/close.js'
-import * as taskModule from '../src/task.js'
-import { interactiveCreate } from '../src/tui/create-tui.js'
+import { main } from './cli.js'
+import initCommand from './commands/init.js'
+import createCommand from './commands/create.js'
+import listCommand from './commands/list.js'
+import doneCommand from './commands/done.js'
+import pruneCommand from './commands/prune.js'
+import closeCommand from './commands/close.js'
+import * as taskModule from './task.js'
+import { interactiveCreate } from './tui/create-tui.js'
 
 type RunCtx = { args: Record<string, unknown> }
 const run = (createCommand as { run: (ctx: RunCtx) => Promise<void> }).run
@@ -373,7 +373,7 @@ describe('close command', () => {
   beforeEach(() => {
     closeTaskSpy = vi
       .spyOn(taskModule, 'closeTask')
-      .mockImplementation(() => {})
+      .mockImplementation(() => '' as string)
   })
 
   afterEach(() => {

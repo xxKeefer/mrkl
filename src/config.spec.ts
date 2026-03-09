@@ -9,7 +9,7 @@ import {
 } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
-import { loadConfig, initConfig } from '../src/config.js'
+import { loadConfig, initConfig } from './config.js'
 
 let tmp: string
 

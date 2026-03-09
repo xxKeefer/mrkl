@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { render, parse } from '../src/template.js'
-import type { TaskData } from '../src/types.js'
+import { render, parse } from './template.js'
+import type { TaskData } from './types.js'
 
 const SAMPLE_TASK: TaskData = {
   id: 'TEST-001',

@@ -10,7 +10,7 @@ import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 
 import matter from 'gray-matter'
-import { initConfig } from '../src/config.js'
+import { initConfig } from '../config.js'
 
 let tmp: string
 
@@ -42,8 +42,8 @@ async function runMigrate(dir: string) {
   const { readdirSync, readFileSync: rf } = await import('node:fs')
   const { join: j } = await import('node:path')
   const matterLib = (await import('gray-matter')).default
-  const { loadConfig } = await import('../src/config.js')
-  const { render } = await import('../src/template.js')
+  const { loadConfig } = await import('../config.js')
+  const { render } = await import('../template.js')
   const { renameSync } = await import('node:fs')
   const { basename } = await import('node:path')
   const VERBOSE_REGEX = /^(\S+)\s+(\S+)\s+-\s+(.+)$/

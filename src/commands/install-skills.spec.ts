@@ -16,8 +16,8 @@ vi.mock('citty', async (importOriginal) => {
   return { ...actual, runMain: vi.fn() }
 })
 
-import { main } from '../src/cli.js'
-import installSkillsCommand from '../src/commands/install-skills.js'
+import { main } from '../cli.js'
+import installSkillsCommand from './install-skills.js'
 
 describe('install-skills registration', () => {
   it('`install-skills` subcommand is registered', () => {
