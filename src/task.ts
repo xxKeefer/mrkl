@@ -199,6 +199,29 @@ export function getChildren(tasks: TaskData[], epicId: string): TaskData[] {
   return tasks.filter((t) => t.parent === epicId)
 }
 
+export function getActiveChildren(dir: string, taskId: string): TaskData[] {
+  const tasks = listTasks({ dir })
+  return getChildren(tasks, taskId)
+}
+
+export function orphanChildren(dir: string, parentId: string): void {
+  const children = getActiveChildren(dir, parentId)
+  for (const child of children) {
+    const { filePath, task } = findTaskFile(dir, child.id)
+    delete task.parent
+    const orphanMarker = `<orphan of ${parentId}>`
+    task.flag = task.flag ? `${task.flag} ${orphanMarker}` : orphanMarker
+    writeFileSync(filePath, render(task))
+  }
+}
+
+export function cascadeClose(dir: string, parentId: string, status: Status): void {
+  const children = getActiveChildren(dir, parentId)
+  for (const child of children) {
+    closeTask(dir, child.id, undefined, status)
+  }
+}
+
 export function getBlockedBy(tasks: TaskData[], taskId: string): TaskData[] {
   return tasks.filter((t) => t.blocks?.includes(taskId))
 }
