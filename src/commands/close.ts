@@ -48,7 +48,7 @@ export default defineCommand({
 
         const resolved = closeTask(dir, id, args.reason)
         logger.closed(`Closed ${resolved}`)
-        logger.flag(`${args.reason}`)
+        if (args.reason) logger.flag(args.reason)
       } catch (err) {
         logger.error(`${id}: ${(err as Error).message}`)
         failed = true

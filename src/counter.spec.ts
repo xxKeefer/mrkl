@@ -8,7 +8,7 @@ import {
 } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
-import { nextId, currentId } from '../src/counter.js'
+import { nextId, currentId } from './counter.js'
 
 let tmp: string
 const counterPath = (dir: string) =>

@@ -1,8 +1,8 @@
 export const EMOJI = {
   success: '\u{1F7E2}',
   error: '\u{1F534}',
-  warn: '\u26A0\uFE0F',
-  info: '\u2139\uFE0F',
+  warn: '\u{1F7E1}',
+  info: '\u{1F535}',
   done: '\u2705',
   closed: '\u274C',
   blocks: '\u{1F6A7}',
