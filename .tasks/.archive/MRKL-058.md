@@ -2,10 +2,9 @@
 id: MRKL-058
 title: snapshot testing for tui screens
 type: test
-status: todo
+status: closed
 created: '2026-03-09'
-blocks:
-  - MRKL-056
+flag: covered by mrkl-056 now
 ---
 
 ## Description
