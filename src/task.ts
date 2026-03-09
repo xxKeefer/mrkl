@@ -174,6 +174,39 @@ export function listArchivedTasks(filter: ListFilter): TaskData[] {
   return tasks
 }
 
+export function getChildren(tasks: TaskData[], epicId: string): TaskData[] {
+  return tasks.filter((t) => t.parent === epicId)
+}
+
+export function getBlockedBy(tasks: TaskData[], taskId: string): TaskData[] {
+  return tasks.filter((t) => t.blocks?.includes(taskId))
+}
+
+export function validateParent(
+  tasks: TaskData[],
+  parentId: string,
+): { valid: boolean; reason?: string } {
+  const target = tasks.find((t) => t.id === parentId)
+  if (!target) return { valid: false, reason: `Task ${parentId} not found` }
+  if (target.parent)
+    return {
+      valid: false,
+      reason: `Task ${parentId} already has a parent — only one level of nesting allowed`,
+    }
+  return { valid: true }
+}
+
+export function validateBlocks(
+  tasks: TaskData[],
+  blockIds: string[],
+): { valid: boolean; reason?: string } {
+  const ids = new Set(tasks.map((t) => t.id))
+  const missing = blockIds.filter((id) => !ids.has(id))
+  if (missing.length > 0)
+    return { valid: false, reason: `Tasks not found: ${missing.join(', ')}` }
+  return { valid: true }
+}
+
 export function resolveTaskId(dir: string, id: string): string {
   if (/^\d+$/.test(id)) {
     const config = loadConfig(dir)

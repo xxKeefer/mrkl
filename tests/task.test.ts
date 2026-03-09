@@ -18,6 +18,10 @@ import {
   parseCutoffDate,
   pruneTasks,
   executePrune,
+  getChildren,
+  getBlockedBy,
+  validateParent,
+  validateBlocks,
 } from '../src/task.js'
 import { render } from '../src/template.js'
 import type { TaskData } from '../src/types.js'
@@ -539,6 +543,139 @@ describe('task', () => {
       const result = pruneTasks(tmp, '2026-12-31')
       expect(result.deleted).toHaveLength(1)
       expect(result.total).toBe(2)
+    })
+  })
+
+  describe('relationship helpers', () => {
+    const makeTasks = (): TaskData[] => [
+      {
+        id: 'TEST-001',
+        type: 'feat',
+        status: 'todo',
+        created: '2026-01-01',
+        title: 'epic task',
+        description: '',
+        acceptance_criteria: [],
+      },
+      {
+        id: 'TEST-002',
+        type: 'feat',
+        status: 'todo',
+        created: '2026-01-02',
+        parent: 'TEST-001',
+        title: 'child one',
+        description: '',
+        acceptance_criteria: [],
+      },
+      {
+        id: 'TEST-003',
+        type: 'fix',
+        status: 'todo',
+        created: '2026-01-03',
+        parent: 'TEST-001',
+        blocks: ['TEST-002'],
+        title: 'child two blocks child one',
+        description: '',
+        acceptance_criteria: [],
+      },
+      {
+        id: 'TEST-004',
+        type: 'chore',
+        status: 'todo',
+        created: '2026-01-04',
+        blocks: ['TEST-002', 'TEST-003'],
+        title: 'standalone blocker',
+        description: '',
+        acceptance_criteria: [],
+      },
+    ]
+
+    describe('getChildren', () => {
+      it('returns tasks whose parent matches epicId', () => {
+        const tasks = makeTasks()
+        const children = getChildren(tasks, 'TEST-001')
+        expect(children).toHaveLength(2)
+        expect(children.map((t) => t.id)).toEqual(['TEST-002', 'TEST-003'])
+      })
+
+      it('returns empty array when no children exist', () => {
+        const tasks = makeTasks()
+        expect(getChildren(tasks, 'TEST-004')).toEqual([])
+      })
+
+      it('returns empty array for nonexistent epicId', () => {
+        const tasks = makeTasks()
+        expect(getChildren(tasks, 'TEST-999')).toEqual([])
+      })
+    })
+
+    describe('getBlockedBy', () => {
+      it('returns tasks that include taskId in their blocks array', () => {
+        const tasks = makeTasks()
+        const blockers = getBlockedBy(tasks, 'TEST-002')
+        expect(blockers).toHaveLength(2)
+        expect(blockers.map((t) => t.id)).toEqual(['TEST-003', 'TEST-004'])
+      })
+
+      it('returns empty array when nothing blocks the task', () => {
+        const tasks = makeTasks()
+        expect(getBlockedBy(tasks, 'TEST-001')).toEqual([])
+      })
+
+      it('returns empty array for nonexistent taskId', () => {
+        const tasks = makeTasks()
+        expect(getBlockedBy(tasks, 'TEST-999')).toEqual([])
+      })
+    })
+
+    describe('validateParent', () => {
+      it('returns valid for an existing task with no parent', () => {
+        const tasks = makeTasks()
+        const result = validateParent(tasks, 'TEST-001')
+        expect(result).toEqual({ valid: true })
+      })
+
+      it('returns invalid when parent does not exist', () => {
+        const tasks = makeTasks()
+        const result = validateParent(tasks, 'TEST-999')
+        expect(result.valid).toBe(false)
+        expect(result.reason).toContain('not found')
+      })
+
+      it('returns invalid when parent is itself a child', () => {
+        const tasks = makeTasks()
+        const result = validateParent(tasks, 'TEST-002')
+        expect(result.valid).toBe(false)
+        expect(result.reason).toContain('parent')
+      })
+    })
+
+    describe('validateBlocks', () => {
+      it('returns valid when all block targets exist', () => {
+        const tasks = makeTasks()
+        const result = validateBlocks(tasks, ['TEST-001', 'TEST-002'])
+        expect(result).toEqual({ valid: true })
+      })
+
+      it('returns invalid when a block target is missing', () => {
+        const tasks = makeTasks()
+        const result = validateBlocks(tasks, ['TEST-001', 'TEST-999'])
+        expect(result.valid).toBe(false)
+        expect(result.reason).toContain('TEST-999')
+      })
+
+      it('returns valid for empty array', () => {
+        const tasks = makeTasks()
+        expect(validateBlocks(tasks, [])).toEqual({ valid: true })
+      })
+    })
+
+    it('demonstrates resolveTaskId usage before calling helpers', () => {
+      const tasks = makeTasks()
+      const resolvedId = resolveTaskId(tmp, '1')
+      expect(resolvedId).toBe('TEST-001')
+      const children = getChildren(tasks, resolvedId)
+      expect(children).toHaveLength(2)
     })
   })
 
