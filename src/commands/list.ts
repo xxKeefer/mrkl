@@ -1,5 +1,5 @@
 import { defineCommand } from 'citty'
-import consola from 'consola'
+import { logger } from '../logger.js'
 import { listTasks, listArchivedTasks, updateTask, groupByEpic } from '../task.js'
 import type { Status, TaskType } from '../types.js'
 
@@ -51,15 +51,15 @@ export default defineCommand({
       const archivedTasks = listArchivedTasks(filter)
 
       if (tasks.length === 0 && archivedTasks.length === 0) {
-        consola.info('📭 No tasks found')
+        logger.empty('No tasks found')
         return
       }
 
       const usePlain = args.plain || !process.stdout.isTTY
 
       if (usePlain) {
-        consola.log(formatRow('ID', 'TYPE', 'STATUS', 'TITLE'))
-        consola.log('─'.repeat(60))
+        logger.log(formatRow('ID', 'TYPE', 'STATUS', 'TITLE'))
+        logger.log('\u2500'.repeat(60))
         const grouped = groupByEpic(tasks)
         const childrenByParent = new Map<string, typeof grouped>()
         for (const entry of grouped) {
@@ -79,18 +79,18 @@ export default defineCommand({
           if (entry.indent === 1) {
             const siblings = childrenByParent.get(entry.task.parent!) ?? []
             const isLast = siblings[siblings.length - 1] === entry
-            const prefix = isLast ? '  └─ ' : '  ├─ '
-            consola.log(`${prefix}${formatRow(entry.task.id, entry.task.type, entry.task.status, entry.task.title)}${suffix}`)
+            const prefix = isLast ? '  \u2514\u2500 ' : '  \u251C\u2500 '
+            logger.log(`${prefix}${formatRow(entry.task.id, entry.task.type, entry.task.status, entry.task.title)}${suffix}`)
           } else {
-            consola.log(`${formatRow(entry.task.id, entry.task.type, entry.task.status, entry.task.title)}${suffix}`)
+            logger.log(`${formatRow(entry.task.id, entry.task.type, entry.task.status, entry.task.title)}${suffix}`)
           }
         }
         if (archivedTasks.length > 0) {
-          consola.log('')
-          consola.log(`Archive (${archivedTasks.length}):`)
-          consola.log('─'.repeat(60))
+          logger.log('')
+          logger.log(`Archive (${archivedTasks.length}):`)
+          logger.log('\u2500'.repeat(60))
           for (const task of archivedTasks) {
-            consola.log(formatRow(task.id, task.type, task.status, task.title))
+            logger.log(formatRow(task.id, task.type, task.status, task.title))
           }
         }
         return
@@ -104,11 +104,11 @@ export default defineCommand({
         const result = await interactiveEdit(selected, tasks)
         if (result) {
           const updated = updateTask(dir, selected.id, result)
-          consola.success(`✏️  Updated ${updated.id}: ${updated.title}`)
+          logger.update(`Updated ${updated.id}: ${updated.title}`)
         }
       }
     } catch (err) {
-      consola.error(`❌ ${(err as Error).message}`)
+      logger.error(`${(err as Error).message}`)
       process.exit(1)
     }
   },

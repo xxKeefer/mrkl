@@ -6,21 +6,18 @@ import { render } from '../template.js'
 import { findTaskFile, listArchivedTasks } from '../task.js'
 import type { TaskData } from '../types.js'
 
-vi.mock('consola', async () => {
-  const actual = await vi.importActual<typeof import('consola')>('consola')
-  return {
-    ...actual,
-    default: {
-      ...actual.default,
-      prompt: vi.fn(),
-      success: vi.fn(),
-      error: vi.fn(),
-      info: vi.fn(),
-    },
-  }
-})
+vi.mock('../logger.js', () => ({
+  logger: {
+    prompt: vi.fn(),
+    success: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+    closed: vi.fn(),
+    flag: vi.fn(),
+  },
+}))
 
-import consola from 'consola'
+import { logger } from '../logger.js'
 import closeCommand from './close.js'
 
 function makeTask(overrides: Partial<TaskData> & { id: string; title: string }): TaskData {
@@ -76,7 +73,7 @@ describe('close command', () => {
 
     await runClose(dir, 'TEST-001', 'duplicate')
 
-    expect(consola.prompt).not.toHaveBeenCalled()
+    expect(logger.prompt).not.toHaveBeenCalled()
     const archived = listArchivedTasks({ dir })
     expect(archived).toHaveLength(1)
     expect(archived[0].status).toBe('closed')
@@ -88,7 +85,7 @@ describe('close command', () => {
     writeTask(dir, parent)
     writeTask(dir, child)
 
-    vi.mocked(consola.prompt).mockResolvedValueOnce('cancel')
+    vi.mocked(logger.prompt).mockResolvedValueOnce('cancel')
 
     await runClose(dir, 'TEST-001')
 
@@ -104,7 +101,7 @@ describe('close command', () => {
     writeTask(dir, child1)
     writeTask(dir, child2)
 
-    vi.mocked(consola.prompt).mockResolvedValueOnce('cascade')
+    vi.mocked(logger.prompt).mockResolvedValueOnce('cascade')
 
     await runClose(dir, 'TEST-001', "won't do")
 
@@ -119,7 +116,7 @@ describe('close command', () => {
     writeTask(dir, parent)
     writeTask(dir, child)
 
-    vi.mocked(consola.prompt).mockResolvedValueOnce('orphan')
+    vi.mocked(logger.prompt).mockResolvedValueOnce('orphan')
 
     await runClose(dir, 'TEST-001', 'obsolete')
 

@@ -1,5 +1,5 @@
 import { defineCommand } from 'citty'
-import consola from 'consola'
+import { logger } from '../logger.js'
 import {
   existsSync,
   mkdirSync,
@@ -49,7 +49,7 @@ export default defineCommand({
       const skillsDir = join(packageRoot, 'skills')
 
       if (!existsSync(skillsDir)) {
-        consola.error('❌ No skills directory found in mrkl package')
+        logger.error('No skills directory found in mrkl package')
         process.exit(1)
       }
 
@@ -58,7 +58,7 @@ export default defineCommand({
       )
 
       if (skills.length === 0) {
-        consola.info('📭 No skills to install')
+        logger.empty('No skills to install')
         return
       }
 
@@ -66,10 +66,10 @@ export default defineCommand({
         const src = join(skillsDir, skill)
         const target = join(dest, skill)
         copyDirSync(src, target)
-        consola.success(`🧩 Installed ${skill}`)
+        logger.module(`Installed ${skill}`)
       }
     } catch (err) {
-      consola.error(String((err as Error).message))
+      logger.error(String((err as Error).message))
       process.exit(1)
     }
   },
