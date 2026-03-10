@@ -2,8 +2,9 @@
 id: MRKL-065
 title: install tui test dependencies
 type: test
-status: todo
+status: done
 created: '2026-03-10'
+flag: completed
 parent: MRKL-056
 ---
 
@@ -13,5 +14,5 @@ Install @xterm/headless, @xterm/addon-serialize, and node-pty as devDependencies
 
 ## Acceptance Criteria
 
-- [ ] pnpm add -D @xterm/headless @xterm/addon-serialize node-pty succeeds
-- [ ] pnpm typecheck passes with new deps
+- [x] pnpm add -D @xterm/headless @xterm/addon-serialize node-pty succeeds
+- [x] pnpm typecheck passes with new deps
