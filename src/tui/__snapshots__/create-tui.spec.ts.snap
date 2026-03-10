@@ -1,0 +1,60 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`render > empty create form snapshot at 40 cols 1`] = `
+"                                        
+  Create Task                           
+               ─────────────────────────
+───────────                             
+           › Type            ◂ feat ▸   
+                                       T
+itle           ····················     
+                                     Des
+cription     ····················       
+                                   Paren
+t          type to search...            
+                              + Block   
+      type to search...                 
+                         + Add          
+ ····················                   
+                       ─────────────────
+───────────────────                     
+                     ↑↓ navigate  ←→ cyc
+le type  Ctrl+N newline  Enter submit  E
+sc quit                                 "
+`;
+
+exports[`render > empty create form snapshot at 80 cols 1`] = `
+"                                                                                
+  Create Task                                                                   
+               ────────────────────────────────────────────────────────────     
+                                                                           › Typ
+e            ◂ feat ▸                                                           
+                       Title           ····················                     
+                                                             Description     ···
+·················                                                               
+                   Parent          type to search...                            
+                                                      + Block         type to se
+arch...                                                                         
+         + Add           ····················                                   
+                                               ─────────────────────────────────
+───────────────────────────                                                     
+                             ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter s
+ubmit  Esc quit                                                                 "
+`;
+
+exports[`render > empty create form snapshot at 120 cols 1`] = `
+"                                                                                                                        
+  Create Task                                                                                                           
+               ────────────────────────────────────────────────────────────                                             
+                                                                           › Type            ◂ feat ▸                   
+                                                                                                       Title           ·
+···················                                                                                                     
+                     Description     ····················                                                               
+                                                           Parent          type to search...                            
+                                                                                              + Block         type to se
+arch...                                                                                                                 
+         + Add           ····················                                                                           
+                                               ────────────────────────────────────────────────────────────             
+                                                                                                             ↑↓ navigate
+  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit                                                                 "
+`;

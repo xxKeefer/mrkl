@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { filterCandidates, buildParentCandidates, render } from './create-tui.js'
 import type { TaskData } from '../types.js'
-import { createMockStdout, makeFormState } from './tui-test-harness.js'
+import { createMockStdout, makeFormState, renderToScreen } from './tui-test-harness.js'
 
 describe('filterCandidates', () => {
   const candidates = [
@@ -101,5 +101,26 @@ describe('render', () => {
     const output = stdout.getOutput()
     expect(output).toContain('Edit Task MRKL-042')
     expect(output).toContain('Status')
+  })
+
+  it('empty create form snapshot at 40 cols', async () => {
+    const stdout = createMockStdout(40, 24)
+    render(makeFormState(), stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 40, 24)
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('empty create form snapshot at 80 cols', async () => {
+    const stdout = createMockStdout(80, 24)
+    render(makeFormState(), stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 80, 24)
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('empty create form snapshot at 120 cols', async () => {
+    const stdout = createMockStdout(120, 24)
+    render(makeFormState(), stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 120, 24)
+    expect(screen).toMatchSnapshot()
   })
 })
