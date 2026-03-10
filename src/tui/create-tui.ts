@@ -345,7 +345,7 @@ function getFilteredSuggestions(state: FormState): AutocompleteCandidate[] {
   return []
 }
 
-function render(state: FormState, stdout: NodeJS.WriteStream): void {
+export function render(state: FormState, stdout: NodeJS.WriteStream): void {
   const cols = stdout.columns || 80
   const contentWidth = Math.max(10, cols - GUTTER - 2)
   const sepWidth = Math.min(cols - 4, 60)

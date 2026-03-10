@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { filterCandidates, buildParentCandidates } from './create-tui.js'
+import { filterCandidates, buildParentCandidates, render } from './create-tui.js'
 import type { TaskData } from '../types.js'
+import { createMockStdout, makeFormState } from './tui-test-harness.js'
 
 describe('filterCandidates', () => {
   const candidates = [
@@ -79,5 +80,26 @@ describe('buildParentCandidates', () => {
       makeTask({ id: 'MRKL-001', title: 'child', parent: 'MRKL-000' }),
     ]
     expect(buildParentCandidates(tasks)).toEqual([])
+  })
+})
+
+describe('render', () => {
+  it('writes form output to stdout with default create state', () => {
+    const stdout = createMockStdout(80, 24)
+    const state = makeFormState()
+    render(state, stdout)
+    const output = stdout.getOutput()
+    expect(output).toContain('Create Task')
+    expect(output).toContain('Type')
+    expect(output).toContain('Title')
+  })
+
+  it('writes edit header when mode is edit', () => {
+    const stdout = createMockStdout(80, 24)
+    const state = makeFormState({ mode: 'edit', taskId: 'MRKL-042' })
+    render(state, stdout)
+    const output = stdout.getOutput()
+    expect(output).toContain('Edit Task MRKL-042')
+    expect(output).toContain('Status')
   })
 })
