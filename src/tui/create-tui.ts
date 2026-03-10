@@ -54,13 +54,13 @@ export function filterCandidates(
   return filtered.slice(0, limit)
 }
 
-type FormMode = 'create' | 'edit'
+export type FormMode = 'create' | 'edit'
 
 const LABEL_WIDTH = 15
 // pointer(1) + space(1) + label(LABEL_WIDTH) + space(1)
 const GUTTER = 2 + LABEL_WIDTH + 1
 
-interface FormState {
+export interface FormState {
   type: number
   status: number
   title: string

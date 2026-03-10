@@ -1,4 +1,6 @@
 import { Terminal, type IBufferLine } from '@xterm/headless'
+import type { TaskData } from '../types.js'
+import type { FormState, FormMode } from './create-tui.js'
 
 export function renderToScreen(ansiOutput: string, cols: number, rows: number): Promise<string> {
   return new Promise((resolve) => {
@@ -45,4 +47,72 @@ export function createMockStdout(columns: number, rows: number): MockStdout {
       buffer = ''
     },
   } as MockStdout
+}
+
+export interface ListRenderState {
+  activeTab: number
+  query: string
+  selectedIndex: number
+  scrollOffset: number
+  datasets: Array<{
+    label: string
+    entries: Array<{
+      task: TaskData
+      searchText: string
+      indent: number
+      blocksIndicator: string | null
+      blockedByIndicator: string | null
+    }>
+  }>
+}
+
+export function makeTask(overrides?: Partial<TaskData>): TaskData {
+  return {
+    id: 'TEST-001',
+    type: 'feat',
+    status: 'todo',
+    created: '2025-01-01',
+    title: 'Test task',
+    description: '',
+    acceptance_criteria: [],
+    ...overrides,
+  }
+}
+
+export function makeFormState(overrides?: Partial<FormState>): FormState {
+  return {
+    type: 0,
+    status: 0,
+    title: '',
+    description: '',
+    parent: '',
+    parentInput: '',
+    parentCandidates: [],
+    parentHighlight: 0,
+    blocks: [],
+    currentBlock: '',
+    blockCandidates: [],
+    blockHighlight: 0,
+    criteria: [],
+    currentCriterion: '',
+    activeField: 0,
+    cursorPos: 0,
+    error: '',
+    mode: 'create' as FormMode,
+    ...overrides,
+  }
+}
+
+export function makeListState(overrides?: Partial<ListRenderState>): ListRenderState {
+  return {
+    activeTab: 0,
+    query: '',
+    selectedIndex: 0,
+    scrollOffset: 0,
+    datasets: [
+      { label: 'Tasks', entries: [] },
+      { label: 'Archive', entries: [] },
+    ],
+    ...overrides,
+  }
 }
