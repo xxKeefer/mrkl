@@ -1,6 +1,8 @@
 import { Terminal, type IBufferLine } from '@xterm/headless'
 import type { TaskData } from '../types.js'
 import type { FormState, FormMode } from './create-tui.js'
+import type { ListRenderState } from './list-tui.js'
+export type { FzfEntry, ListRenderState } from './list-tui.js'
 
 export function renderToScreen(ansiOutput: string, cols: number, rows: number): Promise<string> {
   return new Promise((resolve) => {
@@ -47,23 +49,6 @@ export function createMockStdout(columns: number, rows: number): MockStdout {
       buffer = ''
     },
   } as MockStdout
-}
-
-export interface ListRenderState {
-  activeTab: number
-  query: string
-  selectedIndex: number
-  scrollOffset: number
-  datasets: Array<{
-    label: string
-    entries: Array<{
-      task: TaskData
-      searchText: string
-      indent: number
-      blocksIndicator: string | null
-      blockedByIndicator: string | null
-    }>
-  }>
 }
 
 export function makeTask(overrides?: Partial<TaskData>): TaskData {
@@ -113,6 +98,8 @@ export function makeListState(overrides?: Partial<ListRenderState>): ListRenderS
       { label: 'Tasks', entries: [] },
       { label: 'Archive', entries: [] },
     ],
+    filtered: [],
+    allTasks: [],
     ...overrides,
   }
 }
