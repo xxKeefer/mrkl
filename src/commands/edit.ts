@@ -1,5 +1,5 @@
 import { defineCommand } from 'citty'
-import consola from 'consola'
+import { logger } from '../logger.js'
 import { findTaskFile, updateTask, listTasks, listArchivedTasks } from '../task.js'
 
 export default defineCommand({
@@ -28,7 +28,7 @@ export default defineCommand({
         const archivedTasks = listArchivedTasks({ dir })
 
         if (tasks.length === 0 && archivedTasks.length === 0) {
-          consola.info('📭 No tasks found')
+          logger.empty('No tasks found')
           return
         }
 
@@ -43,9 +43,9 @@ export default defineCommand({
       if (!result) return
 
       const updated = updateTask(dir, task.id, result)
-      consola.success(`✏️  Updated ${updated.id}: ${updated.title}`)
+      logger.update(`Updated ${updated.id}: ${updated.title}`)
     } catch (err) {
-      consola.error(`❌ ${(err as Error).message}`)
+      logger.error(`${(err as Error).message}`)
       process.exit(1)
     }
   },

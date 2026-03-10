@@ -1,5 +1,30 @@
 # Changelog
 
+## v0.5.0...main
+
+[compare changes](https://github.com/xxKeefer/mrkl/compare/v0.5.0...main)
+
+### Changed
+
+- Colocate all tests as *.spec.ts siblings (MRKL-059) ([#34](https://github.com/xxKeefer/mrkl/pull/34))
+
+### ❤️ Contributors
+
+- Daniel John Keefer <xxkeefer.code@gmail.com>
+
+## v0.4.4...main
+
+[compare changes](https://github.com/xxKeefer/mrkl/compare/v0.4.4...main)
+
+### Added
+
+- Grouped epic display and dependency indicators in list views ([#31](https://github.com/xxKeefer/mrkl/pull/31))
+- Centralize emoji keys and custom logger (MRKL-057) ([#33](https://github.com/xxKeefer/mrkl/pull/33))
+
+### ❤️ Contributors
+
+- Daniel John Keefer <xxkeefer.code@gmail.com>
+
 ## v0.4.3...main
 
 [compare changes](https://github.com/xxKeefer/mrkl/compare/v0.4.3...main)

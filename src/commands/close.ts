@@ -1,5 +1,5 @@
 import { defineCommand } from 'citty'
-import consola from 'consola'
+import { logger } from '../logger.js'
 import { closeTask, getActiveChildren, cascadeClose, orphanChildren } from '../task.js'
 
 export default defineCommand({
@@ -31,8 +31,8 @@ export default defineCommand({
         const children = getActiveChildren(dir, id)
         if (children.length > 0) {
           const childList = children.map((c) => `  - ${c.id}: ${c.title}`).join('\n')
-          consola.info(`Task ${id} has ${children.length} active children:\n${childList}`)
-          const choice = await consola.prompt('How should children be handled?', {
+          logger.info(`Task ${id} has ${children.length} active children:\n${childList}`)
+          const choice = await logger.prompt('How should children be handled?', {
             type: 'select',
             options: [
               { label: 'Cancel — do not close this task', value: 'cancel' },
@@ -47,9 +47,10 @@ export default defineCommand({
         }
 
         const resolved = closeTask(dir, id, args.reason)
-        consola.success(` 🚫 Closed ${resolved} 🚩 ${args.reason}`)
+        logger.closed(`Closed ${resolved}`)
+        if (args.reason) logger.flag(args.reason)
       } catch (err) {
-        consola.error(`${id}: ${(err as Error).message}`)
+        logger.error(`${id}: ${(err as Error).message}`)
         failed = true
       }
     }

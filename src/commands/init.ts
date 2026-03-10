@@ -1,5 +1,5 @@
 import { defineCommand } from 'citty'
-import consola from 'consola'
+import { logger } from '../logger.js'
 import { initConfig } from '../config.js'
 
 export default defineCommand({
@@ -17,9 +17,9 @@ export default defineCommand({
     const dir = process.cwd()
     try {
       initConfig(dir, { prefix: args.prefix })
-      consola.success('🎉 mrkl initialized')
+      logger.celebrate('mrkl initialized')
     } catch (err) {
-      consola.error(String((err as Error).message))
+      logger.error(String((err as Error).message))
       process.exit(1)
     }
   },

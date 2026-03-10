@@ -1,5 +1,5 @@
 import { defineCommand } from 'citty'
-import consola from 'consola'
+import { logger } from '../logger.js'
 import { readdirSync, readFileSync, writeFileSync, renameSync } from 'node:fs'
 import { join, basename } from 'node:path'
 import matter from 'gray-matter'
@@ -106,20 +106,20 @@ export default defineCommand({
       const totalSkipped = active.skipped + archived.skipped
       const allWarnings = [...active.warnings, ...archived.warnings]
 
-      consola.success(
+      logger.success(
         `Migrated ${totalMigrated} file(s), skipped ${totalSkipped} file(s).`,
       )
       for (const w of allWarnings) {
-        consola.warn(w)
+        logger.warn(w)
       }
 
       if (totalMigrated > 0) {
-        consola.info(
+        logger.info(
           'Breaking change: title is now stored in frontmatter. Old parsers may need updating.',
         )
       }
     } catch (err) {
-      consola.error(String((err as Error).message))
+      logger.error(String((err as Error).message))
       process.exit(1)
     }
   },

@@ -2,8 +2,9 @@
 id: MRKL-057
 title: emoji key
 type: feat
-status: todo
+status: done
 created: '2026-03-09'
+flag: completed
 ---
 
 ## Description
@@ -35,7 +36,7 @@ create a custom console logger with a type for every key and replace any default
 
 ## Acceptance Criteria
 
-- [ ] emoji key exists
-- [ ] readme updated with definitions
-- [ ] all messages audited across cli and tuis for consistancy
-- [ ] consola prompt is not
+- [x] emoji key exists
+- [x] readme updated with definitions
+- [x] all messages audited across cli and tuis for consistancy
+- [x] consola prompt is not
