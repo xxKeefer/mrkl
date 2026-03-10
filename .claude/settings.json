@@ -14,6 +14,8 @@
       "Bash(pnpm lint:fix:*)",
       "Bash(pnpm format:*)",
       "Bash(pnpm typecheck:*)",
+      "Bash(pn dev:*)",
+      "Bash(pnpm ls:*)",
       "Bash(ls:*)"
     ]
   }
