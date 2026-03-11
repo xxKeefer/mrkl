@@ -3,175 +3,133 @@
 exports[`render > active autocomplete with suggestions snapshot at 80 cols 1`] = `
 "                                                                                
   Create Task                                                                   
-               ────────────────────────────────────────────────────────────     
-                                                                             Typ
-e              feat                                                             
-                     Title           ····················                       
-                                                           Description     ·····
-···············                                                                 
-               › Parent          auth                                           
-                                                            MRKL-010 - Auth epic
-                                                                                
-                   → MRKL-020 - Auth refactor                                   
-                                                                   MRKL-030 - Au
-th tests                                                                        
-          + Block         type to search...                                     
-                                             + Add           ···················
-·                                                                               
-   ────────────────────────────────────────────────────────────                 
-                                                                 ↑↓ navigate  ←→
- cycle type  Ctrl+N newline  Enter submit  Esc quit                             "
+  ────────────────────────────────────────────────────────────                  
+  Type              feat                                                        
+  Title           ····················                                          
+  Description     ····················                                          
+› Parent          auth                                                          
+                      MRKL-010 - Auth epic                                      
+                    → MRKL-020 - Auth refactor                                  
+                      MRKL-030 - Auth tests                                     
+  + Block         type to search...                                             
+  + Add           ····················                                          
+  ────────────────────────────────────────────────────────────                  
+  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
 `;
 
 exports[`render > edit mode form with status field snapshot at 80 cols 1`] = `
 "                                                                                
   Edit Task MRKL-042                                                            
-                      ──────────────────────────────────────────────────────────
-──                                                                              
-  › Type            ◂ feat ▸                                                    
-                              Status            in-progress                     
-                                                             Title           Fix
- login redirect                                                                 
-                 Description     Users are redirected to wrong page after login 
-                                                                                
- Parent          type to search...                                              
-                                    + Block         type to search...           
-                                                                       Criterion
- 1     Redirect goes to dashboard                                               
-                                   + Add           ····················         
-                                                                         ───────
-─────────────────────────────────────────────────────                           
-                                                       ↑↓ navigate  ←→ cycle typ
-e/status  Ctrl+N newline  Enter submit  Esc quit                                "
+  ────────────────────────────────────────────────────────────                  
+› Type            ◂ feat ▸                                                      
+  Status            in-progress                                                 
+  Title           Fix login redirect                                            
+  Description     Users are redirected to wrong page after login                
+  Parent          type to search...                                             
+  + Block         type to search...                                             
+  Criterion 1     Redirect goes to dashboard                                    
+  + Add           ····················                                          
+  ────────────────────────────────────────────────────────────                  
+  ↑↓ navigate  ←→ cycle type/status  Ctrl+N newline  Enter submit  Esc quit     "
 `;
 
 exports[`render > empty create form snapshot at 40 cols 1`] = `
 "                                        
   Create Task                           
-               ─────────────────────────
-───────────                             
-           › Type            ◂ feat ▸   
-                                       T
-itle           ····················     
-                                     Des
-cription     ····················       
-                                   Paren
-t          type to search...            
-                              + Block   
-      type to search...                 
-                         + Add          
- ····················                   
-                       ─────────────────
-───────────────────                     
-                     ↑↓ navigate  ←→ cyc
-le type  Ctrl+N newline  Enter submit  E
-sc quit                                 "
+  ────────────────────────────────────  
+› Type            ◂ feat ▸              
+  Title           ····················  
+  Description     ····················  
+  Parent          type to search...     
+  + Block         type to search...     
+  + Add           ····················  
+  ────────────────────────────────────  
+  ↑↓ navigate  ←→ cycle type  Ctrl+N new
+line  Enter submit  Esc quit            "
 `;
 
 exports[`render > empty create form snapshot at 80 cols 1`] = `
 "                                                                                
   Create Task                                                                   
-               ────────────────────────────────────────────────────────────     
-                                                                           › Typ
-e            ◂ feat ▸                                                           
-                       Title           ····················                     
-                                                             Description     ···
-·················                                                               
-                   Parent          type to search...                            
-                                                      + Block         type to se
-arch...                                                                         
-         + Add           ····················                                   
-                                               ─────────────────────────────────
-───────────────────────────                                                     
-                             ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter s
-ubmit  Esc quit                                                                 "
+  ────────────────────────────────────────────────────────────                  
+› Type            ◂ feat ▸                                                      
+  Title           ····················                                          
+  Description     ····················                                          
+  Parent          type to search...                                             
+  + Block         type to search...                                             
+  + Add           ····················                                          
+  ────────────────────────────────────────────────────────────                  
+  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
 `;
 
 exports[`render > empty create form snapshot at 120 cols 1`] = `
 "                                                                                                                        
   Create Task                                                                                                           
-               ────────────────────────────────────────────────────────────                                             
-                                                                           › Type            ◂ feat ▸                   
-                                                                                                       Title           ·
-···················                                                                                                     
-                     Description     ····················                                                               
-                                                           Parent          type to search...                            
-                                                                                              + Block         type to se
-arch...                                                                                                                 
-         + Add           ····················                                                                           
-                                               ────────────────────────────────────────────────────────────             
-                                                                                                             ↑↓ navigate
-  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit                                                                 "
+  ────────────────────────────────────────────────────────────                                                          
+› Type            ◂ feat ▸                                                                                              
+  Title           ····················                                                                                  
+  Description     ····················                                                                                  
+  Parent          type to search...                                                                                     
+  + Block         type to search...                                                                                     
+  + Add           ····················                                                                                  
+  ────────────────────────────────────────────────────────────                                                          
+  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit                                                    "
 `;
 
 exports[`render > error state (empty title) snapshot at 80 cols 1`] = `
 "                                                                                
   Create Task                                                                   
-               ────────────────────────────────────────────────────────────     
-                                                                             Tit
-le cannot be empty                                                              
-                    Type              feat                                      
-                                          › Title                               
-                                                               Description     ·
-···················                                                             
-                     Parent          type to search...                          
-                                                        + Block         type to 
-search...                                                                       
-           + Add           ····················                                 
-                                                 ───────────────────────────────
-─────────────────────────────                                                   
-                               ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter
- submit  Esc quit                                                               "
+  ────────────────────────────────────────────────────────────                  
+  Title cannot be empty                                                         
+  Type              feat                                                        
+› Title                                                                         
+  Description     ····················                                          
+  Parent          type to search...                                             
+  + Block         type to search...                                             
+  + Add           ····················                                          
+  ────────────────────────────────────────────────────────────                  
+  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
 `;
 
 exports[`render > filled create form snapshot at 80 cols 1`] = `
 "                                                                                
   Create Task                                                                   
-               ────────────────────────────────────────────────────────────     
-                                                                             Typ
-e              chore                                                            
-                    › Title           Implement user authentication             
-                                                                      Descriptio
-n     Add JWT-based auth with refresh tokens                                    
-                                              Parent          MRKL-010 - Auth ep
-ic                                                                              
-    Blocks 1        MRKL-011                                                    
-                              Blocks 2        MRKL-012                          
-                                                        + Block         type to 
-search...                                                                       
-           Criterion 1     Login endpoint returns JWT                           
-                                                       Criterion 2     Refresh t
-oken rotation works                                                             
-                     + Add           ····················                       
-                                                           ─────────────────────
-───────────────────────────────────────                                         
-                                         ↑↓ navigate  ←→ cycle type  Ctrl+N newl
-ine  Enter submit  Esc quit                                                     "
+  ────────────────────────────────────────────────────────────                  
+  Type              chore                                                       
+› Title           Implement user authentication                                 
+  Description     Add JWT-based auth with refresh tokens                        
+  Parent          MRKL-010 - Auth epic                                          
+  Blocks 1        MRKL-011                                                      
+  Blocks 2        MRKL-012                                                      
+  + Block         type to search...                                             
+  Criterion 1     Login endpoint returns JWT                                    
+  Criterion 2     Refresh token rotation works                                  
+  + Add           ····················                                          
+  ────────────────────────────────────────────────────────────                  
+  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
 `;
 
 exports[`render > long text wrapping snapshot at 40 cols 1`] = `
 "                                        
   Create Task                           
-               ─────────────────────────
-───────────                             
-             Type              feat     
-                                     Tit
-le           A very long task tit       
-                                        
-           le that should wrap          
-                                        
-         at narrow width                
-                        › Description   
-  This description con                  
-                                        
-tains enough text to                    
-                                       d
-emonstrate how the                      
-                                     for
-m handles word w                        
-                                  rappin
-g when the ter                          
-                                minal is
- very narrow                            
-              Parent          type to se"
+  ────────────────────────────────────  
+  Type              feat                
+  Title           A very long task tit  
+                  le that should wrap   
+                  at narrow width       
+› Description     This description con  
+                  tains enough text to  
+                   demonstrate how the  
+                   form handles word w  
+                  rapping when the ter  
+                  minal is very narrow  
+  Parent          type to search...     
+  + Block         type to search...     
+  Criterion 1     First criterion with  
+                   a long description   
+                  that wraps            
+  + Add           ····················  
+  ────────────────────────────────────  
+  ↑↓ navigate  ←→ cycle type  Ctrl+N new
+line  Enter submit  Esc quit            "
 `;

@@ -6,7 +6,7 @@ export type { FzfEntry, ListRenderState } from './list-tui.js'
 
 export function renderToScreen(ansiOutput: string, cols: number, rows: number): Promise<string> {
   return new Promise((resolve) => {
-    const terminal = new Terminal({ cols, rows, allowProposedApi: true })
+    const terminal = new Terminal({ cols, rows, allowProposedApi: true, convertEol: true })
 
     terminal.write(ansiOutput, () => {
       const buffer = terminal.buffer.active
