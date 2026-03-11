@@ -1,0 +1,106 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`render snapshots > basic task list snapshot at 80 cols 1`] = `
+"[Tasks]   Archive                                                               
+                                                                                
+>                                                                               
+────────────────────────────────────────────┬───────────────────────────────────
+ID            TYPE        STATUS        TIT…│ Preview                           
+────────────────────────────────────────────┼───────────────────────────────────
+MRKL-001      feat        todo          Add…│ MRKL-001 feat todo                
+├─MRKL-004      feat        todo          …│ Add user authentication            
+MRKL-002      fix         in-progress   Fix…│                                   
+MRKL-003      chore       done          Upd…│ Relationships                     
+MRKL-005      fix         in-progress   Ref…│   Children: MRKL-004              
+MRKL-006      test        todo          Wri…│                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+────────────────────────────────────────────┴───────────────────────────────────
+6/6 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search  "
+`;
+
+exports[`render snapshots > empty task list snapshot at 40 cols 1`] = `
+"[Tasks]   Archive                       
+                                        
+>                                       
+──────────────────────┬─────────────────
+ID            TYPE        STATUS        
+…│ Preview                              
+──────────────────────┼─────────────────
+                      │                 
+                      │                 
+                      │                 
+                      │                 
+                      │                 
+                      │                 
+                      │                 
+                      │                 
+                      │                 
+                      │                 
+                      │                 
+                      │                 
+                      │                 
+                      │                 
+                      │                 
+──────────────────────┴─────────────────
+0/0 tasks  ↑↓: navigate  Tab: switch  En"
+`;
+
+exports[`render snapshots > empty task list snapshot at 80 cols 1`] = `
+"[Tasks]   Archive                                                               
+                                                                                
+>                                                                               
+────────────────────────────────────────────┬───────────────────────────────────
+ID            TYPE        STATUS        TIT…│ Preview                           
+────────────────────────────────────────────┼───────────────────────────────────
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+────────────────────────────────────────────┴───────────────────────────────────
+0/0 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search  "
+`;
+
+exports[`render snapshots > empty task list snapshot at 120 cols 1`] = `
+"[Tasks]   Archive                                                                                                       
+                                                                                                                        
+>                                                                                                                       
+──────────────────────────────────────────────────────────────────┬─────────────────────────────────────────────────────
+ID            TYPE        STATUS        TITLE                     │ Preview                                             
+──────────────────────────────────────────────────────────────────┼─────────────────────────────────────────────────────
+                                                                  │                                                     
+                                                                  │                                                     
+                                                                  │                                                     
+                                                                  │                                                     
+                                                                  │                                                     
+                                                                  │                                                     
+                                                                  │                                                     
+                                                                  │                                                     
+                                                                  │                                                     
+                                                                  │                                                     
+                                                                  │                                                     
+                                                                  │                                                     
+                                                                  │                                                     
+                                                                  │                                                     
+                                                                  │                                                     
+──────────────────────────────────────────────────────────────────┴─────────────────────────────────────────────────────
+0/0 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search                                          "
+`;

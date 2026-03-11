@@ -124,3 +124,50 @@ describe('renderList', () => {
     expect(raw).toContain('3/3')
   })
 })
+
+describe('render snapshots', () => {
+  it('empty task list snapshot at 40 cols', async () => {
+    const stdout = createMockStdout(40, 24)
+    renderList(makeListState(), stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 40, 24)
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('empty task list snapshot at 80 cols', async () => {
+    const stdout = createMockStdout(80, 24)
+    renderList(makeListState(), stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 80, 24)
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('empty task list snapshot at 120 cols', async () => {
+    const stdout = createMockStdout(120, 24)
+    renderList(makeListState(), stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 120, 24)
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('basic task list snapshot at 80 cols', async () => {
+    const tasks = [
+      makeTask({ id: 'MRKL-001', title: 'Add user authentication', type: 'feat', status: 'todo' }),
+      makeTask({ id: 'MRKL-002', title: 'Fix login redirect bug', type: 'fix', status: 'in-progress' }),
+      makeTask({ id: 'MRKL-003', title: 'Update CI pipeline config', type: 'chore', status: 'done' }),
+      makeTask({ id: 'MRKL-004', title: 'Design dashboard layout', type: 'feat', status: 'todo', parent: 'MRKL-001' }),
+      makeTask({ id: 'MRKL-005', title: 'Refactor token validation', type: 'fix', status: 'in-progress' }),
+      makeTask({ id: 'MRKL-006', title: 'Write integration tests', type: 'test', status: 'todo' }),
+    ]
+    const entries = buildEntries(tasks)
+    const state = makeListState({
+      datasets: [
+        { label: 'Tasks', entries },
+        { label: 'Archive', entries: [] },
+      ],
+      filtered: entries,
+      allTasks: tasks,
+    })
+    const stdout = createMockStdout(80, 24)
+    renderList(state, stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 80, 24)
+    expect(screen).toMatchSnapshot()
+  })
+})

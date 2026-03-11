@@ -2,8 +2,9 @@
 id: MRKL-073
 title: list-tui render snapshots — empty and basic states
 type: test
-status: todo
+status: done
 created: '2026-03-10'
+flag: completed
 parent: MRKL-058
 blocks:
   - MRKL-070
@@ -16,8 +17,8 @@ Tier 1 snapshot tests in src/tui/list-tui.spec.ts (new file). Use makeListState(
 
 ## Acceptance Criteria
 
-- [ ] snapshot: empty task list at 40 cols
-- [ ] snapshot: empty task list at 80 cols
-- [ ] snapshot: empty task list at 120 cols
-- [ ] snapshot: basic task list (5-6 tasks) at 80 cols
-- [ ] pnpm test passes
+- [x] snapshot: empty task list at 40 cols
+- [x] snapshot: empty task list at 80 cols
+- [x] snapshot: empty task list at 120 cols
+- [x] snapshot: basic task list (5-6 tasks) at 80 cols
+- [x] pnpm test passes
