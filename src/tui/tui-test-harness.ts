@@ -14,24 +14,31 @@ export interface TuiProcess {
   write(data: string): void
   readScreen(): string
   waitForContent(match: string | RegExp, timeout?: number): Promise<string>
+  exitCode: Promise<number>
   kill(): void
 }
 
 export function spawnTui(
   command: string,
-  opts: { cols?: number; rows?: number } = {},
+  opts: { cols?: number; rows?: number; cwd?: string } = {},
 ): TuiProcess {
   const cols = opts.cols ?? 80
   const rows = opts.rows ?? 24
 
   const terminal = new Terminal({ cols, rows, allowProposedApi: true, convertEol: false })
 
-  const pty = nodePty.spawn(TSX_BIN, ['src/cli.ts', command], {
+  const cliPath = resolve(PROJECT_ROOT, 'src/cli.ts')
+
+  const pty = nodePty.spawn(TSX_BIN, [cliPath, command], {
     name: 'xterm-256color',
     cols,
     rows,
-    cwd: PROJECT_ROOT,
+    cwd: opts.cwd ?? PROJECT_ROOT,
     env: { ...process.env, FORCE_COLOR: '1' },
+  })
+
+  const exitCode = new Promise<number>((resolveExit) => {
+    pty.onExit(({ exitCode: code }) => resolveExit(code))
   })
 
   pty.onData((data: string) => {
@@ -68,6 +75,7 @@ export function spawnTui(
     write: (data: string) => pty.write(data),
     readScreen,
     waitForContent,
+    exitCode,
     kill: () => {
       pty.kill()
       terminal.dispose()

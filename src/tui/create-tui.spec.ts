@@ -1,4 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest'
+import { mkdirSync, mkdtempSync, writeFileSync, rmSync, readdirSync } from 'node:fs'
+import { join } from 'node:path'
+import { tmpdir } from 'node:os'
 import { filterCandidates, buildParentCandidates, render } from './create-tui.js'
 import type { TaskData } from '../types.js'
 import { createMockStdout, makeFormState, renderToScreen, spawnTui, type TuiProcess } from './tui-test-harness.js'
@@ -248,5 +251,59 @@ describe('interaction snapshots', () => {
     tui.write('\x1b[D') // left → back to feat
     const featScreen = await tui.waitForContent('feat')
     expect(featScreen).toMatchSnapshot()
+  })
+
+  it('typing characters into title field shows text on screen', async () => {
+    tui = spawnTui('create', { cols: 80, rows: 24 })
+    await tui.waitForContent('feat')
+    tui.write('\x1b[B') // down to title
+    await new Promise((r) => setTimeout(r, 200))
+    tui.write('Hello')
+    await tui.waitForContent('Hello')
+    const screen = tui.readScreen()
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('pressing Enter on filled form triggers submit', async () => {
+    const tempDir = mkdtempSync(join(tmpdir(), 'mrkl-test-'))
+    mkdirSync(join(tempDir, '.tasks'), { recursive: true })
+    mkdirSync(join(tempDir, '.config', 'mrkl'), { recursive: true })
+    writeFileSync(
+      join(tempDir, '.config', 'mrkl', 'mrkl.toml'),
+      'prefix = "MRKL"\ntasks_dir = ".tasks"\nverbose_files = false\n',
+    )
+    writeFileSync(join(tempDir, '.config', 'mrkl', 'mrkl_counter'), '0')
+
+    try {
+      tui = spawnTui('create', { cols: 80, rows: 24, cwd: tempDir })
+      await tui.waitForContent('feat')
+      tui.write('\x1b[B') // down to title
+      await new Promise((r) => setTimeout(r, 200))
+      tui.write('Test task')
+      await tui.waitForContent('Test task')
+      // Enter through: title → desc → parent → blocks +Add → criteria +Add (empty = submit)
+      for (let i = 0; i < 4; i++) {
+        tui.write('\r')
+        await new Promise((r) => setTimeout(r, 100))
+      }
+      const code = await tui.exitCode
+      expect(code).toBe(0)
+      const screen = tui.readScreen()
+      expect(screen).toMatchSnapshot()
+      const taskFiles = readdirSync(join(tempDir, '.tasks')).filter(
+        (f) => f.endsWith('.md'),
+      )
+      expect(taskFiles).toHaveLength(1)
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true })
+    }
+  })
+
+  it('pressing Esc cancels form', async () => {
+    tui = spawnTui('create', { cols: 80, rows: 24 })
+    await tui.waitForContent('feat')
+    tui.write('\x1b')
+    const code = await tui.exitCode
+    expect(code).toBe(0)
   })
 })

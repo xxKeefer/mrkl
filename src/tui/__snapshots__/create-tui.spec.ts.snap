@@ -70,6 +70,34 @@ exports[`interaction snapshots > left/right arrows cycle type options 2`] = `
   ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
 `;
 
+exports[`interaction snapshots > pressing Enter on filled form triggers submit 1`] = `
+"                                                                                
+  Create Task                                                                   
+  ────────────────────────────────────────────────────────────                  
+  Type              feat                                                        
+  Title           Test task                                                     
+  Description     ····················                                          
+  Parent          type to search...                                             
+› + Block                                                                       
+  + Add           ····················                                          
+  ────────────────────────────────────────────────────────────                  
+  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+`;
+
+exports[`interaction snapshots > typing characters into title field shows text on screen 1`] = `
+"                                                                                
+  Create Task                                                                   
+  ────────────────────────────────────────────────────────────                  
+  Type              feat                                                        
+› Title           Hello                                                         
+  Description     ····················                                          
+  Parent          type to search...                                             
+  + Block         type to search...                                             
+  + Add           ····················                                          
+  ────────────────────────────────────────────────────────────                  
+  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+`;
+
 exports[`render > active autocomplete with suggestions snapshot at 80 cols 1`] = `
 "                                                                                
   Create Task                                                                   
