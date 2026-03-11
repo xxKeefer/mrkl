@@ -1,5 +1,55 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`autocomplete interaction snapshots > Enter selects highlighted suggestion 1`] = `
+"                                                                                
+  Create Task                                                                   
+  ────────────────────────────────────────────────────────────                  
+  Type              feat                                                        
+  Title           ····················                                          
+  Description     ····················                                          
+› Parent          auth                                                          
+                      MRKL-001 - Auth epic                                      
+                    → MRKL-003 - Auth tests                                     
+  + Block         type to search...                                             
+  + Add           ····················                                          
+  ────────────────────────────────────────────────────────────                  
+  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+`;
+
+exports[`autocomplete interaction snapshots > right arrow navigates suggestion highlight 1`] = `
+"                                                                                
+  Create Task                                                                   
+  ────────────────────────────────────────────────────────────                  
+  Type              feat                                                        
+  Title           ····················                                          
+  Description     ····················                                          
+› Parent          MRKL                                                          
+                      MRKL-001 - Auth epic                                      
+                    → MRKL-002 - Fix login bug                                  
+                      MRKL-003 - Auth tests                                     
+  + Block         type to search...                                             
+  + Add           ····················                                          
+  ────────────────────────────────────────────────────────────                  
+  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+`;
+
+exports[`autocomplete interaction snapshots > typing in parent field shows filtered suggestions 1`] = `
+"                                                                                
+  Create Task                                                                   
+  ────────────────────────────────────────────────────────────                  
+  Type              feat                                                        
+  Title           ····················                                          
+  Description     ····················                                          
+› Parent                                                                        
+                    → MRKL-001 - Auth epic                                      
+                      MRKL-002 - Fix login bug                                  
+                      MRKL-003 - Auth tests                                     
+  + Block         type to search...                                             
+  + Add           ····················                                          
+  ────────────────────────────────────────────────────────────                  
+  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+`;
+
 exports[`interaction snapshots > arrow down moves to title field 1`] = `
 "                                                                                
   Create Task                                                                   

@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from 'vitest'
+import { describe, it, expect, afterEach, beforeAll, afterAll } from 'vitest'
 import { mkdirSync, mkdtempSync, writeFileSync, rmSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
@@ -305,5 +305,79 @@ describe('interaction snapshots', () => {
     tui.write('\x1b')
     const code = await tui.exitCode
     expect(code).toBe(0)
+  })
+})
+
+describe('autocomplete interaction snapshots', () => {
+  let tui: TuiProcess | null = null
+  let tempDir: string
+
+  function seedTaskFile(dir: string, id: string, title: string, type: string): void {
+    writeFileSync(
+      join(dir, '.tasks', `${id}.md`),
+      `---\nid: ${id}\ntitle: ${title}\ntype: ${type}\nstatus: todo\ncreated: '2026-01-01'\n---\n`,
+    )
+  }
+
+  beforeAll(() => {
+    tempDir = mkdtempSync(join(tmpdir(), 'mrkl-autocomplete-'))
+    mkdirSync(join(tempDir, '.tasks'), { recursive: true })
+    mkdirSync(join(tempDir, '.config', 'mrkl'), { recursive: true })
+    writeFileSync(
+      join(tempDir, '.config', 'mrkl', 'mrkl.toml'),
+      'prefix = "MRKL"\ntasks_dir = ".tasks"\nverbose_files = false\n',
+    )
+    writeFileSync(join(tempDir, '.config', 'mrkl', 'mrkl_counter'), '3')
+    seedTaskFile(tempDir, 'MRKL-001', 'Auth epic', 'feat')
+    seedTaskFile(tempDir, 'MRKL-002', 'Fix login bug', 'fix')
+    seedTaskFile(tempDir, 'MRKL-003', 'Auth tests', 'test')
+  })
+
+  afterEach(() => {
+    tui?.kill()
+    tui = null
+  })
+
+  afterAll(() => {
+    rmSync(tempDir, { recursive: true, force: true })
+  })
+
+  it('typing in parent field shows filtered suggestions', async () => {
+    tui = spawnTui('create', { cols: 80, rows: 24, cwd: tempDir })
+    await tui.waitForContent('feat')
+    // Navigate to parent field (index 3): type→title→desc→parent
+    tui.write('\x1b[B\x1b[B\x1b[B')
+    await new Promise((r) => setTimeout(r, 300))
+    tui.write('auth')
+    const screen = await tui.waitForContent('Auth epic')
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('right arrow navigates suggestion highlight', async () => {
+    tui = spawnTui('create', { cols: 80, rows: 24, cwd: tempDir })
+    await tui.waitForContent('feat')
+    tui.write('\x1b[B\x1b[B\x1b[B')
+    await new Promise((r) => setTimeout(r, 300))
+    tui.write('MRKL')
+    await tui.waitForContent('MRKL-001')
+    tui.write('\x1b[C') // right arrow → move highlight to index 1
+    await new Promise((r) => setTimeout(r, 200))
+    const screen = tui.readScreen()
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('Enter selects highlighted suggestion', async () => {
+    tui = spawnTui('create', { cols: 80, rows: 24, cwd: tempDir })
+    await tui.waitForContent('feat')
+    tui.write('\x1b[B\x1b[B\x1b[B')
+    await new Promise((r) => setTimeout(r, 300))
+    tui.write('auth')
+    await tui.waitForContent('Auth epic')
+    tui.write('\x1b[C') // highlight "MRKL-003 - Auth tests" (index 1)
+    await new Promise((r) => setTimeout(r, 200))
+    tui.write('\r') // select it
+    await tui.waitForContent('Auth tests')
+    const screen = tui.readScreen()
+    expect(screen).toMatchSnapshot()
   })
 })
