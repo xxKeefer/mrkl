@@ -170,4 +170,116 @@ describe('render snapshots', () => {
     const screen = await renderToScreen(stdout.getOutput(), 80, 24)
     expect(screen).toMatchSnapshot()
   })
+
+  it('epic grouping snapshot at 80 cols', async () => {
+    const tasks = [
+      makeTask({ id: 'MRKL-001', title: 'Auth epic', type: 'feat', status: 'todo' }),
+      makeTask({ id: 'MRKL-002', title: 'Login page', type: 'feat', status: 'in-progress', parent: 'MRKL-001' }),
+      makeTask({ id: 'MRKL-003', title: 'Token refresh', type: 'feat', status: 'todo', parent: 'MRKL-001' }),
+      makeTask({ id: 'MRKL-004', title: 'Fix CI pipeline', type: 'chore', status: 'done' }),
+      makeTask({ id: 'MRKL-005', title: 'Update README', type: 'chore', status: 'todo' }),
+    ]
+    const entries = buildEntries(tasks)
+    const state = makeListState({
+      datasets: [
+        { label: 'Tasks', entries },
+        { label: 'Archive', entries: [] },
+      ],
+      filtered: entries,
+      allTasks: tasks,
+    })
+    const stdout = createMockStdout(80, 24)
+    renderList(state, stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 80, 24)
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('blocking indicators snapshot at 80 cols', async () => {
+    const tasks = [
+      makeTask({ id: 'MRKL-010', title: 'Database migration', type: 'feat', status: 'todo', blocks: ['MRKL-011', 'MRKL-012'] }),
+      makeTask({ id: 'MRKL-011', title: 'API endpoints', type: 'feat', status: 'todo' }),
+      makeTask({ id: 'MRKL-012', title: 'Frontend integration', type: 'feat', status: 'todo' }),
+    ]
+    const entries = buildEntries(tasks)
+    const state = makeListState({
+      datasets: [
+        { label: 'Tasks', entries },
+        { label: 'Archive', entries: [] },
+      ],
+      filtered: entries,
+      allTasks: tasks,
+    })
+    const stdout = createMockStdout(80, 24)
+    renderList(state, stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 80, 24)
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('archive tab active snapshot at 80 cols', async () => {
+    const tasks = [
+      makeTask({ id: 'MRKL-020', title: 'Archived feature', type: 'feat', status: 'closed' }),
+      makeTask({ id: 'MRKL-021', title: 'Old bugfix', type: 'fix', status: 'done' }),
+    ]
+    const archiveEntries = buildEntries(tasks)
+    const state = makeListState({
+      activeTab: 1,
+      datasets: [
+        { label: 'Tasks', entries: [] },
+        { label: 'Archive', entries: archiveEntries },
+      ],
+      filtered: archiveEntries,
+      allTasks: tasks,
+    })
+    const stdout = createMockStdout(80, 24)
+    renderList(state, stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 80, 24)
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('scroll offset snapshot at 80 cols', async () => {
+    const tasks = Array.from({ length: 20 }, (_, i) =>
+      makeTask({
+        id: `MRKL-${String(i + 1).padStart(3, '0')}`,
+        title: `Task number ${i + 1}`,
+        type: i % 3 === 0 ? 'feat' : i % 3 === 1 ? 'fix' : 'chore',
+        status: i % 3 === 0 ? 'todo' : i % 3 === 1 ? 'in-progress' : 'done',
+      }),
+    )
+    const entries = buildEntries(tasks)
+    const state = makeListState({
+      datasets: [
+        { label: 'Tasks', entries },
+        { label: 'Archive', entries: [] },
+      ],
+      filtered: entries,
+      allTasks: tasks,
+      scrollOffset: 3,
+      selectedIndex: 5,
+    })
+    const stdout = createMockStdout(80, 24)
+    renderList(state, stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 80, 24)
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('title truncation snapshot at 40 cols', async () => {
+    const tasks = [
+      makeTask({ id: 'MRKL-001', title: 'Implement user authentication with OAuth2 and SAML', type: 'feat', status: 'todo' }),
+      makeTask({ id: 'MRKL-002', title: 'Fix critical production database connection pooling', type: 'fix', status: 'in-progress' }),
+      makeTask({ id: 'MRKL-003', title: 'Refactor legacy notification service infrastructure', type: 'chore', status: 'done' }),
+    ]
+    const entries = buildEntries(tasks)
+    const state = makeListState({
+      datasets: [
+        { label: 'Tasks', entries },
+        { label: 'Archive', entries: [] },
+      ],
+      filtered: entries,
+      allTasks: tasks,
+    })
+    const stdout = createMockStdout(40, 24)
+    renderList(state, stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 40, 24)
+    expect(screen).toMatchSnapshot()
+  })
 })

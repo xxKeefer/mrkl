@@ -2,8 +2,9 @@
 id: MRKL-074
 title: list-tui render snapshots — advanced states
 type: test
-status: todo
+status: done
 created: '2026-03-10'
+flag: completed
 parent: MRKL-058
 blocks:
   - MRKL-073
@@ -15,9 +16,9 @@ Tier 1 snapshot tests in src/tui/list-tui.spec.ts. Additional snapshots for comp
 
 ## Acceptance Criteria
 
-- [ ] snapshot: epic grouping (parent with children) at 80 cols
-- [ ] snapshot: tasks with blocking indicators at 80 cols
-- [ ] snapshot: archive tab active at 80 cols
-- [ ] snapshot: scroll offset > 0 at 80 cols
-- [ ] snapshot: title truncation at 40 cols
-- [ ] pnpm test passes
+- [x] snapshot: epic grouping (parent with children) at 80 cols
+- [x] snapshot: tasks with blocking indicators at 80 cols
+- [x] snapshot: archive tab active at 80 cols
+- [x] snapshot: scroll offset > 0 at 80 cols
+- [x] snapshot: title truncation at 40 cols
+- [x] pnpm test passes

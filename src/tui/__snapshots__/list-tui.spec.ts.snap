@@ -1,5 +1,31 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`render snapshots > archive tab active snapshot at 80 cols 1`] = `
+" Tasks   [Archive]                                                              
+                                                                                
+>                                                                               
+────────────────────────────────────────────┬───────────────────────────────────
+ID            TYPE        STATUS        TIT…│ Preview                           
+────────────────────────────────────────────┼───────────────────────────────────
+MRKL-020      feat        closed        Arc…│ MRKL-020 feat closed              
+MRKL-021      fix         done          Old…│ Archived feature                  
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+────────────────────────────────────────────┴───────────────────────────────────
+2/2 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search  "
+`;
+
 exports[`render snapshots > basic task list snapshot at 80 cols 1`] = `
 "[Tasks]   Archive                                                               
                                                                                 
@@ -24,6 +50,33 @@ MRKL-006      test        todo          Wri…│
                                             │                                   
 ────────────────────────────────────────────┴───────────────────────────────────
 6/6 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search  "
+`;
+
+exports[`render snapshots > blocking indicators snapshot at 80 cols 1`] = `
+"[Tasks]   Archive                                                               
+                                                                                
+>                                                                               
+────────────────────────────────────────────┬───────────────────────────────────
+ID            TYPE        STATUS        TIT…│ Preview                           
+────────────────────────────────────────────┼───────────────────────────────────
+MRKL-010      feat        todo          Dat… ⛔► MRKL-011, MRKL-012│ MRKL-010 fea
+t todo                                                                          
+MRKL-011      feat        todo          API… ◄⛔ MRKL-010│ Database migration    
+MRKL-012      feat        todo          Fro… ◄⛔ MRKL-010│                       
+                                            │ Relationships                     
+                                            │   Blocks: MRKL-011, MRKL-012      
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+────────────────────────────────────────────┴───────────────────────────────────
+3/3 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search  "
 `;
 
 exports[`render snapshots > empty task list snapshot at 40 cols 1`] = `
@@ -103,4 +156,83 @@ ID            TYPE        STATUS        TITLE                     │ Preview
                                                                   │                                                     
 ──────────────────────────────────────────────────────────────────┴─────────────────────────────────────────────────────
 0/0 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search                                          "
+`;
+
+exports[`render snapshots > epic grouping snapshot at 80 cols 1`] = `
+"[Tasks]   Archive                                                               
+                                                                                
+>                                                                               
+────────────────────────────────────────────┬───────────────────────────────────
+ID            TYPE        STATUS        TIT…│ Preview                           
+────────────────────────────────────────────┼───────────────────────────────────
+MRKL-001      feat        todo          Aut…│ MRKL-001 feat todo                
+├─MRKL-002      feat        in-progress   …│ Auth epic                          
+├─MRKL-003      feat        todo          …│                                    
+MRKL-004      chore       done          Fix…│ Relationships                     
+MRKL-005      chore       todo          Upd…│   Children: MRKL-002, MRKL-003    
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+────────────────────────────────────────────┴───────────────────────────────────
+5/5 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search  "
+`;
+
+exports[`render snapshots > scroll offset snapshot at 80 cols 1`] = `
+"[Tasks]   Archive                                                               
+                                                                                
+>                                                                               
+────────────────────────────────────────────┬───────────────────────────────────
+ID            TYPE        STATUS        TIT…│ Preview                           
+────────────────────────────────────────────┼───────────────────────────────────
+MRKL-004      feat        todo          Tas…│ MRKL-006 chore done               
+MRKL-005      fix         in-progress   Tas…│ Task number 6                     
+MRKL-006      chore       done          Tas…│                                   
+MRKL-007      feat        todo          Tas…│                                   
+MRKL-008      fix         in-progress   Tas…│                                   
+MRKL-009      chore       done          Tas…│                                   
+MRKL-010      feat        todo          Tas…│                                   
+MRKL-011      fix         in-progress   Tas…│                                   
+MRKL-012      chore       done          Tas…│                                   
+MRKL-013      feat        todo          Tas…│                                   
+MRKL-014      fix         in-progress   Tas…│                                   
+MRKL-015      chore       done          Tas…│                                   
+MRKL-016      feat        todo          Tas…│                                   
+MRKL-017      fix         in-progress   Tas…│                                   
+MRKL-018      chore       done          Tas…│                                   
+────────────────────────────────────────────┴───────────────────────────────────
+20/20 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search"
+`;
+
+exports[`render snapshots > title truncation snapshot at 40 cols 1`] = `
+"[Tasks]   Archive                       
+                                        
+>                                       
+──────────────────────┬─────────────────
+ID            TYPE        STATUS        
+…│ Preview                              
+──────────────────────┼─────────────────
+MRKL-001      feat        todo          
+…│ MRKL-001 feat todo                   
+MRKL-002      fix         in-progress   
+…│ Implement user authentication with OA
+uth2 and SAML                           
+MRKL-003      chore       done          
+…│                                      
+                      │                 
+                      │                 
+                      │                 
+                      │                 
+                      │                 
+                      │                 
+                      │                 
+                      │                 
+                      │                 
+                      │                 "
 `;
