@@ -1,7 +1,10 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, afterEach, beforeAll, afterAll } from 'vitest'
+import { mkdirSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs'
+import { join } from 'node:path'
+import { tmpdir } from 'node:os'
 import { buildEntries, renderList } from './list-tui.js'
 import type { ListRenderState } from './list-tui.js'
-import { makeTask, makeListState, createMockStdout, renderToScreen } from './tui-test-harness.js'
+import { makeTask, makeListState, createMockStdout, renderToScreen, spawnTui, type TuiProcess } from './tui-test-harness.js'
 
 describe('buildEntries', () => {
   it('produces FzfEntry[] from flat tasks', () => {
@@ -281,5 +284,108 @@ describe('render snapshots', () => {
     renderList(state, stdout)
     const screen = await renderToScreen(stdout.getOutput(), 40, 24)
     expect(screen).toMatchSnapshot()
+  })
+})
+
+describe('interaction snapshots', () => {
+  let tui: TuiProcess | null = null
+  let tempDir: string
+
+  function seedTaskFile(dir: string, id: string, title: string, type: string, status = 'todo'): void {
+    writeFileSync(
+      join(dir, '.tasks', `${id}.md`),
+      `---\nid: ${id}\ntitle: ${title}\ntype: ${type}\nstatus: ${status}\ncreated: '2026-01-01'\n---\n`,
+    )
+  }
+
+  function seedArchivedTaskFile(dir: string, id: string, title: string, type: string, status = 'closed'): void {
+    writeFileSync(
+      join(dir, '.tasks', '.archive', `${id}.md`),
+      `---\nid: ${id}\ntitle: ${title}\ntype: ${type}\nstatus: ${status}\ncreated: '2026-01-01'\n---\n`,
+    )
+  }
+
+  beforeAll(() => {
+    tempDir = mkdtempSync(join(tmpdir(), 'mrkl-list-interaction-'))
+    mkdirSync(join(tempDir, '.tasks', '.archive'), { recursive: true })
+    mkdirSync(join(tempDir, '.config', 'mrkl'), { recursive: true })
+    writeFileSync(
+      join(tempDir, '.config', 'mrkl', 'mrkl.toml'),
+      'prefix = "MRKL"\ntasks_dir = ".tasks"\nverbose_files = false\n',
+    )
+    writeFileSync(join(tempDir, '.config', 'mrkl', 'mrkl_counter'), '5')
+    seedTaskFile(tempDir, 'MRKL-001', 'Auth epic', 'feat')
+    seedTaskFile(tempDir, 'MRKL-002', 'Fix login bug', 'fix', 'in-progress')
+    seedTaskFile(tempDir, 'MRKL-003', 'Auth tests', 'test')
+    seedTaskFile(tempDir, 'MRKL-004', 'Update CI config', 'chore', 'done')
+    seedTaskFile(tempDir, 'MRKL-005', 'Dashboard layout', 'feat')
+    seedArchivedTaskFile(tempDir, 'MRKL-099', 'Old feature', 'feat')
+  })
+
+  afterEach(() => {
+    tui?.kill()
+    tui = null
+  })
+
+  afterAll(() => {
+    rmSync(tempDir, { recursive: true, force: true })
+  })
+
+  it('initial render shows task list with first item selected', async () => {
+    tui = spawnTui('list', { cols: 80, rows: 24, cwd: tempDir })
+    const screen = await tui.waitForContent('MRKL-001')
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('arrow down moves selection to next task', async () => {
+    tui = spawnTui('list', { cols: 80, rows: 24, cwd: tempDir })
+    await tui.waitForContent('MRKL-001')
+    tui.write('\x1b[B')
+    await new Promise((r) => setTimeout(r, 200))
+    const screen = tui.readScreen()
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('arrow up moves selection back to previous task', async () => {
+    tui = spawnTui('list', { cols: 80, rows: 24, cwd: tempDir })
+    await tui.waitForContent('MRKL-001')
+    tui.write('\x1b[B') // down
+    await new Promise((r) => setTimeout(r, 200))
+    tui.write('\x1b[A') // up
+    await new Promise((r) => setTimeout(r, 200))
+    const screen = tui.readScreen()
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('typing characters filters the task list', async () => {
+    tui = spawnTui('list', { cols: 80, rows: 24, cwd: tempDir })
+    await tui.waitForContent('MRKL-001')
+    tui.write('auth')
+    const screen = await tui.waitForContent('Auth epic')
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('Tab key switches between Tasks and Archive', async () => {
+    tui = spawnTui('list', { cols: 80, rows: 24, cwd: tempDir })
+    await tui.waitForContent('MRKL-001')
+    tui.write('\t')
+    const screen = await tui.waitForContent('Old feature')
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('Enter selects the highlighted task and opens edit TUI', async () => {
+    tui = spawnTui('list', { cols: 80, rows: 24, cwd: tempDir })
+    await tui.waitForContent('MRKL-001')
+    tui.write('\r')
+    const screen = await tui.waitForContent('Edit Task')
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('Esc cancels and exits cleanly', async () => {
+    tui = spawnTui('list', { cols: 80, rows: 24, cwd: tempDir })
+    await tui.waitForContent('MRKL-001')
+    tui.write('\x1b')
+    const code = await tui.exitCode
+    expect(code).toBe(0)
   })
 })

@@ -1,5 +1,150 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`interaction snapshots > Enter selects the highlighted task and opens edit TUI 1`] = `
+"                                                                                
+  Edit Task MRKL-001                                                            
+  ────────────────────────────────────────────────────────────                  
+› Type            ◂ feat ▸                                                      
+  Status            todo                                                        
+  Title           Auth epic                                                     
+  Description     ····················                                          
+  Parent          type to search...                                             
+  + Block         type to search...                                             
+  + Add           ····················                                          
+  ────────────────────────────────────────────────────────────                  
+  ↑↓ navigate  ←→ cycle type/status  Ctrl+N newline  Enter submit  Esc quit     "
+`;
+
+exports[`interaction snapshots > Tab key switches between Tasks and Archive 1`] = `
+" Tasks   [Archive]                                                              
+                                                                                
+>                                                                               
+────────────────────────────────────────────┬───────────────────────────────────
+ID            TYPE        STATUS        TIT…│ Preview                           
+────────────────────────────────────────────┼───────────────────────────────────
+MRKL-099      feat        closed        Old…│ MRKL-099 feat closed              
+                                            │ Old feature                       
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+────────────────────────────────────────────┴───────────────────────────────────
+1/1 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search  "
+`;
+
+exports[`interaction snapshots > arrow down moves selection to next task 1`] = `
+"[Tasks]   Archive                                                               
+                                                                                
+>                                                                               
+────────────────────────────────────────────┬───────────────────────────────────
+ID            TYPE        STATUS        TIT…│ Preview                           
+────────────────────────────────────────────┼───────────────────────────────────
+MRKL-001      feat        todo          Aut…│ MRKL-002 fix in-progress          
+MRKL-002      fix         in-progress   Fix…│ Fix login bug                     
+MRKL-003      test        todo          Aut…│                                   
+MRKL-004      chore       done          Upd…│                                   
+MRKL-005      feat        todo          Das…│                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+────────────────────────────────────────────┴───────────────────────────────────
+5/5 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search  "
+`;
+
+exports[`interaction snapshots > arrow up moves selection back to previous task 1`] = `
+"[Tasks]   Archive                                                               
+                                                                                
+>                                                                               
+────────────────────────────────────────────┬───────────────────────────────────
+ID            TYPE        STATUS        TIT…│ Preview                           
+────────────────────────────────────────────┼───────────────────────────────────
+MRKL-001      feat        todo          Aut…│ MRKL-001 feat todo                
+MRKL-002      fix         in-progress   Fix…│ Auth epic                         
+MRKL-003      test        todo          Aut…│                                   
+MRKL-004      chore       done          Upd…│                                   
+MRKL-005      feat        todo          Das…│                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+────────────────────────────────────────────┴───────────────────────────────────
+5/5 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search  "
+`;
+
+exports[`interaction snapshots > initial render shows task list with first item selected 1`] = `
+"[Tasks]   Archive                                                               
+                                                                                
+>                                                                               
+────────────────────────────────────────────┬───────────────────────────────────
+ID            TYPE        STATUS        TIT…│ Preview                           
+────────────────────────────────────────────┼───────────────────────────────────
+MRKL-001      feat        todo          Aut…│ MRKL-001 feat todo                
+MRKL-002      fix         in-progress   Fix…│ Auth epic                         
+MRKL-003      test        todo          Aut…│                                   
+MRKL-004      chore       done          Upd…│                                   
+MRKL-005      feat        todo          Das…│                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+────────────────────────────────────────────┴───────────────────────────────────
+5/5 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search  "
+`;
+
+exports[`interaction snapshots > typing characters filters the task list 1`] = `
+"[Tasks]   Archive                                                               
+                                                                                
+>                                                                               
+────────────────────────────────────────────┬───────────────────────────────────
+ID            TYPE        STATUS        TIT…│ Preview                           
+────────────────────────────────────────────┼───────────────────────────────────
+MRKL-001      feat        todo          Aut…│ MRKL-001 feat todo                
+MRKL-002      fix         in-progress   Fix…│ Auth epic                         
+MRKL-003      test        todo          Aut…│                                   
+MRKL-004      chore       done          Upd…│                                   
+MRKL-005      feat        todo          Das…│                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+────────────────────────────────────────────┴───────────────────────────────────
+5/5 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search  "
+`;
+
 exports[`render snapshots > archive tab active snapshot at 80 cols 1`] = `
 " Tasks   [Archive]                                                              
                                                                                 
