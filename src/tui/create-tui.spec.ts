@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, afterEach } from 'vitest'
 import { filterCandidates, buildParentCandidates, render } from './create-tui.js'
 import type { TaskData } from '../types.js'
-import { createMockStdout, makeFormState, renderToScreen } from './tui-test-harness.js'
+import { createMockStdout, makeFormState, renderToScreen, spawnTui, type TuiProcess } from './tui-test-harness.js'
 
 describe('filterCandidates', () => {
   const candidates = [
@@ -201,5 +201,52 @@ describe('render', () => {
     render(state, stdout)
     const screen = await renderToScreen(stdout.getOutput(), 40, 24)
     expect(screen).toMatchSnapshot()
+  })
+})
+
+describe('interaction snapshots', () => {
+  let tui: TuiProcess | null = null
+
+  afterEach(() => {
+    tui?.kill()
+    tui = null
+  })
+
+  it('initial render shows type field highlighted', async () => {
+    tui = spawnTui('create', { cols: 80, rows: 24 })
+    const screen = await tui.waitForContent('feat')
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('arrow down moves to title field', async () => {
+    tui = spawnTui('create', { cols: 80, rows: 24 })
+    await tui.waitForContent('feat')
+    tui.write('\x1b[B')
+    // Wait for re-render — title field becomes active, cursor moves
+    await new Promise((r) => setTimeout(r, 200))
+    const screen = tui.readScreen()
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('arrow up returns to type field', async () => {
+    tui = spawnTui('create', { cols: 80, rows: 24 })
+    await tui.waitForContent('feat')
+    tui.write('\x1b[B') // down to title
+    await new Promise((r) => setTimeout(r, 200))
+    tui.write('\x1b[A') // up back to type
+    await new Promise((r) => setTimeout(r, 200))
+    const screen = tui.readScreen()
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('left/right arrows cycle type options', async () => {
+    tui = spawnTui('create', { cols: 80, rows: 24 })
+    await tui.waitForContent('feat')
+    tui.write('\x1b[C') // right → fix
+    const fixScreen = await tui.waitForContent('fix')
+    expect(fixScreen).toMatchSnapshot()
+    tui.write('\x1b[D') // left → back to feat
+    const featScreen = await tui.waitForContent('feat')
+    expect(featScreen).toMatchSnapshot()
   })
 })

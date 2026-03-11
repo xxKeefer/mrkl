@@ -1,5 +1,75 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`interaction snapshots > arrow down moves to title field 1`] = `
+"                                                                                
+  Create Task                                                                   
+  ────────────────────────────────────────────────────────────                  
+  Type              feat                                                        
+› Title                                                                         
+  Description     ····················                                          
+  Parent          type to search...                                             
+  + Block         type to search...                                             
+  + Add           ····················                                          
+  ────────────────────────────────────────────────────────────                  
+  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+`;
+
+exports[`interaction snapshots > arrow up returns to type field 1`] = `
+"                                                                                
+  Create Task                                                                   
+  ────────────────────────────────────────────────────────────                  
+› Type            ◂ feat ▸                                                      
+  Title           ····················                                          
+  Description     ····················                                          
+  Parent          type to search...                                             
+  + Block         type to search...                                             
+  + Add           ····················                                          
+  ────────────────────────────────────────────────────────────                  
+  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+`;
+
+exports[`interaction snapshots > initial render shows type field highlighted 1`] = `
+"                                                                                
+  Create Task                                                                   
+  ────────────────────────────────────────────────────────────                  
+› Type            ◂ feat ▸                                                      
+  Title           ····················                                          
+  Description     ····················                                          
+  Parent          type to search...                                             
+  + Block         type to search...                                             
+  + Add           ····················                                          
+  ────────────────────────────────────────────────────────────                  
+  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+`;
+
+exports[`interaction snapshots > left/right arrows cycle type options 1`] = `
+"                                                                                
+  Create Task                                                                   
+  ────────────────────────────────────────────────────────────                  
+› Type            ◂ fix ▸                                                       
+  Title           ····················                                          
+  Description     ····················                                          
+  Parent          type to search...                                             
+  + Block         type to search...                                             
+  + Add           ····················                                          
+  ────────────────────────────────────────────────────────────                  
+  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+`;
+
+exports[`interaction snapshots > left/right arrows cycle type options 2`] = `
+"                                                                                
+  Create Task                                                                   
+  ────────────────────────────────────────────────────────────                  
+› Type            ◂ feat ▸                                                      
+  Title           ····················                                          
+  Description     ····················                                          
+  Parent          type to search...                                             
+  + Block         type to search...                                             
+  + Add           ····················                                          
+  ────────────────────────────────────────────────────────────                  
+  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+`;
+
 exports[`render > active autocomplete with suggestions snapshot at 80 cols 1`] = `
 "                                                                                
   Create Task                                                                   

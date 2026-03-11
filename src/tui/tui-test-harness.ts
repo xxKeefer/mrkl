@@ -1,8 +1,79 @@
 import { Terminal, type IBufferLine } from '@xterm/headless'
+import * as nodePty from 'node-pty'
+import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import type { TaskData } from '../types.js'
 import type { FormState, FormMode } from './create-tui.js'
 import type { ListRenderState } from './list-tui.js'
 export type { FzfEntry, ListRenderState } from './list-tui.js'
+
+const PROJECT_ROOT = resolve(fileURLToPath(import.meta.url), '../../..')
+const TSX_BIN = resolve(PROJECT_ROOT, 'node_modules/.bin/tsx')
+
+export interface TuiProcess {
+  write(data: string): void
+  readScreen(): string
+  waitForContent(match: string | RegExp, timeout?: number): Promise<string>
+  kill(): void
+}
+
+export function spawnTui(
+  command: string,
+  opts: { cols?: number; rows?: number } = {},
+): TuiProcess {
+  const cols = opts.cols ?? 80
+  const rows = opts.rows ?? 24
+
+  const terminal = new Terminal({ cols, rows, allowProposedApi: true, convertEol: false })
+
+  const pty = nodePty.spawn(TSX_BIN, ['src/cli.ts', command], {
+    name: 'xterm-256color',
+    cols,
+    rows,
+    cwd: PROJECT_ROOT,
+    env: { ...process.env, FORCE_COLOR: '1' },
+  })
+
+  pty.onData((data: string) => {
+    terminal.write(data)
+  })
+
+  function readScreen(): string {
+    const buffer = terminal.buffer.active
+    const lines: string[] = []
+    for (let i = 0; i < rows; i++) {
+      const line: IBufferLine | undefined = buffer.getLine(i)
+      lines.push(line ? line.translateToString(false) : ' '.repeat(cols))
+    }
+    return trimTrailingBlankLines(lines).join('\n')
+  }
+
+  function waitForContent(match: string | RegExp, timeout = 5000): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const start = Date.now()
+      const check = (): void => {
+        const screen = readScreen()
+        const found = typeof match === 'string' ? screen.includes(match) : match.test(screen)
+        if (found) return resolve(screen)
+        if (Date.now() - start > timeout) {
+          return reject(new Error(`Timed out waiting for ${String(match)}.\nScreen:\n${screen}`))
+        }
+        setTimeout(check, 50)
+      }
+      check()
+    })
+  }
+
+  return {
+    write: (data: string) => pty.write(data),
+    readScreen,
+    waitForContent,
+    kill: () => {
+      pty.kill()
+      terminal.dispose()
+    },
+  }
+}
 
 export function renderToScreen(ansiOutput: string, cols: number, rows: number): Promise<string> {
   return new Promise((resolve) => {
