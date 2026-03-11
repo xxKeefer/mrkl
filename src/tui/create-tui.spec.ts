@@ -123,4 +123,83 @@ describe('render', () => {
     const screen = await renderToScreen(stdout.getOutput(), 120, 24)
     expect(screen).toMatchSnapshot()
   })
+
+  it('filled create form snapshot at 80 cols', async () => {
+    const state = makeFormState({
+      type: 2,
+      title: 'Implement user authentication',
+      description: 'Add JWT-based auth with refresh tokens',
+      parent: 'MRKL-010',
+      parentInput: 'MRKL-010 - Auth epic',
+      blocks: ['MRKL-011', 'MRKL-012'],
+      criteria: ['Login endpoint returns JWT', 'Refresh token rotation works'],
+      activeField: 1,
+      cursorPos: 29,
+    })
+    const stdout = createMockStdout(80, 24)
+    render(state, stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 80, 24)
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('edit mode form with status field snapshot at 80 cols', async () => {
+    const state = makeFormState({
+      mode: 'edit',
+      taskId: 'MRKL-042',
+      type: 0,
+      status: 1,
+      title: 'Fix login redirect',
+      description: 'Users are redirected to wrong page after login',
+      criteria: ['Redirect goes to dashboard'],
+      activeField: 0,
+    })
+    const stdout = createMockStdout(80, 24)
+    render(state, stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 80, 24)
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('error state (empty title) snapshot at 80 cols', async () => {
+    const state = makeFormState({
+      error: 'Title cannot be empty',
+      activeField: 1,
+      cursorPos: 0,
+    })
+    const stdout = createMockStdout(80, 24)
+    render(state, stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 80, 24)
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('active autocomplete with suggestions snapshot at 80 cols', async () => {
+    const state = makeFormState({
+      activeField: 3,
+      parentInput: 'auth',
+      cursorPos: 4,
+      parentCandidates: [
+        { id: 'MRKL-010', label: 'MRKL-010 - Auth epic' },
+        { id: 'MRKL-020', label: 'MRKL-020 - Auth refactor' },
+        { id: 'MRKL-030', label: 'MRKL-030 - Auth tests' },
+      ],
+      parentHighlight: 1,
+    })
+    const stdout = createMockStdout(80, 24)
+    render(state, stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 80, 24)
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('long text wrapping snapshot at 40 cols', async () => {
+    const state = makeFormState({
+      title: 'A very long task title that should wrap at narrow width',
+      description: 'This description contains enough text to demonstrate how the form handles word wrapping when the terminal is very narrow',
+      criteria: ['First criterion with a long description that wraps'],
+      activeField: 2,
+      cursorPos: 0,
+    })
+    const stdout = createMockStdout(40, 24)
+    render(state, stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 40, 24)
+    expect(screen).toMatchSnapshot()
+  })
 })
