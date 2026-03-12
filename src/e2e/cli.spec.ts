@@ -269,3 +269,111 @@ describe('cli e2e — interactive create flow', () => {
     expect(screen).toMatchSnapshot()
   })
 })
+
+describe('cli e2e — interactive list flow', () => {
+  let dir: string
+  let tui: TuiProcess | null = null
+
+  beforeEach(() => {
+    dir = setupTempDir()
+  })
+
+  afterEach(() => {
+    tui?.kill()
+    tui = null
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('list renders pre-seeded tasks', async () => {
+    seedTaskFile(dir, 'TEST-001', 'First seeded task', 'feat')
+    seedTaskFile(dir, 'TEST-002', 'Second seeded task', 'fix')
+
+    tui = spawnTui('list', { cols: 80, rows: 24, cwd: dir })
+    await tui.waitForContent('TEST-001')
+    await tui.waitForContent('TEST-002')
+
+    const screen = tui.readScreen()
+    expect(screen).toContain('TEST-001')
+    expect(screen).toContain('TEST-002')
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('selecting a task in list opens edit TUI', async () => {
+    seedTaskFile(dir, 'TEST-001', 'Task to select', 'feat')
+
+    tui = spawnTui('list', { cols: 80, rows: 24, cwd: dir })
+    await tui.waitForContent('TEST-001')
+    tui.write('\r')
+    await tui.waitForContent('Edit Task')
+
+    const screen = tui.readScreen()
+    expect(screen).toContain('Edit Task')
+  })
+})
+
+describe('cli e2e — interactive edit flow', () => {
+  let dir: string
+  let tui: TuiProcess | null = null
+
+  beforeEach(() => {
+    dir = setupTempDir()
+  })
+
+  afterEach(() => {
+    tui?.kill()
+    tui = null
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('edit shows pre-populated form with task data', async () => {
+    seedTaskFile(dir, 'TEST-001', 'Original title', 'feat')
+
+    tui = spawnTui('list', { cols: 80, rows: 24, cwd: dir })
+    await tui.waitForContent('TEST-001')
+    tui.write('\r')
+    await tui.waitForContent('Edit Task')
+    await tui.waitForContent('Original title')
+
+    const screen = tui.readScreen()
+    expect(screen).toContain('Edit Task')
+    expect(screen).toContain('Original title')
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('modifying and submitting edit updates task file', { timeout: 15000 }, async () => {
+    seedTaskFile(dir, 'TEST-001', 'Original title', 'feat')
+
+    tui = spawnTui('list', { cols: 80, rows: 24, cwd: dir })
+    await tui.waitForContent('TEST-001')
+    tui.write('\r')
+    await tui.waitForContent('Edit Task', 8000)
+    await new Promise((r) => setTimeout(r, 300))
+
+    // Navigate: type(0) → status(1) → title(2)
+    tui.write('\x1b[B')
+    await new Promise((r) => setTimeout(r, 200))
+    tui.write('\x1b[B')
+    await new Promise((r) => setTimeout(r, 300))
+
+    // Append to existing title
+    tui.write(' updated')
+    await tui.waitForContent('Original title updated', 8000)
+
+    // Use ↓ to skip past autocomplete fields (Parent, +Block) which would
+    // select suggestions on Enter, then Enter on +Add (text field) to submit
+    // title → desc → parent → +Block → +Add
+    for (let i = 0; i < 4; i++) {
+      tui.write('\x1b[B')
+      await new Promise((r) => setTimeout(r, 150))
+    }
+    // Enter on +Add (empty) triggers submit
+    tui.write('\r')
+
+    const code = await tui.exitCode
+    expect(code).toBe(0)
+
+    const taskPath = join(dir, '.tasks', 'TEST-001.md')
+    const data = parseTaskFile(taskPath)
+    expect(data.title).toBe('original title updated')
+  })
+})
