@@ -25,12 +25,43 @@ makeFormState() / makeListState()   <-- deterministic test state
 
 ```
 src/tui/
-  create-tui.spec.ts          <-- snapshot tests live here
-  list-tui.spec.ts             <-- (future snapshot tests)
-  tui-test-harness.ts          <-- renderToScreen, createMockStdout, state factories
+  create-tui.spec.ts          <-- render + interaction snapshot tests
+  list-tui.spec.ts             <-- render + interaction snapshot tests
+  tui-test-harness.ts          <-- renderToScreen, createMockStdout, spawnTui, state factories
   __snapshots__/
-    create-tui.spec.ts.snap    <-- saved snapshot data
+    create-tui.spec.ts.snap    <-- saved snapshot data (create TUI)
+    list-tui.spec.ts.snap      <-- saved snapshot data (list TUI)
+src/e2e/
+  cli.spec.ts                  <-- e2e snapshot tests (full CLI flows)
+  __snapshots__/
+    cli.spec.ts.snap           <-- saved snapshot data (e2e flows)
 ```
+
+### Two Kinds of Snapshot Tests
+
+**Render snapshots** use `createMockStdout` + `renderToScreen` to test a single render call with deterministic state. Fast, no child process.
+
+**Interaction snapshots** use `spawnTui` (which spawns a real `node-pty` process) to drive multi-step TUI interactions — typing, navigating, submitting — and snapshot the final screen. These are slower but test the full input→render loop, including the e2e tests in `src/e2e/cli.spec.ts` that verify real task files on disk.
+
+## Quick Reference
+
+```bash
+pnpm test                              # run all tests
+pnpm test -- -u                        # update ALL snapshots
+pnpm test -- -u src/tui/               # update only TUI snapshots
+pnpm test -- -u src/e2e/               # update only e2e snapshots
+pnpm vitest --ui                       # browser UI with visual diffs
+git diff src/**/__snapshots__/         # review snapshot changes before committing
+```
+
+## Reviewing Snapshot Diffs in PRs
+
+Snapshot `.snap` files appear in PR diffs like any other file. When reviewing:
+
+1. **Check the test name** — each snapshot is keyed by its `describe > it` path. This tells you which scenario changed.
+2. **Read the diff as a terminal screen** — the content is plain text representing what a user sees. Look for unintended layout shifts, missing fields, or garbled text.
+3. **Cross-reference with code changes** — if a render function changed, the corresponding snapshots should change. If snapshots changed _without_ a code change to the render logic, that's suspicious.
+4. **Watch for snapshot count changes** — new tests add new snapshots (shown as "N written" in test output). Deleted tests leave orphan snapshots until `pnpm test -- -u` cleans them up.
 
 ## Visually Diffing Snapshots
 
@@ -79,13 +110,7 @@ git diff src/tui/__snapshots__/
 When you've intentionally changed render output and want to update all snapshots:
 
 ```bash
-pnpm test -- --update src/tui/create-tui.spec.ts
-```
-
-Or update everything:
-
-```bash
-pnpm test -- --update
+pnpm test -- -u
 ```
 
 This overwrites all `.snap` files with the current output. **Review the git diff after updating** to confirm only expected changes were made.
@@ -95,8 +120,9 @@ This overwrites all `.snap` files with the current output. **Review the git diff
 Vitest updates snapshots per-file. Run only the spec file whose snapshots you want to update:
 
 ```bash
-# Only updates snapshots in create-tui.spec.ts
-pnpm test -- --update src/tui/create-tui.spec.ts
+pnpm test -- -u src/tui/create-tui.spec.ts   # only create TUI snapshots
+pnpm test -- -u src/tui/list-tui.spec.ts      # only list TUI snapshots
+pnpm test -- -u src/e2e/cli.spec.ts           # only e2e flow snapshots
 ```
 
 Snapshots in other spec files remain untouched.
@@ -140,7 +166,7 @@ Key points:
 If you rename or delete snapshot tests, stale entries remain in the `.snap` file. Clean them up:
 
 ```bash
-pnpm test -- --update src/tui/create-tui.spec.ts
+pnpm test -- -u src/tui/create-tui.spec.ts
 ```
 
 This regenerates the snap file with only the current test names.
