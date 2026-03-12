@@ -1,5 +1,37 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`autocomplete interaction snapshots > Enter on empty +Block field skips without selecting a suggestion 1`] = `
+"                                                                                
+  Create Task                                                                   
+  ────────────────────────────────────────────────────────────                  
+  Title cannot be empty                                                         
+  Type              feat                                                        
+› Title                                                                         
+  Description     ····················                                          
+  Parent          type to search...                                             
+  + Block         type to search...                                             
+  + Add           ····················                                          
+  ────────────────────────────────────────────────────────────                  
+  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+`;
+
+exports[`autocomplete interaction snapshots > Enter on empty parent field skips to next field without selecting 1`] = `
+"                                                                                
+  Create Task                                                                   
+  ────────────────────────────────────────────────────────────                  
+  Type              feat                                                        
+  Title           ····················                                          
+  Description     ····················                                          
+  Parent          type to search...                                             
+› + Block                                                                       
+                    → MRKL-001 - Auth epic                                      
+                      MRKL-002 - Fix login bug                                  
+                      MRKL-003 - Auth tests                                     
+  + Add           ····················                                          
+  ────────────────────────────────────────────────────────────                  
+  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+`;
+
 exports[`autocomplete interaction snapshots > Enter selects highlighted suggestion 1`] = `
 "                                                                                
   Create Task                                                                   

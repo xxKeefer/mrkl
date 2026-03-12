@@ -548,14 +548,17 @@ function runForm<T>(
 
     function handleAutocompleteEnter(): boolean {
       if (isParentField(state)) {
+        if (state.parentInput.trim() === '') {
+          state.parent = ''
+          moveToField(state.activeField + 1)
+          return true
+        }
         const suggestions = getFilteredSuggestions(state)
         if (state.parentHighlight >= 0 && state.parentHighlight < suggestions.length) {
           const selected = suggestions[state.parentHighlight]
           state.parent = selected.id
           state.parentInput = selected.label
           state.cursorPos = selected.label.length
-        } else if (state.parentInput.trim() === '') {
-          state.parent = ''
         } else {
           state.parent = state.parentInput.trim()
         }
@@ -564,19 +567,18 @@ function runForm<T>(
       }
 
       if (isBlocksAddField(state)) {
+        if (state.currentBlock.trim() === '') {
+          // Empty input on +Block = move to criteria / submit
+          submit()
+          return true
+        }
         const suggestions = getFilteredSuggestions(state)
         if (state.blockHighlight >= 0 && state.blockHighlight < suggestions.length) {
           state.blocks.push(suggestions[state.blockHighlight].id)
           state.currentBlock = ''
           state.blockHighlight = 0
-          // Stay on the +Block field (its index shifts because blocks grew)
           state.activeField = blocksAddIndex(state)
           state.cursorPos = 0
-          return true
-        }
-        if (state.currentBlock.trim() === '') {
-          // Empty input on +Block = move to criteria / submit
-          submit()
           return true
         }
         // Non-empty text but no highlight match — use raw text as ID

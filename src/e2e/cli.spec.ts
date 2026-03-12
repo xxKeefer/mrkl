@@ -359,15 +359,11 @@ describe('cli e2e — interactive edit flow', () => {
     tui.write(' updated')
     await tui.waitForContent('Original title updated', 8000)
 
-    // Use ↓ to skip past autocomplete fields (Parent, +Block) which would
-    // select suggestions on Enter, then Enter on +Add (text field) to submit
-    // title → desc → parent → +Block → +Add
+    // Enter through: title → desc → parent → +Block (empty = submit)
     for (let i = 0; i < 4; i++) {
-      tui.write('\x1b[B')
+      tui.write('\r')
       await new Promise((r) => setTimeout(r, 150))
     }
-    // Enter on +Add (empty) triggers submit
-    tui.write('\r')
 
     const code = await tui.exitCode
     expect(code).toBe(0)

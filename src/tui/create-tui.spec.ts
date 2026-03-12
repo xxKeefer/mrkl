@@ -380,4 +380,40 @@ describe('autocomplete interaction snapshots', () => {
     const screen = tui.readScreen()
     expect(screen).toMatchSnapshot()
   })
+
+  it('Enter on empty parent field skips to next field without selecting', async () => {
+    tui = spawnTui('create', { cols: 80, rows: 24, cwd: tempDir })
+    await tui.waitForContent('feat')
+    // Navigate to parent field (index 3): type→title→desc→parent
+    tui.write('\x1b[B\x1b[B\x1b[B')
+    await new Promise((r) => setTimeout(r, 300))
+    // Don't type anything — press Enter on empty autocomplete
+    tui.write('\r')
+    await new Promise((r) => setTimeout(r, 300))
+    const screen = tui.readScreen()
+    // Should advance to +Block field, NOT select a suggestion into parent
+    expect(screen).toContain('+ Block')
+    // Parent field should show placeholder (empty), not a selected task
+    const parentLine = screen.split('\n').find((l) => l.includes('Parent'))
+    expect(parentLine).toContain('type to search...')
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('Enter on empty +Block field skips without selecting a suggestion', async () => {
+    tui = spawnTui('create', { cols: 80, rows: 24, cwd: tempDir })
+    await tui.waitForContent('feat')
+    // Navigate to +Block field (index 4): type→title→desc→parent→+Block
+    for (let i = 0; i < 4; i++) {
+      tui.write('\x1b[B')
+      await new Promise((r) => setTimeout(r, 100))
+    }
+    await new Promise((r) => setTimeout(r, 200))
+    // Don't type anything — press Enter on empty +Block autocomplete
+    tui.write('\r')
+    await new Promise((r) => setTimeout(r, 300))
+    const screen = tui.readScreen()
+    // Should NOT have added any blocks (no "Blocks 1" label)
+    expect(screen).not.toMatch(/Blocks\s+1/)
+    expect(screen).toMatchSnapshot()
+  })
 })
