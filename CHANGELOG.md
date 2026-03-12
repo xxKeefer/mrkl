@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.5.1...main
+
+[compare changes](https://github.com/xxKeefer/mrkl/compare/v0.5.1...main)
+
+### Added
+
+- List view overhaul (MRKL-083) ([#37](https://github.com/xxKeefer/mrkl/pull/37))
+
+### Changed
+
+- Add TUI snapshot testing, CLI e2e tests, and CI lint step ([#36](https://github.com/xxKeefer/mrkl/pull/36))
+
+### ❤️ Contributors
+
+- Daniel John Keefer <xxkeefer@proton.me>
+
 ## v0.5.0...main
 
 [compare changes](https://github.com/xxKeefer/mrkl/compare/v0.5.0...main)
