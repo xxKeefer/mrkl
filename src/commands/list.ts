@@ -97,15 +97,22 @@ export default defineCommand({
       }
 
       const { interactiveList } = await import('../tui/list-tui.js')
-      const selected = await interactiveList(tasks, archivedTasks)
+      const { interactiveEdit } = await import('../tui/create-tui.js')
 
-      if (selected) {
-        const { interactiveEdit } = await import('../tui/create-tui.js')
-        const result = await interactiveEdit(selected, tasks)
+      let currentTasks = tasks
+      let currentArchived = archivedTasks
+
+      while (true) {
+        const selected = await interactiveList(currentTasks, currentArchived)
+        if (!selected) break
+
+        const result = await interactiveEdit(selected, currentTasks)
         if (result) {
-          const updated = updateTask(dir, selected.id, result)
-          logger.update(`Updated ${updated.id}: ${updated.title}`)
+          updateTask(dir, selected.id, result)
         }
+
+        currentTasks = listTasks(filter)
+        currentArchived = listArchivedTasks(filter)
       }
     } catch (err) {
       logger.error(`${(err as Error).message}`)

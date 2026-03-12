@@ -2,8 +2,9 @@
 id: MRKL-088
 title: deprecate plain text list output
 type: chore
-status: todo
+status: closed
 created: '2026-03-10'
+flag: actually the plain view is good for agents
 parent: MRKL-083
 ---
 
@@ -13,7 +14,6 @@ Remove the --plain/-p flag and associated plain text rendering code from command
 
 ## Acceptance Criteria
 
-- [ ] 
 - [ ] plain text rendering code block is removed
 - [ ] non-TTY output still produces basic task info
 - [ ] existing tests pass (pnpm test)

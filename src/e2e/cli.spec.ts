@@ -365,6 +365,10 @@ describe('cli e2e — interactive edit flow', () => {
       await new Promise((r) => setTimeout(r, 150))
     }
 
+    // After edit, list view re-appears — press Esc to exit
+    await tui.waitForContent('TEST-001', 8000)
+    tui.write('\x1b')
+
     const code = await tui.exitCode
     expect(code).toBe(0)
 
