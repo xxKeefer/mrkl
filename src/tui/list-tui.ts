@@ -137,14 +137,6 @@ function buildPreviewLines(
   lines.push(`${BOLD}${task.title}${RESET}`)
   lines.push('')
 
-  if (task.description) {
-    lines.push(`${UNDERLINE}Description${RESET}`)
-    for (const line of wrapText(task.description, width)) {
-      lines.push(line)
-    }
-    lines.push('')
-  }
-
   const children = getChildren(allTasks, task.id)
   const blockedBy = getBlockedBy(allTasks, task.id)
   const hasRelationships = task.parent || children.length > 0 || (task.blocks && task.blocks.length > 0) || blockedBy.length > 0
@@ -162,6 +154,14 @@ function buildPreviewLines(
     }
     if (blockedBy.length > 0) {
       lines.push(`  Blocked by: ${FG_RED}${blockedBy.map((t) => t.id).join(', ')}${RESET}`)
+    }
+    lines.push('')
+  }
+
+  if (task.description) {
+    lines.push(`${UNDERLINE}Description${RESET}`)
+    for (const line of wrapText(task.description, width)) {
+      lines.push(line)
     }
     lines.push('')
   }
