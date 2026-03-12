@@ -2,8 +2,9 @@
 id: MRKL-083
 title: list view overhaul
 type: feat
-status: todo
+status: done
 created: '2026-03-10'
+flag: completed
 ---
 
 ## Description

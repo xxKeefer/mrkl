@@ -7,6 +7,7 @@ import {
 } from 'node:fs'
 import { join } from 'node:path'
 import { loadConfig } from './config.js'
+import { EMOJI } from './emoji.js'
 import { nextId } from './counter.js'
 import { render, parse } from './template.js'
 import type {
@@ -258,13 +259,13 @@ export function buildRelationshipIndicators(
 ): { blocksDisplay: string | null; blockedByDisplay: string | null } {
   const blocksDisplay =
     task.blocks && task.blocks.length > 0
-      ? `⛔► ${task.blocks.join(', ')}`
+      ? `${EMOJI.blocks} ${task.blocks.join(', ')}`
       : null
 
   const blockedBy = getBlockedBy(tasks, task.id)
   const blockedByDisplay =
     blockedBy.length > 0
-      ? `◄⛔ ${blockedBy.map((t) => t.id).join(', ')}`
+      ? `${EMOJI.blocked_by} ${blockedBy.map((t) => t.id).join(', ')}`
       : null
 
   return { blocksDisplay, blockedByDisplay }
