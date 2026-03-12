@@ -204,10 +204,10 @@ exports[`render snapshots > blocking indicators snapshot at 80 cols 1`] = `
 ────────────────────────────────────────────┬───────────────────────────────────
 ID            TYPE        STATUS        TIT…│ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
-MRKL-010      feat        todo          Dat… ⛔► MRKL-011, MRKL-012│ MRKL-010 fea
-t todo                                                                          
-MRKL-011      feat        todo          API… ◄⛔ MRKL-010│ Database migration    
-MRKL-012      feat        todo          Fro… ◄⛔ MRKL-010│                       
+MRKL-010      feat        todo          Dat… 🚧 MRKL-011, MRKL-012│ MRKL-010 feat
+ todo                                                                           
+MRKL-011      feat        todo          API… 🛑 MRKL-010│ Database migration     
+MRKL-012      feat        todo          Fro… 🛑 MRKL-010│                        
                                             │ Relationships                     
                                             │   Blocks: MRKL-011, MRKL-012      
                                             │                                   
