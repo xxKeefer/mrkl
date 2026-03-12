@@ -63,43 +63,45 @@ export function buildEntries(tasks: TaskData[]): FzfEntry[] {
   }))
 }
 
+const ID_W = 12
+const STATUS_W = 10
+const TITLE_W = 30
+
+function padOrTruncate(text: string, width: number): string {
+  if (text.length > width) return text.slice(0, width - 1) + '…'
+  return text.padEnd(width)
+}
+
 function formatRow(
   id: string,
-  type: string,
   status: string,
+  indicators: string,
   title: string,
   width: number,
 ): string {
-  const idCol = id.padEnd(14)
-  const typeCol = type.padEnd(12)
-  const statusCol = status.padEnd(14)
-  const usedWidth = 14 + 12 + 14
-  const titleWidth = Math.max(1, width - usedWidth)
-  const titleCol =
-    title.length > titleWidth
-      ? title.slice(0, titleWidth - 1) + '…'
-      : title.padEnd(titleWidth)
-  return `${idCol}${typeCol}${statusCol}${titleCol}`
+  const idCol = padOrTruncate(id, ID_W)
+  const statusCol = padOrTruncate(status, STATUS_W)
+  const titleCol = padOrTruncate(title, TITLE_W)
+  const relWidth = Math.max(0, width - ID_W - STATUS_W - TITLE_W)
+  const relCol = padOrTruncate(indicators, relWidth)
+  return `${idCol}${statusCol}${relCol}${titleCol}`
 }
 
 function colorizeRow(
   id: string,
-  type: string,
   status: string,
+  indicators: string,
   title: string,
   width: number,
   sc: string,
 ): string {
-  const idCol = id.padEnd(14)
-  const typeCol = type.padEnd(12)
-  const statusCol = status.padEnd(14)
-  const usedWidth = 14 + 12 + 14
-  const titleWidth = Math.max(1, width - usedWidth)
-  const titleCol =
-    title.length > titleWidth
-      ? title.slice(0, titleWidth - 1) + '…'
-      : title.padEnd(titleWidth)
-  return `${FG_CYAN}${idCol}${RESET}${typeCol}${sc}${statusCol}${RESET}${titleCol}`
+  const idCol = padOrTruncate(id, ID_W)
+  const statusCol = padOrTruncate(status, STATUS_W)
+  const titleCol = padOrTruncate(title, TITLE_W)
+  const relWidth = Math.max(0, width - ID_W - STATUS_W - TITLE_W)
+  const relCol = padOrTruncate(indicators, relWidth)
+  const relPart = indicators ? `${FG_RED}${relCol}${RESET}` : relCol
+  return `${FG_CYAN}${idCol}${RESET}${sc}${statusCol}${RESET}${relPart}${titleCol}`
 }
 
 function wrapText(text: string, width: number): string[] {
@@ -202,10 +204,11 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
     `${FG_GRAY}${'─'.repeat(listWidth)}┬${'─'.repeat(previewWidth + 2)}${RESET}`,
   )
 
-  // Column headers
-  const headerLine = formatRow('ID', 'TYPE', 'STATUS', 'TITLE', listWidth)
+  // Column headers (1-char padding before separator)
+  const contentWidth = listWidth - 1
+  const headerLine = formatRow('ID', 'STATUS', '', 'TITLE', contentWidth)
   buf.push(
-    `${BOLD}${headerLine}${RESET}${FG_GRAY}│${RESET}${BOLD} Preview${RESET}`,
+    `${BOLD}${headerLine}${RESET} ${FG_GRAY}│${RESET}${BOLD} Preview${RESET}`,
   )
   buf.push(
     `${FG_GRAY}${'─'.repeat(listWidth)}┼${'─'.repeat(previewWidth + 2)}${RESET}`,
@@ -239,37 +242,37 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
 
     let leftPart: string
     if (!entry) {
-      leftPart = ' '.repeat(listWidth)
+      leftPart = ' '.repeat(contentWidth) + ' '
     } else {
       const isSelected = taskIdx === state.selectedIndex
       const treePrefix = entry.indent === 1 ? '├─' : ''
-      const prefixWidth = treePrefix ? 3 : 0
-      const rowWidth = listWidth - prefixWidth
-      const indicators: string[] = []
-      if (entry.blocksIndicator) indicators.push(entry.blocksIndicator)
-      if (entry.blockedByIndicator) indicators.push(entry.blockedByIndicator)
-      const indicatorSuffix = indicators.length > 0 ? ` ${indicators.join(' ')}` : ''
+      const prefixWidth = treePrefix ? 2 : 0
+      const rowWidth = contentWidth - prefixWidth
+      const parts: string[] = []
+      if (entry.blocksIndicator) parts.push(entry.blocksIndicator)
+      if (entry.blockedByIndicator) parts.push(entry.blockedByIndicator)
+      const indicatorStr = parts.join(' ')
 
-      const row = formatRow(
-        entry.task.id,
-        entry.task.type,
-        entry.task.status,
-        entry.task.title,
-        rowWidth,
-      )
       if (isSelected) {
-        leftPart = `${treePrefix ? `${FG_GRAY}${treePrefix}${RESET}` : ''}${INVERSE}${row}${RESET}${indicatorSuffix ? `${FG_RED}${indicatorSuffix}${RESET}` : ''}`
+        const row = formatRow(
+          entry.task.id,
+          entry.task.status,
+          indicatorStr,
+          entry.task.title,
+          rowWidth,
+        )
+        leftPart = `${treePrefix ? `${FG_GRAY}${treePrefix}${RESET}` : ''}${INVERSE}${row}${RESET} `
       } else {
         const sc = statusColor(entry.task.status)
         const coloredRow = colorizeRow(
           entry.task.id,
-          entry.task.type,
           entry.task.status,
+          indicatorStr,
           entry.task.title,
           rowWidth,
           sc,
         )
-        leftPart = `${treePrefix ? `${FG_GRAY}${treePrefix}${RESET}` : ''}${coloredRow}${indicatorSuffix ? `${FG_RED}${indicatorSuffix}${RESET}` : ''}`
+        leftPart = `${treePrefix ? `${FG_GRAY}${treePrefix}${RESET}` : ''}${coloredRow} `
       }
     }
 

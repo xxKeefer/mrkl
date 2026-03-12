@@ -87,10 +87,10 @@ describe('renderList', () => {
     renderList(state, stdout)
     const screen = await renderToScreen(stdout.getOutput(), 120, 30)
     expect(screen).toContain('ID')
-    expect(screen).toContain('TYPE')
     expect(screen).toContain('STATUS')
     expect(screen).toContain('TITLE')
     expect(screen).toContain('Preview')
+    expect(screen).not.toContain('TYPE')
   })
 
   it('writes output containing task IDs', async () => {
