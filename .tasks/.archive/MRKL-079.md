@@ -2,8 +2,9 @@
 id: MRKL-079
 title: cli e2e — non-interactive commands
 type: test
-status: todo
+status: done
 created: '2026-03-10'
+flag: completed
 parent: MRKL-056
 blocks:
   - MRKL-065
@@ -15,10 +16,10 @@ Tier 3 e2e tests in tests/e2e/cli.spec.ts (new file). Spawn the CLI binary (pnpm
 
 ## Acceptance Criteria
 
-- [ ] test: mrkl create with --title and --type flags creates task file
-- [ ] test: created task file has correct frontmatter (title, type, status)
-- [ ] test: mrkl done <id> sets status to done
-- [ ] test: mrkl close <id> sets status to closed
-- [ ] test: exit codes are 0 for success
-- [ ] tests use temp directory for isolation
-- [ ] pnpm test passes
+- [x] test: mrkl create with --title and --type flags creates task file
+- [x] test: created task file has correct frontmatter (title, type, status)
+- [x] test: mrkl done <id> sets status to done
+- [x] test: mrkl close <id> sets status to closed
+- [x] test: exit codes are 0 for success
+- [x] tests use temp directory for isolation
+- [x] pnpm test passes

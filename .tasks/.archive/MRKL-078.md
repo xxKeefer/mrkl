@@ -2,8 +2,9 @@
 id: MRKL-078
 title: list-tui interaction tests — navigation and search
 type: test
-status: todo
+status: done
 created: '2026-03-10'
+flag: completed
 parent: MRKL-058
 blocks:
   - MRKL-074
@@ -15,10 +16,10 @@ Tier 2 keyboard interaction tests in src/tui/list-tui.spec.ts. Use node-pty + xt
 
 ## Acceptance Criteria
 
-- [ ] test: arrow down moves selection to next task
-- [ ] test: arrow up moves selection to previous task
-- [ ] test: typing characters filters the task list
-- [ ] test: Tab key switches between Tasks and Archive
-- [ ] test: Enter selects the highlighted task
-- [ ] test: Esc cancels and exits
-- [ ] pnpm test passes
+- [x] test: arrow down moves selection to next task
+- [x] test: arrow up moves selection to previous task
+- [x] test: typing characters filters the task list
+- [x] test: Tab key switches between Tasks and Archive
+- [x] test: Enter selects the highlighted task
+- [x] test: Esc cancels and exits
+- [x] pnpm test passes

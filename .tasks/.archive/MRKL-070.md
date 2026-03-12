@@ -2,8 +2,9 @@
 id: MRKL-070
 title: extract renderlist and helpers from list-tui.ts closure
 type: refactor
-status: todo
+status: done
 created: '2026-03-10'
+flag: completed
 parent: MRKL-056
 ---
 
@@ -13,9 +14,9 @@ Refactor src/tui/list-tui.ts to extract functions currently nested inside intera
 
 ## Acceptance Criteria
 
-- [ ] formatRow, colorizeRow, buildPreviewLines, wrapText are module-scope functions
-- [ ] ListRenderState interface is exported
-- [ ] renderList(state, stdout) is exported and callable independently
-- [ ] FzfEntry type and buildEntries function are exported
-- [ ] interactiveList still works — no behavior change
-- [ ] pnpm typecheck and pnpm test pass
+- [x] formatRow, colorizeRow, buildPreviewLines, wrapText are module-scope functions
+- [x] ListRenderState interface is exported
+- [x] renderList(state, stdout) is exported and callable independently
+- [x] FzfEntry type and buildEntries function are exported
+- [x] interactiveList still works — no behavior change
+- [x] pnpm typecheck and pnpm test pass

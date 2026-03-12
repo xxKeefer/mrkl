@@ -10,10 +10,13 @@
       "mcp__jcodemunch__get_file_content",
       "mcp__jcodemunch__get_file_tree",
       "Bash(pnpm test:*)",
+      "Bash(pnpm test:update:*)",
       "Bash(pnpm lint:*)",
       "Bash(pnpm lint:fix:*)",
       "Bash(pnpm format:*)",
       "Bash(pnpm typecheck:*)",
+      "Bash(pn dev:*)",
+      "Bash(pnpm ls:*)",
       "Bash(ls:*)"
     ]
   }

@@ -2,8 +2,9 @@
 id: MRKL-069
 title: export formstate and render from create-tui.ts
 type: refactor
-status: todo
+status: done
 created: '2026-03-10'
+flag: completed
 parent: MRKL-056
 ---
 
@@ -13,7 +14,7 @@ Export the FormState interface (line 63) and the render function (line 348) from
 
 ## Acceptance Criteria
 
-- [ ] FormState interface is exported from create-tui.ts
-- [ ] render function is exported from create-tui.ts
-- [ ] no logic changes — existing tests still pass
-- [ ] pnpm typecheck passes
+- [x] FormState interface is exported from create-tui.ts
+- [x] render function is exported from create-tui.ts
+- [x] no logic changes — existing tests still pass
+- [x] pnpm typecheck passes

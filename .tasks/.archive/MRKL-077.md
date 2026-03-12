@@ -2,8 +2,9 @@
 id: MRKL-077
 title: create-tui interaction tests — autocomplete flow
 type: test
-status: todo
+status: done
 created: '2026-03-10'
+flag: completed
 parent: MRKL-058
 blocks:
   - MRKL-076
@@ -15,8 +16,8 @@ Tier 2 keyboard interaction tests in src/tui/create-tui.spec.ts. Tests for autoc
 
 ## Acceptance Criteria
 
-- [ ] test: typing in parent field shows filtered suggestions
-- [ ] test: arrow keys navigate suggestion list
-- [ ] test: Enter selects highlighted suggestion
-- [ ] test: selected parent displays correctly in form
-- [ ] pnpm test passes
+- [x] test: typing in parent field shows filtered suggestions
+- [x] test: arrow keys navigate suggestion list
+- [x] test: Enter selects highlighted suggestion
+- [x] test: selected parent displays correctly in form
+- [x] pnpm test passes

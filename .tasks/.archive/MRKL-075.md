@@ -2,8 +2,9 @@
 id: MRKL-075
 title: create-tui interaction tests — field navigation
 type: test
-status: todo
+status: done
 created: '2026-03-10'
+flag: completed
 parent: MRKL-058
 blocks:
   - MRKL-072
@@ -15,8 +16,8 @@ Tier 2 keyboard interaction tests in src/tui/create-tui.spec.ts. Use node-pty to
 
 ## Acceptance Criteria
 
-- [ ] test: arrow down moves to next field, snapshot shows new field highlighted
-- [ ] test: arrow up moves to previous field
-- [ ] test: left/right arrows cycle type options on type field
-- [ ] each interaction step produces a snapshot
-- [ ] pnpm test passes
+- [x] test: arrow down moves to next field, snapshot shows new field highlighted
+- [x] test: arrow up moves to previous field
+- [x] test: left/right arrows cycle type options on type field
+- [x] each interaction step produces a snapshot
+- [x] pnpm test passes
