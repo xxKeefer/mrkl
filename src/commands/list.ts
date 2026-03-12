@@ -102,8 +102,13 @@ export default defineCommand({
       let currentTasks = tasks
       let currentArchived = archivedTasks
 
+      const reload = () => ({
+        tasks: listTasks(filter),
+        archivedTasks: listArchivedTasks(filter),
+      })
+
       while (true) {
-        const selected = await interactiveList(currentTasks, currentArchived)
+        const selected = await interactiveList(currentTasks, currentArchived, reload)
         if (!selected) break
 
         const result = await interactiveEdit(selected, currentTasks)

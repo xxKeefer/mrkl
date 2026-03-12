@@ -1,6 +1,9 @@
+import { watch, type FSWatcher } from 'node:fs'
+import { join } from 'node:path'
 import { Fzf } from 'fzf'
 import type { TaskData } from '../types.js'
 import { groupByEpic, getChildren, getBlockedBy } from '../task.js'
+import { loadConfig } from '../config.js'
 import {
   ESC,
   ALT_SCREEN_ON,
@@ -292,9 +295,12 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
   stdout.write(CLEAR_SCREEN + buf.join('\n'))
 }
 
+export type ReloadFn = () => { tasks: TaskData[]; archivedTasks: TaskData[] }
+
 export async function interactiveList(
   tasks: TaskData[],
   archivedTasks: TaskData[],
+  onReload?: ReloadFn,
 ): Promise<TaskData | null> {
   const { stdin, stdout } = process
 
@@ -303,6 +309,8 @@ export async function interactiveList(
     { label: 'Archive', entries: buildEntries(archivedTasks) },
   ]
 
+  let currentTasks = tasks
+  let currentArchived = archivedTasks
   let activeTab = 0
   let query = ''
   let selectedIndex = 0
@@ -323,11 +331,25 @@ export async function interactiveList(
       scrollOffset,
       datasets,
       filtered: getFiltered(),
-      allTasks: activeTab === 0 ? tasks : archivedTasks,
+      allTasks: activeTab === 0 ? currentTasks : currentArchived,
     }
     renderList(state, stdout)
     selectedIndex = state.selectedIndex
     scrollOffset = state.scrollOffset
+  }
+
+  function reloadFromDisk(): void {
+    if (!onReload) return
+    const fresh = onReload()
+    currentTasks = fresh.tasks
+    currentArchived = fresh.archivedTasks
+    datasets[0].entries = buildEntries(currentTasks)
+    datasets[1].entries = buildEntries(currentArchived)
+    const filtered = getFiltered()
+    if (selectedIndex >= filtered.length) {
+      selectedIndex = Math.max(0, filtered.length - 1)
+    }
+    render()
   }
 
   // Setup terminal
@@ -336,10 +358,32 @@ export async function interactiveList(
   stdin.setEncoding('utf-8')
   stdout.write(ALT_SCREEN_ON + CURSOR_HIDE)
 
+  // Set up file watchers for live reload
+  const watchers: FSWatcher[] = []
+  let debounceTimer: ReturnType<typeof setTimeout> | null = null
+
+  if (onReload) {
+    try {
+      const config = loadConfig(process.cwd())
+      const tasksPath = join(process.cwd(), config.tasks_dir)
+      const archivePath = join(tasksPath, '.archive')
+
+      const onFsChange = (): void => {
+        if (debounceTimer) clearTimeout(debounceTimer)
+        debounceTimer = setTimeout(reloadFromDisk, 150)
+      }
+
+      try { watchers.push(watch(tasksPath, onFsChange)) } catch { /* dir may not exist */ }
+      try { watchers.push(watch(archivePath, onFsChange)) } catch { /* dir may not exist */ }
+    } catch { /* config unavailable */ }
+  }
+
   render()
 
   return new Promise<TaskData | null>((resolve) => {
     function cleanup(): void {
+      if (debounceTimer) clearTimeout(debounceTimer)
+      for (const w of watchers) w.close()
       stdout.write(CURSOR_SHOW + ALT_SCREEN_OFF)
       if (stdin.isTTY) stdin.setRawMode(false)
       stdin.pause()

@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach, beforeAll, afterAll } from 'vitest'
-import { mkdirSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, writeFileSync, rmSync, unlinkSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { buildEntries, renderList } from './list-tui.js'
@@ -387,5 +387,37 @@ describe('interaction snapshots', () => {
     tui.write('\x1b')
     const code = await tui.exitCode
     expect(code).toBe(0)
+  })
+
+  it('live reloads when a new task file is created on disk', async () => {
+    tui = spawnTui('list', { cols: 80, rows: 24, cwd: tempDir })
+    await tui.waitForContent('MRKL-001')
+
+    // Verify the new task doesn't exist yet
+    const screen = tui.readScreen()
+    expect(screen).not.toContain('MRKL-006')
+
+    // Create a new task file externally
+    seedTaskFile(tempDir, 'MRKL-006', 'Live reload task', 'feat')
+
+    // Wait for the watcher debounce + re-render
+    const updated = await tui.waitForContent('MRKL-006', 3000)
+    expect(updated).toContain('MRKL-006')
+    expect(updated).toContain('Live reload task')
+  })
+
+  it('live reloads when a task file is deleted on disk', async () => {
+    // Ensure MRKL-006 exists from previous test setup
+    seedTaskFile(tempDir, 'MRKL-007', 'Temporary task', 'chore')
+    tui = spawnTui('list', { cols: 80, rows: 24, cwd: tempDir })
+    await tui.waitForContent('MRKL-007')
+
+    // Delete the task file externally
+    unlinkSync(join(tempDir, '.tasks', 'MRKL-007.md'))
+
+    // Wait for watcher to pick up deletion
+    await new Promise((r) => setTimeout(r, 500))
+    const screen = tui.readScreen()
+    expect(screen).not.toContain('MRKL-007')
   })
 })

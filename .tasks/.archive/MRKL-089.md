@@ -2,8 +2,9 @@
 id: MRKL-089
 title: live file watching for list view
 type: feat
-status: todo
+status: done
 created: '2026-03-10'
+flag: completed
 parent: MRKL-083
 ---
 
@@ -13,9 +14,9 @@ Add fs.watch on the .tasks/ directory so the interactive list auto-refreshes whe
 
 ## Acceptance Criteria
 
-- [ ] list view detects file changes in .tasks/ directory
-- [ ] list rows and preview update automatically on file change
-- [ ] file watcher is cleaned up on list exit
-- [ ] rapid successive file changes are debounced
-- [ ] existing tests pass (pnpm test)
-- [ ] typecheck passes (pnpm typecheck)
+- [x] list view detects file changes in .tasks/ directory
+- [x] list rows and preview update automatically on file change
+- [x] file watcher is cleaned up on list exit
+- [x] rapid successive file changes are debounced
+- [x] existing tests pass (pnpm test)
+- [x] typecheck passes (pnpm typecheck)
