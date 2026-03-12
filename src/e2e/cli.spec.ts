@@ -5,6 +5,7 @@ import { join, resolve } from 'node:path'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import matter from 'gray-matter'
+import { spawnTui, type TuiProcess } from '../tui/tui-test-harness.js'
 
 const PROJECT_ROOT = resolve(fileURLToPath(import.meta.url), '../../..')
 const TSX_BIN = resolve(PROJECT_ROOT, 'node_modules/.bin/tsx')
@@ -189,5 +190,82 @@ describe('cli e2e — close command', () => {
     const result = await runCli(['done', 'TEST-999'], dir)
 
     expect(result.exitCode).not.toBe(0)
+  })
+})
+
+describe('cli e2e — interactive create flow', () => {
+  let dir: string
+  let tui: TuiProcess | null = null
+
+  beforeEach(() => {
+    dir = setupTempDir()
+  })
+
+  afterEach(() => {
+    tui?.kill()
+    tui = null
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('interactive create flow produces correct task file', async () => {
+    tui = spawnTui('create', { cols: 80, rows: 24, cwd: dir })
+    await tui.waitForContent('feat')
+    tui.write('\x1b[B') // down to title
+    await new Promise((r) => setTimeout(r, 200))
+    tui.write('My interactive task')
+    await tui.waitForContent('My interactive task')
+    // Enter through: title → desc → parent → blocks +Add → criteria +Add (empty = submit)
+    for (let i = 0; i < 4; i++) {
+      tui.write('\r')
+      await new Promise((r) => setTimeout(r, 100))
+    }
+    const code = await tui.exitCode
+    expect(code).toBe(0)
+
+    const taskPath = join(dir, '.tasks', 'TEST-001.md')
+    expect(existsSync(taskPath)).toBe(true)
+    const data = parseTaskFile(taskPath)
+    expect(data.id).toBe('TEST-001')
+    expect(data.type).toBe('feat')
+    expect(data.title).toBe('my interactive task')
+    expect(data.status).toBe('todo')
+  })
+
+  it('task file frontmatter matches typed title and selected type', async () => {
+    tui = spawnTui('create', { cols: 80, rows: 24, cwd: dir })
+    await tui.waitForContent('feat')
+    tui.write('\x1b[C') // right → cycle type to fix
+    await tui.waitForContent('fix')
+    tui.write('\x1b[B') // down to title
+    await new Promise((r) => setTimeout(r, 200))
+    tui.write('Bug fix title')
+    await tui.waitForContent('Bug fix title')
+    for (let i = 0; i < 4; i++) {
+      tui.write('\r')
+      await new Promise((r) => setTimeout(r, 100))
+    }
+    const code = await tui.exitCode
+    expect(code).toBe(0)
+
+    const taskPath = join(dir, '.tasks', 'TEST-001.md')
+    const data = parseTaskFile(taskPath)
+    expect(data.type).toBe('fix')
+    expect(data.title).toBe('bug fix title')
+  })
+
+  it('final screen state is snapshotted', async () => {
+    tui = spawnTui('create', { cols: 80, rows: 24, cwd: dir })
+    await tui.waitForContent('feat')
+    tui.write('\x1b[B')
+    await new Promise((r) => setTimeout(r, 200))
+    tui.write('My interactive task')
+    await tui.waitForContent('My interactive task')
+    for (let i = 0; i < 4; i++) {
+      tui.write('\r')
+      await new Promise((r) => setTimeout(r, 100))
+    }
+    await tui.exitCode
+    const screen = tui.readScreen()
+    expect(screen).toMatchSnapshot()
   })
 })

@@ -1,0 +1,15 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`cli e2e — interactive create flow > final screen state is snapshotted 1`] = `
+"                                                                                
+  Create Task                                                                   
+  ────────────────────────────────────────────────────────────                  
+  Type              feat                                                        
+  Title           My interactive task                                           
+  Description     ····················                                          
+  Parent          type to search...                                             
+› + Block                                                                       
+  + Add           ····················                                          
+  ────────────────────────────────────────────────────────────                  
+  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+`;
