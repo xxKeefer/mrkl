@@ -9,6 +9,7 @@ exports[`autocomplete interaction snapshots > Enter on empty +Block field skips 
   Priority          ⏹️ 3-normal                                                  
 › Title                                                                         
   Description     ····················                                          
+  Flag            ····················                                          
   Parent          type to search...                                             
   + Block         type to search...                                             
   + Add           ····················                                          
@@ -24,6 +25,7 @@ exports[`autocomplete interaction snapshots > Enter on empty parent field skips 
   Priority          ⏹️ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
+  Flag            ····················                                          
   Parent          type to search...                                             
 › + Block                                                                       
                     → MRKL-001 - Auth epic                                      
@@ -42,6 +44,7 @@ exports[`autocomplete interaction snapshots > Enter selects highlighted suggesti
   Priority          ⏹️ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
+  Flag            ····················                                          
 › Parent          auth                                                          
                       MRKL-001 - Auth epic                                      
                     → MRKL-003 - Auth tests                                     
@@ -59,6 +62,7 @@ exports[`autocomplete interaction snapshots > right arrow navigates suggestion h
   Priority          ⏹️ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
+  Flag            ····················                                          
 › Parent          MRKL                                                          
                       MRKL-001 - Auth epic                                      
                     → MRKL-002 - Fix login bug                                  
@@ -77,6 +81,7 @@ exports[`autocomplete interaction snapshots > typing in parent field shows filte
   Priority          ⏹️ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
+  Flag            ····················                                          
 › Parent                                                                        
                     → MRKL-001 - Auth epic                                      
                       MRKL-002 - Fix login bug                                  
@@ -95,6 +100,7 @@ exports[`interaction snapshots > arrow down moves to priority field 1`] = `
   Priority          ⏹️ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
+  Flag            ····················                                          
   Parent          type to search...                                             
   + Block         type to search...                                             
   + Add           ····················                                          
@@ -110,6 +116,7 @@ exports[`interaction snapshots > arrow up returns to type field 1`] = `
   Priority          ⏹️ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
+  Flag            ····················                                          
   Parent          type to search...                                             
   + Block         type to search...                                             
   + Add           ····················                                          
@@ -125,6 +132,7 @@ exports[`interaction snapshots > initial render shows type field highlighted 1`]
   Priority          ⏹️ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
+  Flag            ····················                                          
   Parent          type to search...                                             
   + Block         type to search...                                             
   + Add           ····················                                          
@@ -140,6 +148,7 @@ exports[`interaction snapshots > left/right arrows cycle type options 1`] = `
   Priority          ⏹️ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
+  Flag            ····················                                          
   Parent          type to search...                                             
   + Block         type to search...                                             
   + Add           ····················                                          
@@ -155,6 +164,7 @@ exports[`interaction snapshots > left/right arrows cycle type options 2`] = `
   Priority          ⏹️ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
+  Flag            ····················                                          
   Parent          type to search...                                             
   + Block         type to search...                                             
   + Add           ····················                                          
@@ -170,6 +180,7 @@ exports[`interaction snapshots > pressing Enter on filled form triggers submit 1
   Priority          ⏹️ 3-normal                                                  
   Title           Test task                                                     
   Description     ····················                                          
+  Flag            ····················                                          
   Parent          type to search...                                             
 › + Block                                                                       
   + Add           ····················                                          
@@ -185,6 +196,7 @@ exports[`interaction snapshots > typing characters into title field shows text o
   Priority          ⏹️ 3-normal                                                  
 › Title           Hello                                                         
   Description     ····················                                          
+  Flag            ····················                                          
   Parent          type to search...                                             
   + Block         type to search...                                             
   + Add           ····················                                          
@@ -200,6 +212,7 @@ exports[`render > active autocomplete with suggestions snapshot at 80 cols 1`] =
   Priority          ⏹️ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
+  Flag            ····················                                          
 › Parent          auth                                                          
                       MRKL-010 - Auth epic                                      
                     → MRKL-020 - Auth refactor                                  
@@ -219,6 +232,7 @@ exports[`render > edit mode form with status field snapshot at 80 cols 1`] = `
   Priority          ⏹️ 3-normal                                                  
   Title           Fix login redirect                                            
   Description     Users are redirected to wrong page after login                
+  Flag            ····················                                          
   Parent          type to search...                                             
   + Block         type to search...                                             
   Criterion 1     Redirect goes to dashboard                                    
@@ -236,6 +250,7 @@ exports[`render > empty create form snapshot at 40 cols 1`] = `
   Priority          ⏹️ 3-normal          
   Title           ····················  
   Description     ····················  
+  Flag            ····················  
   Parent          type to search...     
   + Block         type to search...     
   + Add           ····················  
@@ -252,6 +267,7 @@ exports[`render > empty create form snapshot at 80 cols 1`] = `
   Priority          ⏹️ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
+  Flag            ····················                                          
   Parent          type to search...                                             
   + Block         type to search...                                             
   + Add           ····················                                          
@@ -267,6 +283,7 @@ exports[`render > empty create form snapshot at 120 cols 1`] = `
   Priority          ⏹️ 3-normal                                                                                          
   Title           ····················                                                                                  
   Description     ····················                                                                                  
+  Flag            ····················                                                                                  
   Parent          type to search...                                                                                     
   + Block         type to search...                                                                                     
   + Add           ····················                                                                                  
@@ -283,6 +300,7 @@ exports[`render > error state (empty title) snapshot at 80 cols 1`] = `
   Priority          ⏹️ 3-normal                                                  
 › Title                                                                         
   Description     ····················                                          
+  Flag            ····················                                          
   Parent          type to search...                                             
   + Block         type to search...                                             
   + Add           ····················                                          
@@ -298,6 +316,7 @@ exports[`render > filled create form snapshot at 80 cols 1`] = `
   Priority          ⏹️ 3-normal                                                  
 › Title           Implement user authentication                                 
   Description     Add JWT-based auth with refresh tokens                        
+  Flag            ····················                                          
   Parent          MRKL-010 - Auth epic                                          
   Blocks 1        MRKL-011                                                      
   Blocks 2        MRKL-012                                                      
@@ -324,6 +343,7 @@ exports[`render > long text wrapping snapshot at 40 cols 1`] = `
                    form handles word w  
                   rapping when the ter  
                   minal is very narrow  
+  Flag            ····················  
   Parent          type to search...     
   + Block         type to search...     
   Criterion 1     First criterion with  

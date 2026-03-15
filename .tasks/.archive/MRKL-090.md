@@ -2,8 +2,10 @@
 id: MRKL-090
 title: edit command should support modifying relationships
 type: fix
-status: todo
+status: done
 created: '2026-03-10'
+flag: completed
+priority: 3
 ---
 
 ## Description
@@ -12,9 +14,9 @@ The edit command (both CLI flags and interactive TUI) does not support adding/re
 
 ## Acceptance Criteria
 
-- [ ] edit command accepts --blocks flag to set/update blocks list
-- [ ] edit command accepts --parent flag to set/change parent
-- [ ] edit command accepts --no-parent flag to remove parent
-- [ ] interactive edit TUI includes fields for parent and blocks
-- [ ] existing tests pass (pnpm test)
-- [ ] typecheck passes (pnpm typecheck)
+- [x] edit command accepts --blocks flag to set/update blocks list
+- [x] edit command accepts --parent flag to set/change parent
+- [x] edit command accepts --no-parent flag to remove parent
+- [x] interactive edit TUI includes fields for parent and blocks
+- [x] existing tests pass (pnpm test)
+- [x] typecheck passes (pnpm typecheck)

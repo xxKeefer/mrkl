@@ -86,6 +86,11 @@ export default defineCommand({
       alias: 'P',
       description: 'Priority (1=lowest, 3=normal, 5=highest)',
     },
+    flag: {
+      type: 'string',
+      alias: 'f',
+      description: 'Flag or annotation (e.g., blocked, needs-review)',
+    },
     blocks: {
       type: 'string',
       alias: 'b',
@@ -115,6 +120,7 @@ export default defineCommand({
             description: toOptionalString(args.desc),
             acceptance_criteria: toStringArray(args.ac),
             priority: toPriority(args.priority),
+            flag: toOptionalString(args.flag),
             parent: toOptionalString(args.parent),
             blocks: toStringArray(args.blocks, true),
           }

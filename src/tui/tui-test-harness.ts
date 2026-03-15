@@ -150,6 +150,7 @@ export function makeFormState(overrides?: Partial<FormState>): FormState {
     priority: 2,
     title: '',
     description: '',
+    flag: '',
     parent: '',
     parentInput: '',
     parentCandidates: [],

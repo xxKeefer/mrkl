@@ -119,6 +119,26 @@ describe('renderList', () => {
     expect(state.selectedIndex).toBe(0)
   })
 
+  it('shows flag in preview when task has a flag', async () => {
+    const flaggedTask = makeTask({
+      id: 'MRKL-001',
+      title: 'Flagged task',
+      type: 'feat',
+      status: 'todo',
+      flag: 'needs-review',
+    })
+    const entries = buildEntries([flaggedTask])
+    const state = makeListState({
+      datasets: [{ label: 'Tasks', entries }, { label: 'Archive', entries: [] }],
+      filtered: entries,
+      allTasks: [flaggedTask],
+    })
+    const stdout = createMockStdout(120, 30)
+    renderList(state, stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 120, 30)
+    expect(screen).toContain('needs-review')
+  })
+
   it('displays task count in bottom bar', () => {
     const state = makeStateWithTasks()
     const stdout = createMockStdout(120, 30)

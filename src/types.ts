@@ -49,6 +49,7 @@ export interface CreateTaskOpts {
   description?: string
   acceptance_criteria?: string[]
   priority?: Priority
+  flag?: string
   parent?: string
   blocks?: string[]
 }
@@ -63,6 +64,7 @@ export interface EditTaskResult {
   type: TaskType
   status: Status
   priority?: Priority
+  flag?: string
   title: string
   description?: string
   acceptance_criteria?: string[]
@@ -75,6 +77,18 @@ export interface GroupedTask {
   indent: number // 0 = top-level, 1 = child of epic
   blocksIndicator: string | null // e.g. "⛔► MRKL-010, MRKL-012"
   blockedByIndicator: string | null // e.g. "◄⛔ MRKL-005"
+}
+
+export interface PatchTaskOpts {
+  type?: TaskType
+  status?: Status
+  priority?: Priority
+  flag?: string | null
+  title?: string
+  description?: string
+  acceptance_criteria?: string[]
+  parent?: string | null
+  blocks?: string[] | null
 }
 
 export interface PruneResult {

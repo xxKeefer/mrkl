@@ -69,6 +69,7 @@ export interface FormState {
   priority: number
   title: string
   description: string
+  flag: string
   parent: string
   parentInput: string
   parentCandidates: AutocompleteCandidate[]
@@ -87,8 +88,8 @@ export interface FormState {
 }
 
 // Field layout:
-// create: 0=type, 1=priority, 2=title, 3=description, 4=parent, 5..M=block entries, M+1=+Block, M+2..N=criteria, N+1=+Add
-// edit:   0=type, 1=status, 2=priority, 3=title, 4=description, 5=parent, 6..M=block entries, M+1=+Block, M+2..N=criteria, N+1=+Add
+// create: 0=type, 1=priority, 2=title, 3=description, 4=flag, 5=parent, 6..M=block entries, M+1=+Block, M+2..N=criteria, N+1=+Add
+// edit:   0=type, 1=status, 2=priority, 3=title, 4=description, 5=flag, 6=parent, 7..M=block entries, M+1=+Block, M+2..N=criteria, N+1=+Add
 
 function priorityFieldIndex(state: FormState): number {
   return state.mode === 'edit' ? 2 : 1
@@ -102,8 +103,12 @@ function descFieldIndex(state: FormState): number {
   return state.mode === 'edit' ? 4 : 3
 }
 
-function parentFieldIndex(state: FormState): number {
+function flagFieldIndex(state: FormState): number {
   return descFieldIndex(state) + 1
+}
+
+function parentFieldIndex(state: FormState): number {
+  return flagFieldIndex(state) + 1
 }
 
 function blocksStartIndex(state: FormState): number {
@@ -169,6 +174,7 @@ function isBlockEntryField(state: FormState): boolean {
 function getCurrentText(state: FormState): string {
   const titleIdx = titleFieldIndex(state)
   const descIdx = descFieldIndex(state)
+  const flagIdx = flagFieldIndex(state)
   const parentIdx = parentFieldIndex(state)
   const blkStart = blocksStartIndex(state)
   const blkAddIdx = blocksAddIndex(state)
@@ -176,6 +182,7 @@ function getCurrentText(state: FormState): string {
 
   if (state.activeField === titleIdx) return state.title
   if (state.activeField === descIdx) return state.description
+  if (state.activeField === flagIdx) return state.flag
   if (state.activeField === parentIdx) return state.parentInput
   if (state.activeField >= blkStart && state.activeField < blkStart + state.blocks.length) {
     return state.blocks[state.activeField - blkStart]
@@ -191,6 +198,7 @@ function getCurrentText(state: FormState): string {
 function setCurrentText(state: FormState, text: string): void {
   const titleIdx = titleFieldIndex(state)
   const descIdx = descFieldIndex(state)
+  const flagIdx = flagFieldIndex(state)
   const parentIdx = parentFieldIndex(state)
   const blkStart = blocksStartIndex(state)
   const blkAddIdx = blocksAddIndex(state)
@@ -198,6 +206,7 @@ function setCurrentText(state: FormState, text: string): void {
 
   if (state.activeField === titleIdx) { state.title = text; return }
   if (state.activeField === descIdx) { state.description = text; return }
+  if (state.activeField === flagIdx) { state.flag = text; return }
   if (state.activeField === parentIdx) {
     state.parentInput = text
     state.parentHighlight = 0
@@ -225,6 +234,7 @@ function setCurrentText(state: FormState, text: string): void {
 function getTextForField(state: FormState, fieldIndex: number): string {
   const titleIdx = titleFieldIndex(state)
   const descIdx = descFieldIndex(state)
+  const flagIdx = flagFieldIndex(state)
   const parentIdx = parentFieldIndex(state)
   const blkStart = blocksStartIndex(state)
   const blkAddIdx = blocksAddIndex(state)
@@ -232,6 +242,7 @@ function getTextForField(state: FormState, fieldIndex: number): string {
 
   if (fieldIndex === titleIdx) return state.title
   if (fieldIndex === descIdx) return state.description
+  if (fieldIndex === flagIdx) return state.flag
   if (fieldIndex === parentIdx) return state.parentInput
   if (fieldIndex >= blkStart && fieldIndex < blkStart + state.blocks.length) {
     return state.blocks[fieldIndex - blkStart]
@@ -262,6 +273,7 @@ function buildFieldList(state: FormState): FieldInfo[] {
   fields.push({ label: 'Priority', index: priorityFieldIndex(state), kind: 'cycle' })
   fields.push({ label: 'Title', index: titleFieldIndex(state), kind: 'text' })
   fields.push({ label: 'Description', index: descFieldIndex(state), kind: 'text' })
+  fields.push({ label: 'Flag', index: flagFieldIndex(state), kind: 'text' })
   fields.push({ label: 'Parent', index: parentFieldIndex(state), kind: 'autocomplete' })
 
   for (let i = 0; i < state.blocks.length; i++) {
@@ -475,6 +487,7 @@ interface FormOptions {
     priority?: number
     title?: string
     description?: string
+    flag?: string
     parent?: string
     blocks?: string[]
     criteria?: string[]
@@ -504,6 +517,7 @@ function runForm<T>(
     priority: init.priority ?? 2,
     title: init.title ?? '',
     description: init.description ?? '',
+    flag: init.flag ?? '',
     parent: init.parent ?? '',
     parentInput: initialParentInput,
     parentCandidates,
@@ -825,6 +839,7 @@ export async function interactiveCreate(
         description: state.description.trim() || undefined,
         acceptance_criteria: criteria.length > 0 ? criteria : undefined,
         priority,
+        flag: state.flag.trim() || undefined,
         parent: state.parent || undefined,
         blocks: state.blocks.length > 0 ? [...state.blocks] : undefined,
       }
@@ -850,6 +865,7 @@ export async function interactiveEdit(
         priority: task.priority ? PRIORITIES.indexOf(task.priority) : 2,
         title: task.title,
         description: task.description,
+        flag: task.flag,
         parent: task.parent,
         blocks: task.blocks,
         criteria: [...task.acceptance_criteria],
@@ -868,6 +884,7 @@ export async function interactiveEdit(
         description: state.description.trim() || undefined,
         acceptance_criteria: criteria.length > 0 ? criteria : undefined,
         priority,
+        flag: state.flag.trim() || undefined,
         parent: state.parent || undefined,
         blocks: state.blocks.length > 0 ? [...state.blocks] : undefined,
       }

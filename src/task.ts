@@ -15,6 +15,7 @@ import type {
   EditTaskResult,
   GroupedTask,
   ListFilter,
+  PatchTaskOpts,
   PruneResult,
   Status,
   TaskData,
@@ -69,6 +70,7 @@ export function createTask(opts: CreateTaskOpts): TaskData {
     description: opts.description ?? '',
     acceptance_criteria: opts.acceptance_criteria ?? [],
     priority: opts.priority ?? 3,
+    ...(opts.flag && { flag: opts.flag }),
     ...(resolvedParent && { parent: resolvedParent }),
     ...(resolvedBlocks?.length && { blocks: resolvedBlocks }),
   }
@@ -383,15 +385,61 @@ export function updateTask(
   const config = loadConfig(dir)
   const { filePath, task } = findTaskFile(dir, id)
 
-  // Preserve immutable fields (id, created, flag), apply updates
+  // Preserve immutable fields (id, created), apply updates
   task.type = updates.type
   task.status = updates.status
   task.title = normalizeTitle(updates.title)
   task.description = updates.description ?? ''
   task.acceptance_criteria = updates.acceptance_criteria ?? []
   task.priority = updates.priority ?? 3
+  if (updates.flag !== undefined) {
+    task.flag = updates.flag || undefined
+  }
+
+  if (updates.parent !== undefined) {
+    task.parent = updates.parent
+  }
+  if (updates.blocks !== undefined) {
+    task.blocks = updates.blocks?.length ? updates.blocks : undefined
+  }
 
   // Handle filename change if verbose_files is enabled
+  if (config.verbose_files) {
+    const parentDir = filePath.substring(0, filePath.lastIndexOf('/'))
+    const newFilename = `${task.id} ${task.type} - ${task.title}.md`
+    const newPath = join(parentDir, newFilename)
+    if (newPath !== filePath) {
+      writeFileSync(newPath, render(task))
+      unlinkSync(filePath)
+      return task
+    }
+  }
+
+  writeFileSync(filePath, render(task))
+  return task
+}
+
+export function patchTask(
+  dir: string,
+  id: string,
+  patch: PatchTaskOpts,
+): TaskData {
+  const config = loadConfig(dir)
+  const { filePath, task } = findTaskFile(dir, id)
+
+  if (patch.type !== undefined) task.type = patch.type
+  if (patch.status !== undefined) task.status = patch.status
+  if (patch.priority !== undefined) task.priority = patch.priority
+  if (patch.flag === null) delete task.flag
+  else if (patch.flag !== undefined) task.flag = patch.flag
+  if (patch.title !== undefined) task.title = normalizeTitle(patch.title)
+  if (patch.description !== undefined) task.description = patch.description
+  if (patch.acceptance_criteria !== undefined) task.acceptance_criteria = patch.acceptance_criteria
+  if (patch.parent === null) delete task.parent
+  else if (patch.parent !== undefined) task.parent = patch.parent
+  if (patch.blocks === null) delete task.blocks
+  else if (patch.blocks !== undefined) task.blocks = patch.blocks
+
   if (config.verbose_files) {
     const parentDir = filePath.substring(0, filePath.lastIndexOf('/'))
     const newFilename = `${task.id} ${task.type} - ${task.title}.md`

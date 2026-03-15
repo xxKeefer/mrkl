@@ -2,8 +2,10 @@
 id: MRKL-098
 title: flag field not exposed in create-edit cli or tui
 type: fix
-status: todo
+status: done
 created: '2026-03-10'
+flag: completed
+priority: 3
 ---
 
 ## Description
@@ -12,9 +14,8 @@ The flag field exists in TaskData and is rendered in template.ts but is not expo
 
 ## Acceptance Criteria
 
-- [ ] 
-- [ ] flag field appears in interactive create TUI
-- [ ] flag field editable in interactive edit TUI
-- [ ] flag shown in list view preview panel
-- [ ] existing tests pass (pnpm test)
-- [ ] typecheck passes (pnpm typecheck)
+- [x] flag field appears in interactive create TUI
+- [x] flag field editable in interactive edit TUI
+- [x] flag shown in list view preview panel
+- [x] existing tests pass (pnpm test)
+- [x] typecheck passes (pnpm typecheck)

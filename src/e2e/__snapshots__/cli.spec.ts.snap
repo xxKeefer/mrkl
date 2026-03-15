@@ -8,6 +8,7 @@ exports[`cli e2e — interactive create flow > final screen state is snapshotted
   Priority          ⏹️ 3-normal                                                  
   Title           My interactive task                                           
   Description     ····················                                          
+  Flag            ····················                                          
   Parent          type to search...                                             
 › + Block                                                                       
   + Add           ····················                                          
@@ -24,6 +25,7 @@ exports[`cli e2e — interactive edit flow > edit shows pre-populated form with 
   Priority          ⏹️ 3-normal                                                  
   Title           Original title                                                
   Description     ····················                                          
+  Flag            ····················                                          
   Parent          type to search...                                             
   + Block         type to search...                                             
   + Add           ····················                                          
