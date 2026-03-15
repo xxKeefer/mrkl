@@ -2,8 +2,9 @@
 id: MRKL-097
 title: update documentation for priority system
 type: docs
-status: todo
+status: done
 created: '2026-03-10'
+flag: completed
 parent: MRKL-091
 ---
 
@@ -13,6 +14,6 @@ Update README.md, CONTRIBUTING.md, and docs/workflow.md to document the priority
 
 ## Acceptance Criteria
 
-- [ ] README.md documents priority field and --priority flag
-- [ ] docs/workflow.md updated with priority usage
-- [ ] emoji mapping table included in documentation
+- [x] README.md documents priority field and --priority flag
+- [x] docs/workflow.md updated with priority usage
+- [x] emoji mapping table included in documentation
