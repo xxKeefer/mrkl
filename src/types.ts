@@ -17,6 +17,10 @@ export const STATUSES = ['todo', 'in-progress', 'done', 'closed'] as const
 
 export type Status = (typeof STATUSES)[number]
 
+export const PRIORITIES = [1, 2, 3, 4, 5] as const
+
+export type Priority = (typeof PRIORITIES)[number]
+
 export interface Config {
   prefix: string
   tasks_dir: string
@@ -28,6 +32,7 @@ export interface TaskData {
   type: TaskType
   status: Status
   created: string
+  priority?: Priority
   flag?: string
   parent?: string
   blocks?: string[]
@@ -43,6 +48,7 @@ export interface CreateTaskOpts {
   title: string
   description?: string
   acceptance_criteria?: string[]
+  priority?: Priority
   parent?: string
   blocks?: string[]
 }
@@ -56,6 +62,7 @@ export interface ListFilter {
 export interface EditTaskResult {
   type: TaskType
   status: Status
+  priority?: Priority
   title: string
   description?: string
   acceptance_criteria?: string[]
