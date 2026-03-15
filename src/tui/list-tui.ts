@@ -1,7 +1,8 @@
 import { watch, type FSWatcher } from 'node:fs'
 import { join } from 'node:path'
 import { Fzf } from 'fzf'
-import type { TaskData } from '../types.js'
+import type { TaskData, Priority } from '../types.js'
+import { priorityEmoji } from '../emoji.js'
 import { groupByEpic, getChildren, getBlockedBy } from '../task.js'
 import { loadConfig } from '../config.js'
 import {
@@ -68,7 +69,10 @@ export function buildEntries(tasks: TaskData[]): FzfEntry[] {
 
 const ID_W = 12
 const STATUS_W = 10
+const PRIORITY_W = 4
 const TITLE_W = 30
+
+const PRIORITY_LABELS = ['lowest', 'low', 'normal', 'high', 'highest'] as const
 
 function padOrTruncate(text: string, width: number): string {
   if (text.length > width) return text.slice(0, width - 1) + '…'
@@ -78,21 +82,24 @@ function padOrTruncate(text: string, width: number): string {
 function formatRow(
   id: string,
   status: string,
+  priority: string,
   indicators: string,
   title: string,
   width: number,
 ): string {
   const idCol = padOrTruncate(id, ID_W)
   const statusCol = padOrTruncate(status, STATUS_W)
+  const priCol = padOrTruncate(priority, PRIORITY_W)
   const titleCol = padOrTruncate(title, TITLE_W)
-  const relWidth = Math.max(0, width - ID_W - STATUS_W - TITLE_W)
+  const relWidth = Math.max(0, width - ID_W - STATUS_W - PRIORITY_W - TITLE_W)
   const relCol = padOrTruncate(indicators, relWidth)
-  return `${idCol}${statusCol}${relCol}${titleCol}`
+  return `${idCol}${statusCol}${priCol}${relCol}${titleCol}`
 }
 
 function colorizeRow(
   id: string,
   status: string,
+  priority: string,
   indicators: string,
   title: string,
   width: number,
@@ -100,11 +107,12 @@ function colorizeRow(
 ): string {
   const idCol = padOrTruncate(id, ID_W)
   const statusCol = padOrTruncate(status, STATUS_W)
+  const priCol = padOrTruncate(priority, PRIORITY_W)
   const titleCol = padOrTruncate(title, TITLE_W)
-  const relWidth = Math.max(0, width - ID_W - STATUS_W - TITLE_W)
+  const relWidth = Math.max(0, width - ID_W - STATUS_W - PRIORITY_W - TITLE_W)
   const relCol = padOrTruncate(indicators, relWidth)
   const relPart = indicators ? `${FG_RED}${relCol}${RESET}` : relCol
-  return `${FG_CYAN}${idCol}${RESET}${sc}${statusCol}${RESET}${relPart}${titleCol}`
+  return `${FG_CYAN}${idCol}${RESET}${sc}${statusCol}${RESET}${priCol}${relPart}${titleCol}`
 }
 
 function wrapText(text: string, width: number): string[] {
@@ -134,9 +142,11 @@ function buildPreviewLines(
   if (!task) return []
   const lines: string[] = []
 
+  const p = (task.priority ?? 3) as Priority
   lines.push(
     `${BOLD}${task.id}${RESET} ${FG_GRAY}${task.type}${RESET} ${statusColor(task.status)}${task.status}${RESET}`,
   )
+  lines.push(`  ${priorityEmoji(p)} Priority: ${p}-${PRIORITY_LABELS[p - 1]}`)
   lines.push(`${BOLD}${task.title}${RESET}`)
   lines.push('')
 
@@ -209,7 +219,7 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
 
   // Column headers (1-char padding before separator)
   const contentWidth = listWidth - 1
-  const headerLine = formatRow('ID', 'STATUS', '', 'TITLE', contentWidth)
+  const headerLine = formatRow('ID', 'STATUS', 'PRI', '', 'TITLE', contentWidth)
   buf.push(
     `${BOLD}${headerLine}${RESET} ${FG_GRAY}│${RESET}${BOLD} Preview${RESET}`,
   )
@@ -256,10 +266,13 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
       if (entry.blockedByIndicator) parts.push(entry.blockedByIndicator)
       const indicatorStr = parts.join(' ')
 
+      const priEmoji = priorityEmoji((entry.task.priority ?? 3) as Priority)
+
       if (isSelected) {
         const row = formatRow(
           entry.task.id,
           entry.task.status,
+          priEmoji,
           indicatorStr,
           entry.task.title,
           rowWidth,
@@ -270,6 +283,7 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
         const coloredRow = colorizeRow(
           entry.task.id,
           entry.task.status,
+          priEmoji,
           indicatorStr,
           entry.task.title,
           rowWidth,
