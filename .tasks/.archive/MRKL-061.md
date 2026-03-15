@@ -2,8 +2,10 @@
 id: MRKL-061
 title: create command unit tests
 type: test
-status: todo
+status: closed
 created: '2026-03-09'
+flag: Superseded by MRKL-117 under test coverage epic MRKL-116
+priority: 3
 ---
 
 ## Description

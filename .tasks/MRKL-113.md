@@ -4,11 +4,13 @@ title: create tui - empty blocks should not complete task
 type: fix
 status: todo
 created: '2026-03-12'
+parent: MRKL-125
+priority: 3
 ---
 
 ## Description
 
-
+Pressing Enter on an empty blocks field in the create TUI incorrectly completes the task instead of advancing to the next field.
 
 ## Acceptance Criteria
 

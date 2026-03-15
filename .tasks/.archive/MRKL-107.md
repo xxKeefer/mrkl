@@ -2,8 +2,10 @@
 id: MRKL-107
 title: responsive design - list view
 type: fix
-status: todo
+status: closed
 created: '2026-03-10'
+flag: Duplicate of MRKL-110 which describes the responsive layout approach
+priority: 3
 ---
 
 ## Description

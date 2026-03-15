@@ -4,6 +4,8 @@ title: list preview - children overflow
 type: fix
 status: todo
 created: '2026-03-12'
+parent: MRKL-124
+priority: 3
 ---
 
 ## Description
