@@ -15,9 +15,7 @@ export function render(task: TaskData): string {
   if (task.parent) {
     frontmatter.parent = task.parent
   }
-  if (task.priority && task.priority !== 3) {
-    frontmatter.priority = task.priority
-  }
+  frontmatter.priority = task.priority ?? 3
   if (task.blocks && task.blocks.length > 0) {
     frontmatter.blocks = task.blocks
   }

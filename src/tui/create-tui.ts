@@ -824,7 +824,7 @@ export async function interactiveCreate(
         title: state.title.trim(),
         description: state.description.trim() || undefined,
         acceptance_criteria: criteria.length > 0 ? criteria : undefined,
-        ...(priority !== 3 && { priority }),
+        priority,
         parent: state.parent || undefined,
         blocks: state.blocks.length > 0 ? [...state.blocks] : undefined,
       }
@@ -867,7 +867,7 @@ export async function interactiveEdit(
         title: state.title.trim(),
         description: state.description.trim() || undefined,
         acceptance_criteria: criteria.length > 0 ? criteria : undefined,
-        ...(priority !== 3 && { priority }),
+        priority,
         parent: state.parent || undefined,
         blocks: state.blocks.length > 0 ? [...state.blocks] : undefined,
       }

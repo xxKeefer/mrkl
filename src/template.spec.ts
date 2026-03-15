@@ -65,13 +65,13 @@ describe('template', () => {
       const output = render({ ...SAMPLE_TASK, priority: 5 })
       expect(output).toContain('priority: 5')
     })
-    it('omits priority from frontmatter when priority is 3', () => {
+    it('includes priority 3 in frontmatter when priority is 3', () => {
       const output = render({ ...SAMPLE_TASK, priority: 3 })
-      expect(output).not.toContain('priority')
+      expect(output).toContain('priority: 3')
     })
-    it('omits priority from frontmatter when priority is undefined', () => {
+    it('defaults to priority 3 in frontmatter when priority is undefined', () => {
       const output = render(SAMPLE_TASK)
-      expect(output).not.toContain('priority')
+      expect(output).toContain('priority: 3')
     })
     it('handles empty description and empty acceptance criteria', () => {
       const task: TaskData = {
