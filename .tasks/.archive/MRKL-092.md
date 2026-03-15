@@ -2,8 +2,9 @@
 id: MRKL-092
 title: add priority types and emoji constants
 type: feat
-status: todo
+status: done
 created: '2026-03-10'
+flag: completed
 parent: MRKL-091
 blocks:
   - MRKL-093
@@ -18,11 +19,11 @@ Add PRIORITIES const array [1,2,3,4,5] and Priority type to types.ts. Add priori
 
 ## Acceptance Criteria
 
-- [ ] PRIORITIES const and Priority type exported from types.ts
-- [ ] priority field added to TaskData as optional number defaulting to 3
-- [ ] priority field added to CreateTaskOpts as optional number
-- [ ] priority field added to EditTaskResult as optional number
-- [ ] five priority emoji keys added to EMOJI in emoji.ts
-- [ ] priorityEmoji helper maps 1-5 to correct emoji
-- [ ] existing tests pass (pnpm test)
-- [ ] typecheck passes (pnpm typecheck)
+- [x] PRIORITIES const and Priority type exported from types.ts
+- [x] priority field added to TaskData as optional number defaulting to 3
+- [x] priority field added to CreateTaskOpts as optional number
+- [x] priority field added to EditTaskResult as optional number
+- [x] five priority emoji keys added to EMOJI in emoji.ts
+- [x] priorityEmoji helper maps 1-5 to correct emoji
+- [x] existing tests pass (pnpm test)
+- [x] typecheck passes (pnpm typecheck)

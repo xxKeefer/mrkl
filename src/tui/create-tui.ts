@@ -1,4 +1,4 @@
-import { TASK_TYPES, STATUSES } from '../types.js'
+import { TASK_TYPES, STATUSES, PRIORITIES } from '../types.js'
 import type {
   TaskType,
   Status,
@@ -6,6 +6,7 @@ import type {
   TaskData,
   EditTaskResult,
 } from '../types.js'
+import { priorityEmoji } from '../emoji.js'
 import {
   ESC,
   ALT_SCREEN_ON,
@@ -21,6 +22,8 @@ import {
   FG_RED,
   FG_GRAY,
 } from './ansi.js'
+
+const PRIORITY_LABELS = ['lowest', 'low', 'normal', 'high', 'highest'] as const
 
 export interface AutocompleteCandidate {
   id: string
@@ -63,6 +66,7 @@ const GUTTER = 2 + LABEL_WIDTH + 1
 export interface FormState {
   type: number
   status: number
+  priority: number
   title: string
   description: string
   parent: string
@@ -83,15 +87,19 @@ export interface FormState {
 }
 
 // Field layout:
-// create: 0=type, 1=title, 2=description, 3=parent, 4..M=block entries, M+1=+Block, M+2..N=criteria, N+1=+Add
-// edit:   0=type, 1=status, 2=title, 3=description, 4=parent, 5..M=block entries, M+1=+Block, M+2..N=criteria, N+1=+Add
+// create: 0=type, 1=priority, 2=title, 3=description, 4=parent, 5..M=block entries, M+1=+Block, M+2..N=criteria, N+1=+Add
+// edit:   0=type, 1=status, 2=priority, 3=title, 4=description, 5=parent, 6..M=block entries, M+1=+Block, M+2..N=criteria, N+1=+Add
 
-function titleFieldIndex(state: FormState): number {
+function priorityFieldIndex(state: FormState): number {
   return state.mode === 'edit' ? 2 : 1
 }
 
-function descFieldIndex(state: FormState): number {
+function titleFieldIndex(state: FormState): number {
   return state.mode === 'edit' ? 3 : 2
+}
+
+function descFieldIndex(state: FormState): number {
+  return state.mode === 'edit' ? 4 : 3
 }
 
 function parentFieldIndex(state: FormState): number {
@@ -128,8 +136,12 @@ function isStatusField(state: FormState): boolean {
   return state.mode === 'edit' && state.activeField === 1
 }
 
+function isPriorityField(state: FormState): boolean {
+  return state.activeField === priorityFieldIndex(state)
+}
+
 function isCycleField(state: FormState): boolean {
-  return isTypeField(state) || isStatusField(state)
+  return isTypeField(state) || isStatusField(state) || isPriorityField(state)
 }
 
 function isTextField(state: FormState): boolean {
@@ -247,6 +259,7 @@ function buildFieldList(state: FormState): FieldInfo[] {
   if (state.mode === 'edit') {
     fields.push({ label: 'Status', index: 1, kind: 'cycle' })
   }
+  fields.push({ label: 'Priority', index: priorityFieldIndex(state), kind: 'cycle' })
   fields.push({ label: 'Title', index: titleFieldIndex(state), kind: 'text' })
   fields.push({ label: 'Description', index: descFieldIndex(state), kind: 'text' })
   fields.push({ label: 'Parent', index: parentFieldIndex(state), kind: 'autocomplete' })
@@ -373,10 +386,15 @@ export function render(state: FormState, stdout: NodeJS.WriteStream): void {
     const label = `${labelColor}${f.label.padEnd(LABEL_WIDTH)}${RESET}`
 
     if (f.kind === 'cycle') {
-      const items: readonly string[] =
-        f.index === 0 ? TASK_TYPES : STATUSES
-      const stateIndex = f.index === 0 ? state.type : state.status
-      const value = items[stateIndex]
+      let value: string
+      if (f.index === priorityFieldIndex(state)) {
+        const p = PRIORITIES[state.priority]
+        value = `${priorityEmoji(p)} ${p}-${PRIORITY_LABELS[state.priority]}`
+      } else if (f.index === 0) {
+        value = TASK_TYPES[state.type]
+      } else {
+        value = STATUSES[state.status]
+      }
       const display = active
         ? `${FG_CYAN}◂ ${BOLD}${value}${RESET}${FG_CYAN} ▸${RESET}`
         : `  ${value}`
@@ -438,7 +456,7 @@ export function render(state: FormState, stdout: NodeJS.WriteStream): void {
 
   buf.push(`  ${FG_GRAY}${'─'.repeat(sepWidth)}${RESET}`)
   const cycleHint =
-    state.mode === 'edit' ? '←→ cycle type/status' : '←→ cycle type'
+    state.mode === 'edit' ? '←→ cycle type/status/priority' : '←→ cycle type/priority'
   buf.push(
     `  ${FG_GRAY}↑↓ navigate  ${cycleHint}  Ctrl+N newline  Enter submit  Esc quit${RESET}`,
   )
@@ -454,6 +472,7 @@ interface FormOptions {
   initialValues?: {
     type?: number
     status?: number
+    priority?: number
     title?: string
     description?: string
     parent?: string
@@ -482,6 +501,7 @@ function runForm<T>(
   const state: FormState = {
     type: init.type ?? 0,
     status: init.status ?? 0,
+    priority: init.priority ?? 2,
     title: init.title ?? '',
     description: init.description ?? '',
     parent: init.parent ?? '',
@@ -660,6 +680,8 @@ function runForm<T>(
                 state.type = (state.type + 1) % TASK_TYPES.length
               } else if (isStatusField(state)) {
                 state.status = (state.status + 1) % STATUSES.length
+              } else if (isPriorityField(state)) {
+                state.priority = (state.priority + 1) % PRIORITIES.length
               } else if (isTextField(state)) {
                 const text = getCurrentText(state)
                 if (state.cursorPos < text.length) state.cursorPos++
@@ -676,6 +698,9 @@ function runForm<T>(
               } else if (isStatusField(state)) {
                 state.status =
                   (state.status - 1 + STATUSES.length) % STATUSES.length
+              } else if (isPriorityField(state)) {
+                state.priority =
+                  (state.priority - 1 + PRIORITIES.length) % PRIORITIES.length
               } else if (isTextField(state)) {
                 if (state.cursorPos > 0) state.cursorPos--
               }
@@ -793,11 +818,13 @@ export async function interactiveCreate(
       if (state.currentCriterion.trim()) {
         criteria.push(state.currentCriterion.trim())
       }
+      const priority = PRIORITIES[state.priority]
       return {
         type: TASK_TYPES[state.type] as TaskType,
         title: state.title.trim(),
         description: state.description.trim() || undefined,
         acceptance_criteria: criteria.length > 0 ? criteria : undefined,
+        priority,
         parent: state.parent || undefined,
         blocks: state.blocks.length > 0 ? [...state.blocks] : undefined,
       }
@@ -820,6 +847,7 @@ export async function interactiveEdit(
       initialValues: {
         type: typeIndex >= 0 ? typeIndex : 0,
         status: statusIndex >= 0 ? statusIndex : 0,
+        priority: task.priority ? PRIORITIES.indexOf(task.priority) : 2,
         title: task.title,
         description: task.description,
         parent: task.parent,
@@ -832,12 +860,14 @@ export async function interactiveEdit(
       if (state.currentCriterion.trim()) {
         criteria.push(state.currentCriterion.trim())
       }
+      const priority = PRIORITIES[state.priority]
       return {
         type: TASK_TYPES[state.type] as TaskType,
         status: STATUSES[state.status] as Status,
         title: state.title.trim(),
         description: state.description.trim() || undefined,
         acceptance_criteria: criteria.length > 0 ? criteria : undefined,
+        priority,
         parent: state.parent || undefined,
         blocks: state.blocks.length > 0 ? [...state.blocks] : undefined,
       }

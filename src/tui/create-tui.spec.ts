@@ -136,7 +136,7 @@ describe('render', () => {
       parentInput: 'MRKL-010 - Auth epic',
       blocks: ['MRKL-011', 'MRKL-012'],
       criteria: ['Login endpoint returns JWT', 'Refresh token rotation works'],
-      activeField: 1,
+      activeField: 2,
       cursorPos: 29,
     })
     const stdout = createMockStdout(80, 24)
@@ -165,7 +165,7 @@ describe('render', () => {
   it('error state (empty title) snapshot at 80 cols', async () => {
     const state = makeFormState({
       error: 'Title cannot be empty',
-      activeField: 1,
+      activeField: 2,
       cursorPos: 0,
     })
     const stdout = createMockStdout(80, 24)
@@ -176,7 +176,7 @@ describe('render', () => {
 
   it('active autocomplete with suggestions snapshot at 80 cols', async () => {
     const state = makeFormState({
-      activeField: 3,
+      activeField: 4,
       parentInput: 'auth',
       cursorPos: 4,
       parentCandidates: [
@@ -197,7 +197,7 @@ describe('render', () => {
       title: 'A very long task title that should wrap at narrow width',
       description: 'This description contains enough text to demonstrate how the form handles word wrapping when the terminal is very narrow',
       criteria: ['First criterion with a long description that wraps'],
-      activeField: 2,
+      activeField: 3,
       cursorPos: 0,
     })
     const stdout = createMockStdout(40, 24)
@@ -221,12 +221,11 @@ describe('interaction snapshots', () => {
     expect(screen).toMatchSnapshot()
   })
 
-  it('arrow down moves to title field', async () => {
+  it('arrow down moves to priority field', async () => {
     tui = spawnTui('create', { cols: 80, rows: 24 })
     await tui.waitForContent('feat')
     tui.write('\x1b[B')
-    // Wait for re-render — title field becomes active, cursor moves
-    await new Promise((r) => setTimeout(r, 200))
+    await tui.waitForContent('Priority')
     const screen = tui.readScreen()
     expect(screen).toMatchSnapshot()
   })
@@ -234,7 +233,7 @@ describe('interaction snapshots', () => {
   it('arrow up returns to type field', async () => {
     tui = spawnTui('create', { cols: 80, rows: 24 })
     await tui.waitForContent('feat')
-    tui.write('\x1b[B') // down to title
+    tui.write('\x1b[B') // down to priority
     await new Promise((r) => setTimeout(r, 200))
     tui.write('\x1b[A') // up back to type
     await new Promise((r) => setTimeout(r, 200))
@@ -256,7 +255,7 @@ describe('interaction snapshots', () => {
   it('typing characters into title field shows text on screen', async () => {
     tui = spawnTui('create', { cols: 80, rows: 24 })
     await tui.waitForContent('feat')
-    tui.write('\x1b[B') // down to title
+    tui.write('\x1b[B\x1b[B') // down to priority, then title
     await new Promise((r) => setTimeout(r, 200))
     tui.write('Hello')
     await tui.waitForContent('Hello')
@@ -277,7 +276,7 @@ describe('interaction snapshots', () => {
     try {
       tui = spawnTui('create', { cols: 80, rows: 24, cwd: tempDir })
       await tui.waitForContent('feat')
-      tui.write('\x1b[B') // down to title
+      tui.write('\x1b[B\x1b[B') // down to priority, then title
       await new Promise((r) => setTimeout(r, 200))
       tui.write('Test task')
       await tui.waitForContent('Test task')
@@ -345,8 +344,8 @@ describe('autocomplete interaction snapshots', () => {
   it('typing in parent field shows filtered suggestions', async () => {
     tui = spawnTui('create', { cols: 80, rows: 24, cwd: tempDir })
     await tui.waitForContent('feat')
-    // Navigate to parent field (index 3): type→title→desc→parent
-    tui.write('\x1b[B\x1b[B\x1b[B')
+    // Navigate to parent field (index 4): type→priority→title→desc→parent
+    tui.write('\x1b[B\x1b[B\x1b[B\x1b[B')
     await new Promise((r) => setTimeout(r, 300))
     tui.write('auth')
     const screen = await tui.waitForContent('Auth epic')
@@ -356,7 +355,7 @@ describe('autocomplete interaction snapshots', () => {
   it('right arrow navigates suggestion highlight', async () => {
     tui = spawnTui('create', { cols: 80, rows: 24, cwd: tempDir })
     await tui.waitForContent('feat')
-    tui.write('\x1b[B\x1b[B\x1b[B')
+    tui.write('\x1b[B\x1b[B\x1b[B\x1b[B')
     await new Promise((r) => setTimeout(r, 300))
     tui.write('MRKL')
     await tui.waitForContent('MRKL-001')
@@ -369,7 +368,7 @@ describe('autocomplete interaction snapshots', () => {
   it('Enter selects highlighted suggestion', async () => {
     tui = spawnTui('create', { cols: 80, rows: 24, cwd: tempDir })
     await tui.waitForContent('feat')
-    tui.write('\x1b[B\x1b[B\x1b[B')
+    tui.write('\x1b[B\x1b[B\x1b[B\x1b[B')
     await new Promise((r) => setTimeout(r, 300))
     tui.write('auth')
     await tui.waitForContent('Auth epic')
@@ -384,8 +383,8 @@ describe('autocomplete interaction snapshots', () => {
   it('Enter on empty parent field skips to next field without selecting', async () => {
     tui = spawnTui('create', { cols: 80, rows: 24, cwd: tempDir })
     await tui.waitForContent('feat')
-    // Navigate to parent field (index 3): type→title→desc→parent
-    tui.write('\x1b[B\x1b[B\x1b[B')
+    // Navigate to parent field (index 4): type→priority→title→desc→parent
+    tui.write('\x1b[B\x1b[B\x1b[B\x1b[B')
     await new Promise((r) => setTimeout(r, 300))
     // Don't type anything — press Enter on empty autocomplete
     tui.write('\r')
@@ -402,8 +401,8 @@ describe('autocomplete interaction snapshots', () => {
   it('Enter on empty +Block field skips without selecting a suggestion', async () => {
     tui = spawnTui('create', { cols: 80, rows: 24, cwd: tempDir })
     await tui.waitForContent('feat')
-    // Navigate to +Block field (index 4): type→title→desc→parent→+Block
-    for (let i = 0; i < 4; i++) {
+    // Navigate to +Block field (index 5): type→priority→title→desc→parent→+Block
+    for (let i = 0; i < 5; i++) {
       tui.write('\x1b[B')
       await new Promise((r) => setTimeout(r, 100))
     }

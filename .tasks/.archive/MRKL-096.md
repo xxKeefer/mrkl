@@ -2,8 +2,9 @@
 id: MRKL-096
 title: show priority in list view and preview
 type: feat
-status: todo
+status: done
 created: '2026-03-10'
+flag: completed
 parent: MRKL-091
 blocks:
   - MRKL-097
@@ -16,8 +17,8 @@ Add priority emoji column to the interactive list view in list-tui.ts. Show the 
 
 ## Acceptance Criteria
 
-- [ ] priority emoji appears as a column in list view rows
-- [ ] priority with label shown in preview panel
-- [ ] tasks without priority field display as normal (⏹️)
-- [ ] existing tests pass (pnpm test)
-- [ ] typecheck passes (pnpm typecheck)
+- [x] priority emoji appears as a column in list view rows
+- [x] priority with label shown in preview panel
+- [x] tasks without priority field display as normal (⏹️)
+- [x] existing tests pass (pnpm test)
+- [x] typecheck passes (pnpm typecheck)

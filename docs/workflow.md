@@ -28,7 +28,7 @@ git checkout -b planning/sprint-3 main
 # 2. Create tasks
 mrkl create feat "user authentication"
 mrkl create feat "dark mode"
-mrkl create fix "login redirect loop" --desc "Users stuck after OAuth callback"
+mrkl create fix "login redirect loop" --desc "Users stuck after OAuth callback" -P 4
 mrkl create chore "upgrade dependencies"
 
 # 3. Commit
@@ -160,7 +160,7 @@ mrkl list  # now shows newly planned tasks
 | Action             | Command                                                   |
 | ------------------ | --------------------------------------------------------- |
 | Start planning     | `git checkout -b planning/sprint-N main`                  |
-| Create task        | `mrkl create <type> "<title>"`                            |
+| Create task        | `mrkl create <type> "<title>" [-P <1-5>]`                 |
 | Commit planning    | `git add .tasks/ .config/mrkl/mrkl_counter && git commit` |
 | Start feature work | `git checkout -b feature/MRKL-NNN_slug main`              |
 | Complete task      | `mrkl done MRKL-NNN`                                      |

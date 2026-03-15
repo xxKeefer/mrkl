@@ -1,7 +1,8 @@
 import { watch, type FSWatcher } from 'node:fs'
 import { join } from 'node:path'
 import { Fzf } from 'fzf'
-import type { TaskData } from '../types.js'
+import type { TaskData, Priority } from '../types.js'
+import { EMOJI, priorityEmoji } from '../emoji.js'
 import { groupByEpic, getChildren, getBlockedBy } from '../task.js'
 import { loadConfig } from '../config.js'
 import {
@@ -28,6 +29,7 @@ export interface FzfEntry {
   indent: number
   blocksIndicator: string | null
   blockedByIndicator: string | null
+  isEpic: boolean
 }
 
 export interface ListRenderState {
@@ -56,6 +58,7 @@ function statusColor(status: string): string {
 }
 
 export function buildEntries(tasks: TaskData[]): FzfEntry[] {
+  const parentIds = new Set(tasks.filter((t) => t.parent).map((t) => t.parent!))
   const grouped = groupByEpic(tasks)
   return grouped.map((g) => ({
     task: g.task,
@@ -63,12 +66,13 @@ export function buildEntries(tasks: TaskData[]): FzfEntry[] {
     indent: g.indent,
     blocksIndicator: g.blocksIndicator,
     blockedByIndicator: g.blockedByIndicator,
+    isEpic: parentIds.has(g.task.id),
   }))
 }
 
 const ID_W = 12
-const STATUS_W = 10
-const TITLE_W = 30
+const STATUS_W = 16
+
 
 function padOrTruncate(text: string, width: number): string {
   if (text.length > width) return text.slice(0, width - 1) + '…'
@@ -78,33 +82,28 @@ function padOrTruncate(text: string, width: number): string {
 function formatRow(
   id: string,
   status: string,
-  indicators: string,
   title: string,
   width: number,
 ): string {
   const idCol = padOrTruncate(id, ID_W)
   const statusCol = padOrTruncate(status, STATUS_W)
-  const titleCol = padOrTruncate(title, TITLE_W)
-  const relWidth = Math.max(0, width - ID_W - STATUS_W - TITLE_W)
-  const relCol = padOrTruncate(indicators, relWidth)
-  return `${idCol}${statusCol}${relCol}${titleCol}`
+  const titleWidth = Math.max(0, width - ID_W - STATUS_W)
+  const titleCol = padOrTruncate(title, titleWidth)
+  return `${idCol}${statusCol}${titleCol}`
 }
 
 function colorizeRow(
   id: string,
   status: string,
-  indicators: string,
   title: string,
   width: number,
   sc: string,
 ): string {
   const idCol = padOrTruncate(id, ID_W)
   const statusCol = padOrTruncate(status, STATUS_W)
-  const titleCol = padOrTruncate(title, TITLE_W)
-  const relWidth = Math.max(0, width - ID_W - STATUS_W - TITLE_W)
-  const relCol = padOrTruncate(indicators, relWidth)
-  const relPart = indicators ? `${FG_RED}${relCol}${RESET}` : relCol
-  return `${FG_CYAN}${idCol}${RESET}${sc}${statusCol}${RESET}${relPart}${titleCol}`
+  const titleWidth = Math.max(0, width - ID_W - STATUS_W)
+  const titleCol = padOrTruncate(title, titleWidth)
+  return `${FG_CYAN}${idCol}${RESET}${sc}${statusCol}${RESET}${titleCol}`
 }
 
 function wrapText(text: string, width: number): string[] {
@@ -134,29 +133,31 @@ function buildPreviewLines(
   if (!task) return []
   const lines: string[] = []
 
+  const p = (task.priority ?? 3) as Priority
+  const children = getChildren(allTasks, task.id)
+  const hierarchyEmoji = children.length > 0 ? EMOJI.epic : task.parent ? EMOJI.child : ''
   lines.push(
-    `${BOLD}${task.id}${RESET} ${FG_GRAY}${task.type}${RESET} ${statusColor(task.status)}${task.status}${RESET}`,
+    `${hierarchyEmoji}${priorityEmoji(p)} ${BOLD}${task.id}${RESET} ${FG_GRAY}${task.type}${RESET} ${statusColor(task.status)}${task.status}${RESET}`,
   )
   lines.push(`${BOLD}${task.title}${RESET}`)
   lines.push('')
 
-  const children = getChildren(allTasks, task.id)
   const blockedBy = getBlockedBy(allTasks, task.id)
   const hasRelationships = task.parent || children.length > 0 || (task.blocks && task.blocks.length > 0) || blockedBy.length > 0
 
   if (hasRelationships) {
     lines.push(`${UNDERLINE}Relationships${RESET}`)
     if (task.parent) {
-      lines.push(`  Parent: ${FG_CYAN}${task.parent}${RESET}`)
+      lines.push(`  ${EMOJI.epic} Parent: ${FG_CYAN}${task.parent}${RESET}`)
     }
     if (children.length > 0) {
-      lines.push(`  Children: ${FG_CYAN}${children.map((c) => c.id).join(', ')}${RESET}`)
+      lines.push(`  ${EMOJI.child} Children: ${FG_CYAN}${children.map((c) => c.id).join(', ')}${RESET}`)
     }
     if (task.blocks && task.blocks.length > 0) {
-      lines.push(`  Blocks: ${FG_RED}${task.blocks.join(', ')}${RESET}`)
+      lines.push(`  ${EMOJI.blocks} Blocks: ${FG_RED}${task.blocks.join(', ')}${RESET}`)
     }
     if (blockedBy.length > 0) {
-      lines.push(`  Blocked by: ${FG_RED}${blockedBy.map((t) => t.id).join(', ')}${RESET}`)
+      lines.push(`  ${EMOJI.blocked_by} Blocked by: ${FG_RED}${blockedBy.map((t) => t.id).join(', ')}${RESET}`)
     }
     lines.push('')
   }
@@ -209,7 +210,7 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
 
   // Column headers (1-char padding before separator)
   const contentWidth = listWidth - 1
-  const headerLine = formatRow('ID', 'STATUS', '', 'TITLE', contentWidth)
+  const headerLine = formatRow('ID', 'STATUS', 'TITLE', contentWidth)
   buf.push(
     `${BOLD}${headerLine}${RESET} ${FG_GRAY}│${RESET}${BOLD} Preview${RESET}`,
   )
@@ -251,16 +252,16 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
       const treePrefix = entry.indent === 1 ? '├─' : ''
       const prefixWidth = treePrefix ? 2 : 0
       const rowWidth = contentWidth - prefixWidth
-      const parts: string[] = []
-      if (entry.blocksIndicator) parts.push(entry.blocksIndicator)
-      if (entry.blockedByIndicator) parts.push(entry.blockedByIndicator)
-      const indicatorStr = parts.join(' ')
+      const priEmoji = priorityEmoji((entry.task.priority ?? 3) as Priority)
+      const blockedByEmoji = entry.blockedByIndicator ? EMOJI.blocked_by : ''
+      const blocksEmoji = entry.blocksIndicator ? EMOJI.blocks : ''
+      const hierarchyEmoji = entry.isEpic ? EMOJI.epic : entry.task.parent ? EMOJI.child : ''
+      const compactStatus = `${entry.task.status} ${hierarchyEmoji}${priEmoji}${blockedByEmoji}${blocksEmoji}`
 
       if (isSelected) {
         const row = formatRow(
           entry.task.id,
-          entry.task.status,
-          indicatorStr,
+          compactStatus,
           entry.task.title,
           rowWidth,
         )
@@ -269,8 +270,7 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
         const sc = statusColor(entry.task.status)
         const coloredRow = colorizeRow(
           entry.task.id,
-          entry.task.status,
-          indicatorStr,
+          compactStatus,
           entry.task.title,
           rowWidth,
           sc,

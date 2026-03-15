@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.5.2...main
+
+[compare changes](https://github.com/xxKeefer/mrkl/compare/v0.5.2...main)
+
+### Added
+
+- Task priority system (MRKL-091) ([#40](https://github.com/xxKeefer/mrkl/pull/40))
+
+### ❤️ Contributors
+
+- Daniel John Keefer <xxkeefer@proton.me>
+
 ## v0.5.1...main
 
 [compare changes](https://github.com/xxKeefer/mrkl/compare/v0.5.1...main)
