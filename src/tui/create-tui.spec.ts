@@ -106,6 +106,23 @@ describe('render', () => {
     expect(output).toContain('Status')
   })
 
+  it('renders Flag field in create form', () => {
+    const stdout = createMockStdout(80, 24)
+    const state = makeFormState()
+    render(state, stdout)
+    const output = stdout.getOutput()
+    expect(output).toContain('Flag')
+  })
+
+  it('renders Flag field with value in edit form', () => {
+    const stdout = createMockStdout(80, 24)
+    const state = makeFormState({ mode: 'edit', taskId: 'MRKL-001', flag: 'needs-review' })
+    render(state, stdout)
+    const output = stdout.getOutput()
+    expect(output).toContain('Flag')
+    expect(output).toContain('needs-review')
+  })
+
   it('empty create form snapshot at 40 cols', async () => {
     const stdout = createMockStdout(40, 24)
     render(makeFormState(), stdout)
@@ -176,7 +193,7 @@ describe('render', () => {
 
   it('active autocomplete with suggestions snapshot at 80 cols', async () => {
     const state = makeFormState({
-      activeField: 4,
+      activeField: 5,
       parentInput: 'auth',
       cursorPos: 4,
       parentCandidates: [
@@ -280,8 +297,8 @@ describe('interaction snapshots', () => {
       await new Promise((r) => setTimeout(r, 200))
       tui.write('Test task')
       await tui.waitForContent('Test task')
-      // Enter through: title → desc → parent → blocks +Add → criteria +Add (empty = submit)
-      for (let i = 0; i < 4; i++) {
+      // Enter through: title → desc → flag → parent → blocks +Add → criteria +Add (empty = submit)
+      for (let i = 0; i < 5; i++) {
         tui.write('\r')
         await new Promise((r) => setTimeout(r, 100))
       }
@@ -344,8 +361,8 @@ describe('autocomplete interaction snapshots', () => {
   it('typing in parent field shows filtered suggestions', async () => {
     tui = spawnTui('create', { cols: 80, rows: 24, cwd: tempDir })
     await tui.waitForContent('feat')
-    // Navigate to parent field (index 4): type→priority→title→desc→parent
-    tui.write('\x1b[B\x1b[B\x1b[B\x1b[B')
+    // Navigate to parent field (index 5): type→priority→title→desc→flag→parent
+    tui.write('\x1b[B\x1b[B\x1b[B\x1b[B\x1b[B')
     await new Promise((r) => setTimeout(r, 300))
     tui.write('auth')
     const screen = await tui.waitForContent('Auth epic')
@@ -355,7 +372,7 @@ describe('autocomplete interaction snapshots', () => {
   it('right arrow navigates suggestion highlight', async () => {
     tui = spawnTui('create', { cols: 80, rows: 24, cwd: tempDir })
     await tui.waitForContent('feat')
-    tui.write('\x1b[B\x1b[B\x1b[B\x1b[B')
+    tui.write('\x1b[B\x1b[B\x1b[B\x1b[B\x1b[B')
     await new Promise((r) => setTimeout(r, 300))
     tui.write('MRKL')
     await tui.waitForContent('MRKL-001')
@@ -368,7 +385,7 @@ describe('autocomplete interaction snapshots', () => {
   it('Enter selects highlighted suggestion', async () => {
     tui = spawnTui('create', { cols: 80, rows: 24, cwd: tempDir })
     await tui.waitForContent('feat')
-    tui.write('\x1b[B\x1b[B\x1b[B\x1b[B')
+    tui.write('\x1b[B\x1b[B\x1b[B\x1b[B\x1b[B')
     await new Promise((r) => setTimeout(r, 300))
     tui.write('auth')
     await tui.waitForContent('Auth epic')
@@ -383,8 +400,8 @@ describe('autocomplete interaction snapshots', () => {
   it('Enter on empty parent field skips to next field without selecting', async () => {
     tui = spawnTui('create', { cols: 80, rows: 24, cwd: tempDir })
     await tui.waitForContent('feat')
-    // Navigate to parent field (index 4): type→priority→title→desc→parent
-    tui.write('\x1b[B\x1b[B\x1b[B\x1b[B')
+    // Navigate to parent field (index 5): type→priority→title→desc→flag→parent
+    tui.write('\x1b[B\x1b[B\x1b[B\x1b[B\x1b[B')
     await new Promise((r) => setTimeout(r, 300))
     // Don't type anything — press Enter on empty autocomplete
     tui.write('\r')
@@ -401,8 +418,8 @@ describe('autocomplete interaction snapshots', () => {
   it('Enter on empty +Block field skips without selecting a suggestion', async () => {
     tui = spawnTui('create', { cols: 80, rows: 24, cwd: tempDir })
     await tui.waitForContent('feat')
-    // Navigate to +Block field (index 5): type→priority→title→desc→parent→+Block
-    for (let i = 0; i < 5; i++) {
+    // Navigate to +Block field (index 6): type→priority→title→desc→flag→parent→+Block
+    for (let i = 0; i < 6; i++) {
       tui.write('\x1b[B')
       await new Promise((r) => setTimeout(r, 100))
     }

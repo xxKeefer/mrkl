@@ -95,6 +95,17 @@ describe('cli e2e — create command', () => {
     expect(content).toContain('Login works')
   })
 
+  it('creates task with --flag', async () => {
+    const result = await runCli(
+      ['create', 'feat', 'Flagged task', '--flag', 'needs-review'],
+      dir,
+    )
+
+    expect(result.exitCode).toBe(0)
+    const data = parseTaskFile(join(dir, '.tasks', 'TEST-001.md'))
+    expect(data.flag).toBe('needs-review')
+  })
+
   it('increments counter for subsequent creates', async () => {
     await runCli(['create', 'feat', 'First task'], dir)
     await runCli(['create', 'feat', 'Second task'], dir)
@@ -214,8 +225,8 @@ describe('cli e2e — interactive create flow', () => {
     await new Promise((r) => setTimeout(r, 200))
     tui.write('My interactive task')
     await tui.waitForContent('My interactive task')
-    // Enter through: title → desc → parent → blocks +Add → criteria +Add (empty = submit)
-    for (let i = 0; i < 4; i++) {
+    // Enter through: title → desc → flag → parent → blocks +Add → criteria +Add (empty = submit)
+    for (let i = 0; i < 5; i++) {
       tui.write('\r')
       await new Promise((r) => setTimeout(r, 100))
     }
@@ -240,7 +251,7 @@ describe('cli e2e — interactive create flow', () => {
     await new Promise((r) => setTimeout(r, 200))
     tui.write('Bug fix title')
     await tui.waitForContent('Bug fix title')
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 5; i++) {
       tui.write('\r')
       await new Promise((r) => setTimeout(r, 100))
     }
@@ -260,7 +271,7 @@ describe('cli e2e — interactive create flow', () => {
     await new Promise((r) => setTimeout(r, 200))
     tui.write('My interactive task')
     await tui.waitForContent('My interactive task')
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 5; i++) {
       tui.write('\r')
       await new Promise((r) => setTimeout(r, 100))
     }
@@ -361,8 +372,8 @@ describe('cli e2e — interactive edit flow', () => {
     tui.write(' updated')
     await tui.waitForContent('Original title updated', 8000)
 
-    // Enter through: title → desc → parent → +Block (empty = submit)
-    for (let i = 0; i < 4; i++) {
+    // Enter through: title → desc → flag → parent → +Block (empty = submit)
+    for (let i = 0; i < 5; i++) {
       tui.write('\r')
       await new Promise((r) => setTimeout(r, 150))
     }
@@ -472,5 +483,25 @@ describe('cli e2e — edit command (non-interactive)', () => {
     expect(result.exitCode).toBe(0)
     const data = parseTaskFile(join(dir, '.tasks', 'TEST-002.md'))
     expect(data.blocks).toContain('TEST-001')
+  })
+
+  it('updates flag via --flag', async () => {
+    seedTaskFile(dir, 'TEST-001', 'some task', 'feat')
+
+    const result = await runCli(['edit', 'TEST-001', '--flag', 'blocked'], dir)
+
+    expect(result.exitCode).toBe(0)
+    const data = parseTaskFile(join(dir, '.tasks', 'TEST-001.md'))
+    expect(data.flag).toBe('blocked')
+  })
+
+  it('updates priority via --priority', async () => {
+    seedTaskFile(dir, 'TEST-001', 'some task', 'feat')
+
+    const result = await runCli(['edit', 'TEST-001', '--priority', '5'], dir)
+
+    expect(result.exitCode).toBe(0)
+    const data = parseTaskFile(join(dir, '.tasks', 'TEST-001.md'))
+    expect(data.priority).toBe(5)
   })
 })

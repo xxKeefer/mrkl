@@ -162,6 +162,11 @@ function buildPreviewLines(
     lines.push('')
   }
 
+  if (task.flag) {
+    lines.push(`${EMOJI.flag} ${task.flag}`)
+    lines.push('')
+  }
+
   if (task.description) {
     lines.push(`${UNDERLINE}Description${RESET}`)
     for (const line of wrapText(task.description, width)) {

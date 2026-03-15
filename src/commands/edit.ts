@@ -1,6 +1,7 @@
 import { defineCommand } from 'citty'
 import { logger } from '../logger.js'
 import { findTaskFile, patchTask, updateTask, listTasks, listArchivedTasks } from '../task.js'
+import { toPriority } from './create.js'
 import type { PatchTaskOpts } from '../types.js'
 
 export default defineCommand({
@@ -28,6 +29,16 @@ export default defineCommand({
       alias: 's',
       description: 'New status',
     },
+    priority: {
+      type: 'string',
+      alias: 'P',
+      description: 'Priority (1=lowest, 3=normal, 5=highest)',
+    },
+    flag: {
+      type: 'string',
+      alias: 'f',
+      description: 'Flag or annotation',
+    },
     desc: {
       type: 'string',
       alias: 'd',
@@ -53,7 +64,8 @@ export default defineCommand({
 
     try {
       const hasCliFlags = args.title || args.type || args.status ||
-        args.desc || args.ac || args.parent || args.blocks
+        args.priority || args.flag || args.desc || args.ac ||
+        args.parent || args.blocks
 
       if (hasCliFlags && args.id) {
         const patch: PatchTaskOpts = {}
@@ -61,6 +73,8 @@ export default defineCommand({
         if (args.title) patch.title = args.title as string
         if (args.type) patch.type = args.type as PatchTaskOpts['type']
         if (args.status) patch.status = args.status as PatchTaskOpts['status']
+        if (args.priority) patch.priority = toPriority(args.priority)
+        if (args.flag) patch.flag = args.flag as string
         if (args.desc) patch.description = args.desc as string
         if (args.ac) {
           const raw = args.ac

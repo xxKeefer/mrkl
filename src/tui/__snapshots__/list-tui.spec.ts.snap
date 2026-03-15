@@ -9,6 +9,7 @@ exports[`interaction snapshots > Enter selects the highlighted task and opens ed
   Priority          ⏫ 5-highest                                                 
   Title           Auth epic                                                     
   Description     ····················                                          
+  Flag            ····················                                          
   Parent          type to search...                                             
   + Block         type to search...                                             
   + Add           ····················                                          

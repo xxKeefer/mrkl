@@ -49,6 +49,7 @@ export interface CreateTaskOpts {
   description?: string
   acceptance_criteria?: string[]
   priority?: Priority
+  flag?: string
   parent?: string
   blocks?: string[]
 }
@@ -63,6 +64,7 @@ export interface EditTaskResult {
   type: TaskType
   status: Status
   priority?: Priority
+  flag?: string
   title: string
   description?: string
   acceptance_criteria?: string[]
@@ -80,6 +82,8 @@ export interface GroupedTask {
 export interface PatchTaskOpts {
   type?: TaskType
   status?: Status
+  priority?: Priority
+  flag?: string | null
   title?: string
   description?: string
   acceptance_criteria?: string[]
