@@ -1,8 +1,8 @@
 import matter from 'gray-matter'
-import type { TaskData, TaskType, Status } from './types.js'
+import type { TaskData, TaskType, Status, Priority } from './types.js'
 
 export function render(task: TaskData): string {
-  const frontmatter: Record<string, string | string[]> = {
+  const frontmatter: Record<string, string | number | string[]> = {
     id: task.id,
     title: task.title,
     type: task.type,
@@ -14,6 +14,9 @@ export function render(task: TaskData): string {
   }
   if (task.parent) {
     frontmatter.parent = task.parent
+  }
+  if (task.priority && task.priority !== 3) {
+    frontmatter.priority = task.priority
   }
   if (task.blocks && task.blocks.length > 0) {
     frontmatter.blocks = task.blocks
@@ -65,6 +68,7 @@ export function parse(content: string, _filename: string): TaskData {
     type: data.type as TaskType,
     status: data.status as Status,
     created: data.created as string,
+    priority: ((data.priority as Priority | undefined) ?? 3) as Priority,
     ...(data.flag ? { flag: data.flag as string } : {}),
     ...(data.parent ? { parent: data.parent as string } : {}),
     ...(data.blocks ? { blocks: data.blocks as string[] } : {}),
