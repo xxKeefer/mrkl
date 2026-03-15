@@ -88,7 +88,6 @@ describe('renderList', () => {
     const screen = await renderToScreen(stdout.getOutput(), 120, 30)
     expect(screen).toContain('ID')
     expect(screen).toContain('STATUS')
-    expect(screen).toContain('PRI')
     expect(screen).toContain('TITLE')
     expect(screen).toContain('Preview')
     expect(screen).not.toContain('TYPE')
@@ -404,7 +403,7 @@ describe('interaction snapshots', () => {
     // Wait for the watcher debounce + re-render
     const updated = await tui.waitForContent('MRKL-006', 3000)
     expect(updated).toContain('MRKL-006')
-    expect(updated).toContain('Live reload task')
+    expect(updated).toContain('Live reload')
   })
 
   it('live reloads when a task file is deleted on disk', async () => {

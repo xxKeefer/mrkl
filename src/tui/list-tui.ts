@@ -2,7 +2,7 @@ import { watch, type FSWatcher } from 'node:fs'
 import { join } from 'node:path'
 import { Fzf } from 'fzf'
 import type { TaskData, Priority } from '../types.js'
-import { priorityEmoji } from '../emoji.js'
+import { EMOJI, priorityEmoji } from '../emoji.js'
 import { groupByEpic, getChildren, getBlockedBy } from '../task.js'
 import { loadConfig } from '../config.js'
 import {
@@ -68,9 +68,7 @@ export function buildEntries(tasks: TaskData[]): FzfEntry[] {
 }
 
 const ID_W = 12
-const STATUS_W = 10
-const PRIORITY_W = 4
-const TITLE_W = 30
+const STATUS_W = 16
 
 const PRIORITY_LABELS = ['lowest', 'low', 'normal', 'high', 'highest'] as const
 
@@ -82,37 +80,28 @@ function padOrTruncate(text: string, width: number): string {
 function formatRow(
   id: string,
   status: string,
-  priority: string,
-  indicators: string,
   title: string,
   width: number,
 ): string {
   const idCol = padOrTruncate(id, ID_W)
   const statusCol = padOrTruncate(status, STATUS_W)
-  const priCol = padOrTruncate(priority, PRIORITY_W)
-  const titleCol = padOrTruncate(title, TITLE_W)
-  const relWidth = Math.max(0, width - ID_W - STATUS_W - PRIORITY_W - TITLE_W)
-  const relCol = padOrTruncate(indicators, relWidth)
-  return `${idCol}${statusCol}${priCol}${relCol}${titleCol}`
+  const titleWidth = Math.max(0, width - ID_W - STATUS_W)
+  const titleCol = padOrTruncate(title, titleWidth)
+  return `${idCol}${statusCol}${titleCol}`
 }
 
 function colorizeRow(
   id: string,
   status: string,
-  priority: string,
-  indicators: string,
   title: string,
   width: number,
   sc: string,
 ): string {
   const idCol = padOrTruncate(id, ID_W)
   const statusCol = padOrTruncate(status, STATUS_W)
-  const priCol = padOrTruncate(priority, PRIORITY_W)
-  const titleCol = padOrTruncate(title, TITLE_W)
-  const relWidth = Math.max(0, width - ID_W - STATUS_W - PRIORITY_W - TITLE_W)
-  const relCol = padOrTruncate(indicators, relWidth)
-  const relPart = indicators ? `${FG_RED}${relCol}${RESET}` : relCol
-  return `${FG_CYAN}${idCol}${RESET}${sc}${statusCol}${RESET}${priCol}${relPart}${titleCol}`
+  const titleWidth = Math.max(0, width - ID_W - STATUS_W)
+  const titleCol = padOrTruncate(title, titleWidth)
+  return `${FG_CYAN}${idCol}${RESET}${sc}${statusCol}${RESET}${titleCol}`
 }
 
 function wrapText(text: string, width: number): string[] {
@@ -219,7 +208,7 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
 
   // Column headers (1-char padding before separator)
   const contentWidth = listWidth - 1
-  const headerLine = formatRow('ID', 'STATUS', 'PRI', '', 'TITLE', contentWidth)
+  const headerLine = formatRow('ID', 'STATUS', 'TITLE', contentWidth)
   buf.push(
     `${BOLD}${headerLine}${RESET} ${FG_GRAY}│${RESET}${BOLD} Preview${RESET}`,
   )
@@ -261,19 +250,15 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
       const treePrefix = entry.indent === 1 ? '├─' : ''
       const prefixWidth = treePrefix ? 2 : 0
       const rowWidth = contentWidth - prefixWidth
-      const parts: string[] = []
-      if (entry.blocksIndicator) parts.push(entry.blocksIndicator)
-      if (entry.blockedByIndicator) parts.push(entry.blockedByIndicator)
-      const indicatorStr = parts.join(' ')
-
       const priEmoji = priorityEmoji((entry.task.priority ?? 3) as Priority)
+      const blockedByEmoji = entry.blockedByIndicator ? EMOJI.blocked_by : ''
+      const blocksEmoji = entry.blocksIndicator ? EMOJI.blocks : ''
+      const compactStatus = `${entry.task.status} ${priEmoji}${blockedByEmoji}${blocksEmoji}`
 
       if (isSelected) {
         const row = formatRow(
           entry.task.id,
-          entry.task.status,
-          priEmoji,
-          indicatorStr,
+          compactStatus,
           entry.task.title,
           rowWidth,
         )
@@ -282,9 +267,7 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
         const sc = statusColor(entry.task.status)
         const coloredRow = colorizeRow(
           entry.task.id,
-          entry.task.status,
-          priEmoji,
-          indicatorStr,
+          compactStatus,
           entry.task.title,
           rowWidth,
           sc,
