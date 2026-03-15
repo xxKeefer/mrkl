@@ -5,13 +5,14 @@ exports[`cli e2e — interactive create flow > final screen state is snapshotted
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
   Type              feat                                                        
+  Priority          ⏹️ 3-normal                                                  
   Title           My interactive task                                           
   Description     ····················                                          
   Parent          type to search...                                             
 › + Block                                                                       
   + Add           ····················                                          
   ────────────────────────────────────────────────────────────                  
-  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+  ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter submit  Esc quit   "
 `;
 
 exports[`cli e2e — interactive edit flow > edit shows pre-populated form with task data 1`] = `
@@ -20,13 +21,15 @@ exports[`cli e2e — interactive edit flow > edit shows pre-populated form with 
   ────────────────────────────────────────────────────────────                  
 › Type            ◂ feat ▸                                                      
   Status            todo                                                        
+  Priority          ⏹️ 3-normal                                                  
   Title           Original title                                                
   Description     ····················                                          
   Parent          type to search...                                             
   + Block         type to search...                                             
   + Add           ····················                                          
   ────────────────────────────────────────────────────────────                  
-  ↑↓ navigate  ←→ cycle type/status  Ctrl+N newline  Enter submit  Esc quit     "
+  ↑↓ navigate  ←→ cycle type/status/priority  Ctrl+N newline  Enter submit  Esc 
+quit                                                                            "
 `;
 
 exports[`cli e2e — interactive list flow > list renders pre-seeded tasks 1`] = `

@@ -6,13 +6,14 @@ exports[`autocomplete interaction snapshots > Enter on empty +Block field skips 
   ────────────────────────────────────────────────────────────                  
   Title cannot be empty                                                         
   Type              feat                                                        
+  Priority          ⏹️ 3-normal                                                  
 › Title                                                                         
   Description     ····················                                          
   Parent          type to search...                                             
   + Block         type to search...                                             
   + Add           ····················                                          
   ────────────────────────────────────────────────────────────                  
-  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+  ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter submit  Esc quit   "
 `;
 
 exports[`autocomplete interaction snapshots > Enter on empty parent field skips to next field without selecting 1`] = `
@@ -20,6 +21,7 @@ exports[`autocomplete interaction snapshots > Enter on empty parent field skips 
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
   Type              feat                                                        
+  Priority          ⏹️ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
   Parent          type to search...                                             
@@ -29,7 +31,7 @@ exports[`autocomplete interaction snapshots > Enter on empty parent field skips 
                       MRKL-003 - Auth tests                                     
   + Add           ····················                                          
   ────────────────────────────────────────────────────────────                  
-  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+  ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter submit  Esc quit   "
 `;
 
 exports[`autocomplete interaction snapshots > Enter selects highlighted suggestion 1`] = `
@@ -37,6 +39,7 @@ exports[`autocomplete interaction snapshots > Enter selects highlighted suggesti
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
   Type              feat                                                        
+  Priority          ⏹️ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
 › Parent          auth                                                          
@@ -45,7 +48,7 @@ exports[`autocomplete interaction snapshots > Enter selects highlighted suggesti
   + Block         type to search...                                             
   + Add           ····················                                          
   ────────────────────────────────────────────────────────────                  
-  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+  ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter submit  Esc quit   "
 `;
 
 exports[`autocomplete interaction snapshots > right arrow navigates suggestion highlight 1`] = `
@@ -53,6 +56,7 @@ exports[`autocomplete interaction snapshots > right arrow navigates suggestion h
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
   Type              feat                                                        
+  Priority          ⏹️ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
 › Parent          MRKL                                                          
@@ -62,7 +66,7 @@ exports[`autocomplete interaction snapshots > right arrow navigates suggestion h
   + Block         type to search...                                             
   + Add           ····················                                          
   ────────────────────────────────────────────────────────────                  
-  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+  ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter submit  Esc quit   "
 `;
 
 exports[`autocomplete interaction snapshots > typing in parent field shows filtered suggestions 1`] = `
@@ -70,6 +74,7 @@ exports[`autocomplete interaction snapshots > typing in parent field shows filte
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
   Type              feat                                                        
+  Priority          ⏹️ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
 › Parent                                                                        
@@ -79,21 +84,22 @@ exports[`autocomplete interaction snapshots > typing in parent field shows filte
   + Block         type to search...                                             
   + Add           ····················                                          
   ────────────────────────────────────────────────────────────                  
-  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+  ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter submit  Esc quit   "
 `;
 
-exports[`interaction snapshots > arrow down moves to title field 1`] = `
+exports[`interaction snapshots > arrow down moves to priority field 1`] = `
 "                                                                                
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
-  Type              feat                                                        
-› Title                                                                         
+› Type            ◂ feat ▸                                                      
+  Priority          ⏹️ 3-normal                                                  
+  Title           ····················                                          
   Description     ····················                                          
   Parent          type to search...                                             
   + Block         type to search...                                             
   + Add           ····················                                          
   ────────────────────────────────────────────────────────────                  
-  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+  ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter submit  Esc quit   "
 `;
 
 exports[`interaction snapshots > arrow up returns to type field 1`] = `
@@ -101,13 +107,14 @@ exports[`interaction snapshots > arrow up returns to type field 1`] = `
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
 › Type            ◂ feat ▸                                                      
+  Priority          ⏹️ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
   Parent          type to search...                                             
   + Block         type to search...                                             
   + Add           ····················                                          
   ────────────────────────────────────────────────────────────                  
-  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+  ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter submit  Esc quit   "
 `;
 
 exports[`interaction snapshots > initial render shows type field highlighted 1`] = `
@@ -115,13 +122,14 @@ exports[`interaction snapshots > initial render shows type field highlighted 1`]
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
 › Type            ◂ feat ▸                                                      
+  Priority          ⏹️ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
   Parent          type to search...                                             
   + Block         type to search...                                             
   + Add           ····················                                          
   ────────────────────────────────────────────────────────────                  
-  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+  ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter submit  Esc quit   "
 `;
 
 exports[`interaction snapshots > left/right arrows cycle type options 1`] = `
@@ -129,13 +137,14 @@ exports[`interaction snapshots > left/right arrows cycle type options 1`] = `
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
 › Type            ◂ fix ▸                                                       
+  Priority          ⏹️ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
   Parent          type to search...                                             
   + Block         type to search...                                             
   + Add           ····················                                          
   ────────────────────────────────────────────────────────────                  
-  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+  ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter submit  Esc quit   "
 `;
 
 exports[`interaction snapshots > left/right arrows cycle type options 2`] = `
@@ -143,13 +152,14 @@ exports[`interaction snapshots > left/right arrows cycle type options 2`] = `
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
 › Type            ◂ feat ▸                                                      
+  Priority          ⏹️ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
   Parent          type to search...                                             
   + Block         type to search...                                             
   + Add           ····················                                          
   ────────────────────────────────────────────────────────────                  
-  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+  ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter submit  Esc quit   "
 `;
 
 exports[`interaction snapshots > pressing Enter on filled form triggers submit 1`] = `
@@ -157,13 +167,14 @@ exports[`interaction snapshots > pressing Enter on filled form triggers submit 1
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
   Type              feat                                                        
+  Priority          ⏹️ 3-normal                                                  
   Title           Test task                                                     
   Description     ····················                                          
   Parent          type to search...                                             
 › + Block                                                                       
   + Add           ····················                                          
   ────────────────────────────────────────────────────────────                  
-  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+  ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter submit  Esc quit   "
 `;
 
 exports[`interaction snapshots > typing characters into title field shows text on screen 1`] = `
@@ -171,13 +182,14 @@ exports[`interaction snapshots > typing characters into title field shows text o
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
   Type              feat                                                        
+  Priority          ⏹️ 3-normal                                                  
 › Title           Hello                                                         
   Description     ····················                                          
   Parent          type to search...                                             
   + Block         type to search...                                             
   + Add           ····················                                          
   ────────────────────────────────────────────────────────────                  
-  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+  ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter submit  Esc quit   "
 `;
 
 exports[`render > active autocomplete with suggestions snapshot at 80 cols 1`] = `
@@ -185,6 +197,7 @@ exports[`render > active autocomplete with suggestions snapshot at 80 cols 1`] =
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
   Type              feat                                                        
+  Priority          ⏹️ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
 › Parent          auth                                                          
@@ -194,7 +207,7 @@ exports[`render > active autocomplete with suggestions snapshot at 80 cols 1`] =
   + Block         type to search...                                             
   + Add           ····················                                          
   ────────────────────────────────────────────────────────────                  
-  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+  ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter submit  Esc quit   "
 `;
 
 exports[`render > edit mode form with status field snapshot at 80 cols 1`] = `
@@ -203,6 +216,7 @@ exports[`render > edit mode form with status field snapshot at 80 cols 1`] = `
   ────────────────────────────────────────────────────────────                  
 › Type            ◂ feat ▸                                                      
   Status            in-progress                                                 
+  Priority          ⏹️ 3-normal                                                  
   Title           Fix login redirect                                            
   Description     Users are redirected to wrong page after login                
   Parent          type to search...                                             
@@ -210,7 +224,8 @@ exports[`render > edit mode form with status field snapshot at 80 cols 1`] = `
   Criterion 1     Redirect goes to dashboard                                    
   + Add           ····················                                          
   ────────────────────────────────────────────────────────────                  
-  ↑↓ navigate  ←→ cycle type/status  Ctrl+N newline  Enter submit  Esc quit     "
+  ↑↓ navigate  ←→ cycle type/status/priority  Ctrl+N newline  Enter submit  Esc 
+quit                                                                            "
 `;
 
 exports[`render > empty create form snapshot at 40 cols 1`] = `
@@ -218,14 +233,15 @@ exports[`render > empty create form snapshot at 40 cols 1`] = `
   Create Task                           
   ────────────────────────────────────  
 › Type            ◂ feat ▸              
+  Priority          ⏹️ 3-normal          
   Title           ····················  
   Description     ····················  
   Parent          type to search...     
   + Block         type to search...     
   + Add           ····················  
   ────────────────────────────────────  
-  ↑↓ navigate  ←→ cycle type  Ctrl+N new
-line  Enter submit  Esc quit            "
+  ↑↓ navigate  ←→ cycle type/priority  C
+trl+N newline  Enter submit  Esc quit   "
 `;
 
 exports[`render > empty create form snapshot at 80 cols 1`] = `
@@ -233,13 +249,14 @@ exports[`render > empty create form snapshot at 80 cols 1`] = `
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
 › Type            ◂ feat ▸                                                      
+  Priority          ⏹️ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
   Parent          type to search...                                             
   + Block         type to search...                                             
   + Add           ····················                                          
   ────────────────────────────────────────────────────────────                  
-  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+  ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter submit  Esc quit   "
 `;
 
 exports[`render > empty create form snapshot at 120 cols 1`] = `
@@ -247,13 +264,14 @@ exports[`render > empty create form snapshot at 120 cols 1`] = `
   Create Task                                                                                                           
   ────────────────────────────────────────────────────────────                                                          
 › Type            ◂ feat ▸                                                                                              
+  Priority          ⏹️ 3-normal                                                                                          
   Title           ····················                                                                                  
   Description     ····················                                                                                  
   Parent          type to search...                                                                                     
   + Block         type to search...                                                                                     
   + Add           ····················                                                                                  
   ────────────────────────────────────────────────────────────                                                          
-  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit                                                    "
+  ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter submit  Esc quit                                           "
 `;
 
 exports[`render > error state (empty title) snapshot at 80 cols 1`] = `
@@ -262,13 +280,14 @@ exports[`render > error state (empty title) snapshot at 80 cols 1`] = `
   ────────────────────────────────────────────────────────────                  
   Title cannot be empty                                                         
   Type              feat                                                        
+  Priority          ⏹️ 3-normal                                                  
 › Title                                                                         
   Description     ····················                                          
   Parent          type to search...                                             
   + Block         type to search...                                             
   + Add           ····················                                          
   ────────────────────────────────────────────────────────────                  
-  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+  ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter submit  Esc quit   "
 `;
 
 exports[`render > filled create form snapshot at 80 cols 1`] = `
@@ -276,6 +295,7 @@ exports[`render > filled create form snapshot at 80 cols 1`] = `
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
   Type              chore                                                       
+  Priority          ⏹️ 3-normal                                                  
 › Title           Implement user authentication                                 
   Description     Add JWT-based auth with refresh tokens                        
   Parent          MRKL-010 - Auth epic                                          
@@ -286,7 +306,7 @@ exports[`render > filled create form snapshot at 80 cols 1`] = `
   Criterion 2     Refresh token rotation works                                  
   + Add           ····················                                          
   ────────────────────────────────────────────────────────────                  
-  ↑↓ navigate  ←→ cycle type  Ctrl+N newline  Enter submit  Esc quit            "
+  ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter submit  Esc quit   "
 `;
 
 exports[`render > long text wrapping snapshot at 40 cols 1`] = `
@@ -294,6 +314,7 @@ exports[`render > long text wrapping snapshot at 40 cols 1`] = `
   Create Task                           
   ────────────────────────────────────  
   Type              feat                
+  Priority          ⏹️ 3-normal          
   Title           A very long task tit  
                   le that should wrap   
                   at narrow width       
@@ -310,6 +331,6 @@ exports[`render > long text wrapping snapshot at 40 cols 1`] = `
                   that wraps            
   + Add           ····················  
   ────────────────────────────────────  
-  ↑↓ navigate  ←→ cycle type  Ctrl+N new
-line  Enter submit  Esc quit            "
+  ↑↓ navigate  ←→ cycle type/priority  C
+trl+N newline  Enter submit  Esc quit   "
 `;

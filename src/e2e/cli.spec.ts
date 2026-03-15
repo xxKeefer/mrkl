@@ -210,7 +210,7 @@ describe('cli e2e — interactive create flow', () => {
   it('interactive create flow produces correct task file', async () => {
     tui = spawnTui('create', { cols: 80, rows: 24, cwd: dir })
     await tui.waitForContent('feat')
-    tui.write('\x1b[B') // down to title
+    tui.write('\x1b[B\x1b[B') // down to priority, then title
     await new Promise((r) => setTimeout(r, 200))
     tui.write('My interactive task')
     await tui.waitForContent('My interactive task')
@@ -236,7 +236,7 @@ describe('cli e2e — interactive create flow', () => {
     await tui.waitForContent('feat')
     tui.write('\x1b[C') // right → cycle type to fix
     await tui.waitForContent('fix')
-    tui.write('\x1b[B') // down to title
+    tui.write('\x1b[B\x1b[B') // down to priority, then title
     await new Promise((r) => setTimeout(r, 200))
     tui.write('Bug fix title')
     await tui.waitForContent('Bug fix title')
@@ -256,7 +256,7 @@ describe('cli e2e — interactive create flow', () => {
   it('final screen state is snapshotted', async () => {
     tui = spawnTui('create', { cols: 80, rows: 24, cwd: dir })
     await tui.waitForContent('feat')
-    tui.write('\x1b[B')
+    tui.write('\x1b[B\x1b[B')
     await new Promise((r) => setTimeout(r, 200))
     tui.write('My interactive task')
     await tui.waitForContent('My interactive task')
@@ -349,7 +349,9 @@ describe('cli e2e — interactive edit flow', () => {
     await tui.waitForContent('Edit Task', 8000)
     await new Promise((r) => setTimeout(r, 300))
 
-    // Navigate: type(0) → status(1) → title(2)
+    // Navigate: type(0) → status(1) → priority(2) → title(3)
+    tui.write('\x1b[B')
+    await new Promise((r) => setTimeout(r, 200))
     tui.write('\x1b[B')
     await new Promise((r) => setTimeout(r, 200))
     tui.write('\x1b[B')

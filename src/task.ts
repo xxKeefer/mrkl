@@ -68,6 +68,7 @@ export function createTask(opts: CreateTaskOpts): TaskData {
     title: normalizeTitle(opts.title),
     description: opts.description ?? '',
     acceptance_criteria: opts.acceptance_criteria ?? [],
+    ...(opts.priority && opts.priority !== 3 && { priority: opts.priority }),
     ...(resolvedParent && { parent: resolvedParent }),
     ...(resolvedBlocks?.length && { blocks: resolvedBlocks }),
   }
@@ -388,6 +389,11 @@ export function updateTask(
   task.title = normalizeTitle(updates.title)
   task.description = updates.description ?? ''
   task.acceptance_criteria = updates.acceptance_criteria ?? []
+  if (updates.priority && updates.priority !== 3) {
+    task.priority = updates.priority
+  } else {
+    delete task.priority
+  }
 
   // Handle filename change if verbose_files is enabled
   if (config.verbose_files) {

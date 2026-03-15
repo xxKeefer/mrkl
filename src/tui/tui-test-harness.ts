@@ -147,6 +147,7 @@ export function makeFormState(overrides?: Partial<FormState>): FormState {
   return {
     type: 0,
     status: 0,
+    priority: 2,
     title: '',
     description: '',
     parent: '',

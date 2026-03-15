@@ -6,13 +6,15 @@ exports[`interaction snapshots > Enter selects the highlighted task and opens ed
   ────────────────────────────────────────────────────────────                  
 › Type            ◂ feat ▸                                                      
   Status            todo                                                        
+  Priority          ⏹️ 3-normal                                                  
   Title           Auth epic                                                     
   Description     ····················                                          
   Parent          type to search...                                             
   + Block         type to search...                                             
   + Add           ····················                                          
   ────────────────────────────────────────────────────────────                  
-  ↑↓ navigate  ←→ cycle type/status  Ctrl+N newline  Enter submit  Esc quit     "
+  ↑↓ navigate  ←→ cycle type/status/priority  Ctrl+N newline  Enter submit  Esc 
+quit                                                                            "
 `;
 
 exports[`interaction snapshots > Tab key switches between Tasks and Archive 1`] = `
