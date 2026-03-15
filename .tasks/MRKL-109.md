@@ -4,6 +4,7 @@ title: skills-refinement
 type: feat
 status: todo
 created: '2026-03-11'
+priority: 2
 ---
 
 ## Description

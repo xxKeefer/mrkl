@@ -4,7 +4,7 @@ title: warn of update
 type: feat
 status: todo
 created: '2026-03-10'
-priority: 3
+priority: 2
 ---
 
 ## Description

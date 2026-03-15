@@ -4,7 +4,7 @@ title: create function should default to feat if not type provided
 type: feat
 status: todo
 created: '2026-03-07'
-priority: 3
+priority: 5
 ---
 
 ## Description

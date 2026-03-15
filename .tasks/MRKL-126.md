@@ -4,7 +4,7 @@ title: multiplayer workflow
 type: feat
 status: todo
 created: '2026-03-15'
-priority: 3
+priority: 1
 ---
 
 ## Description

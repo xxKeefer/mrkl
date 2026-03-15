@@ -5,7 +5,7 @@ type: feat
 status: todo
 created: '2026-03-02'
 parent: MRKL-126
-priority: 3
+priority: 1
 ---
 
 ## Description

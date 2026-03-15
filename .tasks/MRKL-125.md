@@ -4,7 +4,7 @@ title: tui interaction fixes
 type: fix
 status: todo
 created: '2026-03-15'
-priority: 3
+priority: 4
 ---
 
 ## Description

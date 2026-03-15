@@ -5,6 +5,7 @@ type: chore
 status: todo
 created: '2026-03-12'
 parent: MRKL-116
+priority: 4
 ---
 
 ## Description

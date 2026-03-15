@@ -4,7 +4,7 @@ title: mrkl help command version
 type: fix
 status: todo
 created: '2026-03-10'
-priority: 3
+priority: 5
 ---
 
 ## Description
