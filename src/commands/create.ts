@@ -1,8 +1,8 @@
 import { defineCommand } from 'citty'
 import { logger } from '../logger.js'
 import { createTask, listTasks } from '../task.js'
-import { TASK_TYPES } from '../types.js'
-import type { TaskType, CreateTaskOpts } from '../types.js'
+import { TASK_TYPES, PRIORITIES } from '../types.js'
+import type { TaskType, Priority, CreateTaskOpts } from '../types.js'
 import { interactiveCreate } from '../tui/create-tui.js'
 
 function toStringArray(
@@ -19,6 +19,16 @@ function toStringArray(
 
 function toOptionalString(value: unknown): string | undefined {
   return value ? String(value) : undefined
+}
+
+export function toPriority(value: unknown): Priority | undefined {
+  if (!value) return undefined
+  const num = Number(value)
+  if (!PRIORITIES.includes(num as Priority)) {
+    logger.error(`Invalid priority "${value}". Must be 1-5.`)
+    process.exit(1)
+  }
+  return num as Priority
 }
 
 function toTaskType(value: unknown): TaskType {
@@ -71,6 +81,11 @@ export default defineCommand({
       alias: 'p',
       description: 'Parent task ID (epic)',
     },
+    priority: {
+      type: 'string',
+      alias: 'P',
+      description: 'Priority (1=lowest, 3=normal, 5=highest)',
+    },
     blocks: {
       type: 'string',
       alias: 'b',
@@ -99,6 +114,7 @@ export default defineCommand({
             title: String(args.title),
             description: toOptionalString(args.desc),
             acceptance_criteria: toStringArray(args.ac),
+            priority: toPriority(args.priority),
             parent: toOptionalString(args.parent),
             blocks: toStringArray(args.blocks, true),
           }

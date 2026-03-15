@@ -7,6 +7,7 @@ const SAMPLE_TASK: TaskData = {
   type: 'feat',
   status: 'todo',
   created: '2026-03-01',
+  priority: 3,
   title: 'implement template module',
   description: 'Build the template rendering system.',
   acceptance_criteria: ['render produces frontmatter', 'parse extracts fields'],
@@ -17,6 +18,7 @@ const SAMPLE_TASK_WITH_RELATIONSHIPS: TaskData = {
   type: 'feat',
   status: 'todo',
   created: '2026-03-01',
+  priority: 3,
   parent: 'TEST-000',
   blocks: ['TEST-002', 'TEST-003'],
   title: 'implement template module',
@@ -58,6 +60,18 @@ describe('template', () => {
       const output = render(SAMPLE_TASK)
       expect(output).not.toContain('parent:')
       expect(output).not.toContain('blocks:')
+    })
+    it('includes priority in frontmatter when non-normal', () => {
+      const output = render({ ...SAMPLE_TASK, priority: 5 })
+      expect(output).toContain('priority: 5')
+    })
+    it('includes priority 3 in frontmatter when priority is 3', () => {
+      const output = render({ ...SAMPLE_TASK, priority: 3 })
+      expect(output).toContain('priority: 3')
+    })
+    it('defaults to priority 3 in frontmatter when priority is undefined', () => {
+      const output = render(SAMPLE_TASK)
+      expect(output).toContain('priority: 3')
     })
     it('handles empty description and empty acceptance criteria', () => {
       const task: TaskData = {
@@ -118,6 +132,22 @@ describe('template', () => {
       const content = render(SAMPLE_TASK_WITH_RELATIONSHIPS)
       const result = parse(content, 'TEST-001.md')
       expect(result).toEqual(SAMPLE_TASK_WITH_RELATIONSHIPS)
+    })
+    it('reads priority as a number from frontmatter', () => {
+      const content = render({ ...SAMPLE_TASK, priority: 5 })
+      const result = parse(content, 'TEST-001.md')
+      expect(result.priority).toBe(5)
+    })
+    it('defaults priority to 3 when field is absent', () => {
+      const content = render(SAMPLE_TASK)
+      const result = parse(content, 'TEST-001.md')
+      expect(result.priority).toBe(3)
+    })
+    it('round-trips with priority', () => {
+      const task: TaskData = { ...SAMPLE_TASK, priority: 1 }
+      const content = render(task)
+      const result = parse(content, 'TEST-001.md')
+      expect(result).toEqual(task)
     })
   })
 })

@@ -2,8 +2,9 @@
 id: MRKL-091
 title: task priority system
 type: feat
-status: todo
+status: done
 created: '2026-03-10'
+flag: completed
 ---
 
 ## Description

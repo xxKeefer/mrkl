@@ -49,6 +49,7 @@ mrkl init PROJ
 mrkl create feat "user authentication"
 mrkl create fix "login redirect loop" --desc "Users get stuck after OAuth callback"
 mrkl create feat "dark mode" --ac "toggle in settings" --ac "persists across sessions"
+mrkl create fix "critical bug" --priority 5    # highest priority
 
 # View active tasks
 mrkl list
@@ -113,17 +114,19 @@ Creates a new task file.
 | `type`   | Task type (see [Task Types](#task-types)) |
 | `title`  | Short description of the task             |
 
-| Option          | Alias | Description                       |
-| --------------- | ----- | --------------------------------- |
-| `--desc <text>` | `-d`  | Detailed description              |
-| `--ac <text>`   | `-a`  | Acceptance criterion (repeatable) |
+| Option              | Alias | Description                              |
+| ------------------- | ----- | ---------------------------------------- |
+| `--desc <text>`     | `-d`  | Detailed description                     |
+| `--ac <text>`       | `-a`  | Acceptance criterion (repeatable)        |
+| `--priority <1-5>`  | `-P`  | Priority: 1=lowest, 3=normal, 5=highest |
 
 ```sh
 mrkl create feat "search functionality" \
   --desc "Full-text search across all documents" \
   --ac "search bar in header" \
   --ac "results update as you type" \
-  --ac "highlights matching terms"
+  --ac "highlights matching terms" \
+  --priority 4
 ```
 
 Running `mrkl create` with no arguments enters **interactive mode**, prompting for type, title, description, and acceptance criteria.
@@ -287,6 +290,27 @@ mrkl uses [conventional commit](https://www.conventionalcommits.org/) types:
 | `build`    | Build system changes    |
 | `style`    | Code style/formatting   |
 
+## Priority 🎯
+
+Tasks have a numeric priority from 1 (lowest) to 5 (highest). Default is `3` (normal).
+
+| Priority | Label    | Emoji |
+| -------- | -------- | ----- |
+| 1        | lowest   | ⏬    |
+| 2        | low      | 🔽    |
+| 3        | normal   | ⏹️    |
+| 4        | high     | 🔼    |
+| 5        | highest  | ⏫    |
+
+Set priority on create with `--priority` / `-P`:
+
+```sh
+mrkl create fix "critical bug" -P 5
+mrkl create chore "update deps" -P 1
+```
+
+Priority is stored as `priority: <1-5>` in task frontmatter and displayed as an emoji in the list view status column and preview panel.
+
 ## Task File Format 📄
 
 Each task is a markdown file with YAML frontmatter. By default, filenames use the short format:
@@ -301,6 +325,7 @@ id: PROJ-001
 title: user authentication
 type: feat
 status: todo
+priority: 3
 created: '2026-03-01'
 ---
 
@@ -385,26 +410,33 @@ verbose_files = false
 
 All CLI output uses a centralized emoji map (`src/emoji.ts`) via a custom logger. Each key maps to a consola log level and auto-prefixes messages with the corresponding emoji.
 
-| Emoji | Key          | Level     |
-| ----- | ------------ | --------- |
-| 🟢    | `success`    | `success` |
-| 🔴    | `error`      | `error`   |
-| ⚠️    | `warn`       | `warn`    |
-| ℹ️    | `info`       | `info`    |
-| ✅    | `done`       | `success` |
-| ❌    | `closed`     | `info`    |
-| 🚧    | `blocks`     | `info`    |
-| 🛑    | `blocked_by` | `info`    |
-| 📝    | `create`     | `success` |
-| ✏️    | `update`     | `success` |
-| 🧹    | `delete`     | `success` |
-| 📭    | `empty`      | `info`    |
-| 🎉    | `celebrate`  | `success` |
-| 🧩    | `module`     | `success` |
-| ✌️    | `quit`       | `info`    |
-| 🔎    | `found`      | `info`    |
-| ❓    | `not_found`  | `info`    |
-| 🚩    | `flag`       | `info`    |
+| Emoji | Key                | Level     |
+| ----- | ------------------ | --------- |
+| 🟢    | `success`          | `success` |
+| 🔴    | `error`            | `error`   |
+| ⚠️    | `warn`             | `warn`    |
+| ℹ️    | `info`             | `info`    |
+| ✅    | `done`             | `success` |
+| ❌    | `closed`           | `info`    |
+| 🚧    | `blocks`           | `info`    |
+| 🛑    | `blocked_by`       | `info`    |
+| 📝    | `create`           | `success` |
+| ✏️    | `update`           | `success` |
+| 🧹    | `delete`           | `success` |
+| 📭    | `empty`            | `info`    |
+| 🎉    | `celebrate`        | `success` |
+| 🧩    | `module`           | `success` |
+| ✌️    | `quit`             | `info`    |
+| 🔎    | `found`            | `info`    |
+| ❓    | `not_found`        | `info`    |
+| 🚩    | `flag`             | `info`    |
+| ✴️    | `epic`             | `info`    |
+| ❇️    | `child`            | `info`    |
+| ⏬    | `priority_lowest`  | `info`    |
+| 🔽    | `priority_low`     | `info`    |
+| ⏹️    | `priority_normal`  | `info`    |
+| 🔼    | `priority_high`    | `info`    |
+| ⏫    | `priority_highest` | `info`    |
 
 ## Development 🧑‍💻
 

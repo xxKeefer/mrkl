@@ -2,8 +2,9 @@
 id: MRKL-095
 title: add priority to edit interactive tui
 type: feat
-status: todo
+status: done
 created: '2026-03-10'
+flag: completed
 parent: MRKL-091
 blocks:
   - MRKL-097
@@ -15,8 +16,8 @@ Add priority field to interactiveEdit in create-tui.ts. Show current priority wi
 
 ## Acceptance Criteria
 
-- [ ] interactive edit TUI shows priority field with emoji label
-- [ ] priority is editable by cycling through 1-5 values
-- [ ] priority included in EditTaskResult on save
-- [ ] existing tests pass (pnpm test)
-- [ ] typecheck passes (pnpm typecheck)
+- [x] interactive edit TUI shows priority field with emoji label
+- [x] priority is editable by cycling through 1-5 values
+- [x] priority included in EditTaskResult on save
+- [x] existing tests pass (pnpm test)
+- [x] typecheck passes (pnpm typecheck)

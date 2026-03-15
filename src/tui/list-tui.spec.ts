@@ -48,8 +48,8 @@ describe('buildEntries', () => {
 describe('renderList', () => {
   function makeStateWithTasks(): ListRenderState {
     const tasks = [
-      makeTask({ id: 'MRKL-001', title: 'First task', type: 'feat', status: 'todo' }),
-      makeTask({ id: 'MRKL-002', title: 'Second task', type: 'fix', status: 'in-progress' }),
+      makeTask({ id: 'MRKL-001', title: 'First task', type: 'feat', status: 'todo', priority: 5 }),
+      makeTask({ id: 'MRKL-002', title: 'Second task', type: 'fix', status: 'in-progress', priority: 2 }),
       makeTask({ id: 'MRKL-003', title: 'Third task', type: 'chore', status: 'done' }),
     ]
     const entries = buildEntries(tasks)
@@ -152,11 +152,11 @@ describe('render snapshots', () => {
 
   it('basic task list snapshot at 80 cols', async () => {
     const tasks = [
-      makeTask({ id: 'MRKL-001', title: 'Add user authentication', type: 'feat', status: 'todo' }),
-      makeTask({ id: 'MRKL-002', title: 'Fix login redirect bug', type: 'fix', status: 'in-progress' }),
+      makeTask({ id: 'MRKL-001', title: 'Add user authentication', type: 'feat', status: 'todo', priority: 5 }),
+      makeTask({ id: 'MRKL-002', title: 'Fix login redirect bug', type: 'fix', status: 'in-progress', priority: 4 }),
       makeTask({ id: 'MRKL-003', title: 'Update CI pipeline config', type: 'chore', status: 'done' }),
-      makeTask({ id: 'MRKL-004', title: 'Design dashboard layout', type: 'feat', status: 'todo', parent: 'MRKL-001' }),
-      makeTask({ id: 'MRKL-005', title: 'Refactor token validation', type: 'fix', status: 'in-progress' }),
+      makeTask({ id: 'MRKL-004', title: 'Design dashboard layout', type: 'feat', status: 'todo', parent: 'MRKL-001', priority: 2 }),
+      makeTask({ id: 'MRKL-005', title: 'Refactor token validation', type: 'fix', status: 'in-progress', priority: 1 }),
       makeTask({ id: 'MRKL-006', title: 'Write integration tests', type: 'test', status: 'todo' }),
     ]
     const entries = buildEntries(tasks)
@@ -199,8 +199,8 @@ describe('render snapshots', () => {
 
   it('blocking indicators snapshot at 80 cols', async () => {
     const tasks = [
-      makeTask({ id: 'MRKL-010', title: 'Database migration', type: 'feat', status: 'todo', blocks: ['MRKL-011', 'MRKL-012'] }),
-      makeTask({ id: 'MRKL-011', title: 'API endpoints', type: 'feat', status: 'todo' }),
+      makeTask({ id: 'MRKL-010', title: 'Database migration', type: 'feat', status: 'todo', blocks: ['MRKL-011', 'MRKL-012'], priority: 5 }),
+      makeTask({ id: 'MRKL-011', title: 'API endpoints', type: 'feat', status: 'todo', priority: 4 }),
       makeTask({ id: 'MRKL-012', title: 'Frontend integration', type: 'feat', status: 'todo' }),
     ]
     const entries = buildEntries(tasks)
@@ -291,10 +291,10 @@ describe('interaction snapshots', () => {
   let tui: TuiProcess | null = null
   let tempDir: string
 
-  function seedTaskFile(dir: string, id: string, title: string, type: string, status = 'todo'): void {
+  function seedTaskFile(dir: string, id: string, title: string, type: string, status = 'todo', priority = 3): void {
     writeFileSync(
       join(dir, '.tasks', `${id}.md`),
-      `---\nid: ${id}\ntitle: ${title}\ntype: ${type}\nstatus: ${status}\ncreated: '2026-01-01'\n---\n`,
+      `---\nid: ${id}\ntitle: ${title}\ntype: ${type}\nstatus: ${status}\npriority: ${priority}\ncreated: '2026-01-01'\n---\n`,
     )
   }
 
@@ -314,9 +314,9 @@ describe('interaction snapshots', () => {
       'prefix = "MRKL"\ntasks_dir = ".tasks"\nverbose_files = false\n',
     )
     writeFileSync(join(tempDir, '.config', 'mrkl', 'mrkl_counter'), '5')
-    seedTaskFile(tempDir, 'MRKL-001', 'Auth epic', 'feat')
-    seedTaskFile(tempDir, 'MRKL-002', 'Fix login bug', 'fix', 'in-progress')
-    seedTaskFile(tempDir, 'MRKL-003', 'Auth tests', 'test')
+    seedTaskFile(tempDir, 'MRKL-001', 'Auth epic', 'feat', 'todo', 5)
+    seedTaskFile(tempDir, 'MRKL-002', 'Fix login bug', 'fix', 'in-progress', 4)
+    seedTaskFile(tempDir, 'MRKL-003', 'Auth tests', 'test', 'todo', 2)
     seedTaskFile(tempDir, 'MRKL-004', 'Update CI config', 'chore', 'done')
     seedTaskFile(tempDir, 'MRKL-005', 'Dashboard layout', 'feat')
     seedArchivedTaskFile(tempDir, 'MRKL-099', 'Old feature', 'feat')
@@ -403,7 +403,7 @@ describe('interaction snapshots', () => {
     // Wait for the watcher debounce + re-render
     const updated = await tui.waitForContent('MRKL-006', 3000)
     expect(updated).toContain('MRKL-006')
-    expect(updated).toContain('Live reload task')
+    expect(updated).toContain('Live reload')
   })
 
   it('live reloads when a task file is deleted on disk', async () => {
