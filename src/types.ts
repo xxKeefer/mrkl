@@ -70,6 +70,16 @@ export interface GroupedTask {
   blockedByIndicator: string | null // e.g. "◄⛔ MRKL-005"
 }
 
+export interface PatchTaskOpts {
+  type?: TaskType
+  status?: Status
+  title?: string
+  description?: string
+  acceptance_criteria?: string[]
+  parent?: string | null
+  blocks?: string[] | null
+}
+
 export interface PruneResult {
   deleted: Array<{
     id: string

@@ -377,3 +377,98 @@ describe('cli e2e — interactive edit flow', () => {
     expect(data.title).toBe('original title updated')
   })
 })
+
+describe('cli e2e — edit command (non-interactive)', () => {
+  let dir: string
+
+  beforeEach(() => {
+    dir = setupTempDir()
+  })
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('updates title via --title flag', async () => {
+    seedTaskFile(dir, 'TEST-001', 'original', 'feat')
+
+    const result = await runCli(['edit', 'TEST-001', '--title', 'updated title'], dir)
+
+    expect(result.exitCode).toBe(0)
+    const data = parseTaskFile(join(dir, '.tasks', 'TEST-001.md'))
+    expect(data.title).toBe('updated title')
+    expect(data.type).toBe('feat')
+  })
+
+  it('updates type via --type flag', async () => {
+    seedTaskFile(dir, 'TEST-001', 'some task', 'feat')
+
+    const result = await runCli(['edit', 'TEST-001', '--type', 'fix'], dir)
+
+    expect(result.exitCode).toBe(0)
+    const data = parseTaskFile(join(dir, '.tasks', 'TEST-001.md'))
+    expect(data.type).toBe('fix')
+    expect(data.title).toBe('some task')
+  })
+
+  it('updates description via --desc flag', async () => {
+    seedTaskFile(dir, 'TEST-001', 'task', 'feat')
+
+    const result = await runCli(['edit', 'TEST-001', '--desc', 'new description'], dir)
+
+    expect(result.exitCode).toBe(0)
+    const content = readFileSync(join(dir, '.tasks', 'TEST-001.md'), 'utf-8')
+    expect(content).toContain('new description')
+  })
+
+  it('updates acceptance criteria via --ac flag', async () => {
+    seedTaskFile(dir, 'TEST-001', 'task', 'feat')
+
+    const result = await runCli(['edit', 'TEST-001', '--ac', 'criterion one', '--ac', 'criterion two'], dir)
+
+    expect(result.exitCode).toBe(0)
+    const content = readFileSync(join(dir, '.tasks', 'TEST-001.md'), 'utf-8')
+    expect(content).toContain('- [ ] criterion one')
+    expect(content).toContain('- [ ] criterion two')
+  })
+
+  it('updates multiple fields at once', async () => {
+    seedTaskFile(dir, 'TEST-001', 'original', 'feat')
+
+    const result = await runCli([
+      'edit', 'TEST-001',
+      '--title', 'new name',
+      '--type', 'fix',
+      '--desc', 'fixed description',
+    ], dir)
+
+    expect(result.exitCode).toBe(0)
+    const data = parseTaskFile(join(dir, '.tasks', 'TEST-001.md'))
+    expect(data.title).toBe('new name')
+    expect(data.type).toBe('fix')
+    const content = readFileSync(join(dir, '.tasks', 'TEST-001.md'), 'utf-8')
+    expect(content).toContain('fixed description')
+  })
+
+  it('updates parent via --parent flag', async () => {
+    seedTaskFile(dir, 'TEST-001', 'epic', 'feat')
+    seedTaskFile(dir, 'TEST-002', 'child', 'feat')
+
+    const result = await runCli(['edit', 'TEST-002', '--parent', 'TEST-001'], dir)
+
+    expect(result.exitCode).toBe(0)
+    const data = parseTaskFile(join(dir, '.tasks', 'TEST-002.md'))
+    expect(data.parent).toBe('TEST-001')
+  })
+
+  it('updates blocks via --blocks flag', async () => {
+    seedTaskFile(dir, 'TEST-001', 'blocked', 'feat')
+    seedTaskFile(dir, 'TEST-002', 'blocker', 'feat')
+
+    const result = await runCli(['edit', 'TEST-002', '--blocks', 'TEST-001'], dir)
+
+    expect(result.exitCode).toBe(0)
+    const data = parseTaskFile(join(dir, '.tasks', 'TEST-002.md'))
+    expect(data.blocks).toContain('TEST-001')
+  })
+})

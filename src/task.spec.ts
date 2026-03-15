@@ -24,6 +24,7 @@ import {
   findTaskFile,
   groupByEpic,
   buildRelationshipIndicators,
+  patchTask,
 } from './task.js'
 import type { TaskData } from './types.js'
 
@@ -1019,7 +1020,7 @@ describe('task CRUD operations', () => {
       })
     })
 
-    it('demonstrates resolveTaskId usage before calling helpers', () => {
+    it('resolveTaskId usage before calling helpers', () => {
       const tasks = makeTasks()
       const resolvedId = resolveTaskId(tmp, '1')
       expect(resolvedId).toBe('TEST-001')
@@ -1181,6 +1182,108 @@ describe('task CRUD operations', () => {
 
       const tasks = listArchivedTasks({ dir: tmp })
       expect(tasks).toHaveLength(1)
+    })
+  })
+
+  describe('patchTask', () => {
+    it('updates only title and preserves all other fields', () => {
+      createTask({
+        dir: tmp,
+        type: 'feat',
+        title: 'original title',
+        description: 'keep this description',
+        acceptance_criteria: ['keep this ac'],
+      })
+
+      const patched = patchTask(tmp, 'TEST-001', { title: 'new title' })
+
+      expect(patched.title).toBe('new title')
+      expect(patched.type).toBe('feat')
+      expect(patched.status).toBe('todo')
+      expect(patched.description).toBe('keep this description')
+      expect(patched.acceptance_criteria).toEqual(['keep this ac'])
+    })
+
+    it('updates type and renames verbose filename', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'rename me' })
+      expect(existsSync(join(tmp, '.tasks', 'TEST-001 feat - rename me.md'))).toBe(true)
+
+      const patched = patchTask(tmp, 'TEST-001', { type: 'fix' })
+
+      expect(patched.type).toBe('fix')
+      expect(patched.title).toBe('rename me')
+      expect(existsSync(join(tmp, '.tasks', 'TEST-001 fix - rename me.md'))).toBe(true)
+      expect(existsSync(join(tmp, '.tasks', 'TEST-001 feat - rename me.md'))).toBe(false)
+    })
+
+    it('updates description and acceptance criteria', () => {
+      createTask({
+        dir: tmp,
+        type: 'feat',
+        title: 'update content',
+        description: 'old desc',
+        acceptance_criteria: ['old ac'],
+      })
+
+      const patched = patchTask(tmp, 'TEST-001', {
+        description: 'new desc',
+        acceptance_criteria: ['new ac 1', 'new ac 2'],
+      })
+
+      expect(patched.description).toBe('new desc')
+      expect(patched.acceptance_criteria).toEqual(['new ac 1', 'new ac 2'])
+      expect(patched.title).toBe('update content')
+    })
+
+    it('updates parent with validation', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'epic' })
+      createTask({ dir: tmp, type: 'feat', title: 'child' })
+
+      const patched = patchTask(tmp, 'TEST-002', { parent: 'TEST-001' })
+
+      expect(patched.parent).toBe('TEST-001')
+    })
+
+    it('clears parent when set to null', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'epic' })
+      createTask({ dir: tmp, type: 'feat', title: 'child', parent: 'TEST-001' })
+
+      const patched = patchTask(tmp, 'TEST-002', { parent: null })
+
+      expect(patched.parent).toBeUndefined()
+    })
+
+    it('updates blocks with validation', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'blocked' })
+      createTask({ dir: tmp, type: 'feat', title: 'blocker' })
+
+      const patched = patchTask(tmp, 'TEST-002', { blocks: ['TEST-001'] })
+
+      expect(patched.blocks).toEqual(['TEST-001'])
+    })
+
+    it('clears blocks when set to null', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'blocked' })
+      createTask({ dir: tmp, type: 'feat', title: 'blocker', blocks: ['TEST-001'] })
+
+      const patched = patchTask(tmp, 'TEST-002', { blocks: null })
+
+      expect(patched.blocks).toBeUndefined()
+    })
+
+    it('updates multiple fields simultaneously', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'multi update' })
+
+      const patched = patchTask(tmp, 'TEST-001', {
+        type: 'fix',
+        title: 'updated multi',
+        description: 'added desc',
+      })
+
+      expect(patched.type).toBe('fix')
+      expect(patched.title).toBe('updated multi')
+      expect(patched.description).toBe('added desc')
+      expect(patched.status).toBe('todo')
     })
   })
 })

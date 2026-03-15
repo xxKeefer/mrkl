@@ -15,6 +15,7 @@ import type {
   EditTaskResult,
   GroupedTask,
   ListFilter,
+  PatchTaskOpts,
   PruneResult,
   Status,
   TaskData,
@@ -389,7 +390,47 @@ export function updateTask(
   task.description = updates.description ?? ''
   task.acceptance_criteria = updates.acceptance_criteria ?? []
 
+  if (updates.parent !== undefined) {
+    task.parent = updates.parent
+  }
+  if (updates.blocks !== undefined) {
+    task.blocks = updates.blocks?.length ? updates.blocks : undefined
+  }
+
   // Handle filename change if verbose_files is enabled
+  if (config.verbose_files) {
+    const parentDir = filePath.substring(0, filePath.lastIndexOf('/'))
+    const newFilename = `${task.id} ${task.type} - ${task.title}.md`
+    const newPath = join(parentDir, newFilename)
+    if (newPath !== filePath) {
+      writeFileSync(newPath, render(task))
+      unlinkSync(filePath)
+      return task
+    }
+  }
+
+  writeFileSync(filePath, render(task))
+  return task
+}
+
+export function patchTask(
+  dir: string,
+  id: string,
+  patch: PatchTaskOpts,
+): TaskData {
+  const config = loadConfig(dir)
+  const { filePath, task } = findTaskFile(dir, id)
+
+  if (patch.type !== undefined) task.type = patch.type
+  if (patch.status !== undefined) task.status = patch.status
+  if (patch.title !== undefined) task.title = normalizeTitle(patch.title)
+  if (patch.description !== undefined) task.description = patch.description
+  if (patch.acceptance_criteria !== undefined) task.acceptance_criteria = patch.acceptance_criteria
+  if (patch.parent === null) delete task.parent
+  else if (patch.parent !== undefined) task.parent = patch.parent
+  if (patch.blocks === null) delete task.blocks
+  else if (patch.blocks !== undefined) task.blocks = patch.blocks
+
   if (config.verbose_files) {
     const parentDir = filePath.substring(0, filePath.lastIndexOf('/'))
     const newFilename = `${task.id} ${task.type} - ${task.title}.md`
