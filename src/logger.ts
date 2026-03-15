@@ -27,6 +27,8 @@ const LEVEL_MAP: Record<EmojiKey, Level> = {
   priority_normal: 'info',
   priority_high: 'info',
   priority_highest: 'info',
+  epic: 'info',
+  child: 'info',
 }
 
 const LEVEL_EMOJI: Record<Level, string> = {

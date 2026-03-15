@@ -19,6 +19,8 @@ export const EMOJI = {
   found: '\u{1F50E}', // 🔎
   not_found: '\u2753', // ❓
   flag: '\u{1F6A9}', // 🚩
+  epic: '\u2734\uFE0F', // ✴️
+  child: '\u2747\uFE0F', // ❇️
   priority_lowest: '\u23EC', // ⏬
   priority_low: '\u{1F53D}', // 🔽
   priority_normal: '\u23F9\uFE0F', // ⏹️

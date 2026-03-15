@@ -29,6 +29,7 @@ export interface FzfEntry {
   indent: number
   blocksIndicator: string | null
   blockedByIndicator: string | null
+  isEpic: boolean
 }
 
 export interface ListRenderState {
@@ -57,6 +58,7 @@ function statusColor(status: string): string {
 }
 
 export function buildEntries(tasks: TaskData[]): FzfEntry[] {
+  const parentIds = new Set(tasks.filter((t) => t.parent).map((t) => t.parent!))
   const grouped = groupByEpic(tasks)
   return grouped.map((g) => ({
     task: g.task,
@@ -64,13 +66,13 @@ export function buildEntries(tasks: TaskData[]): FzfEntry[] {
     indent: g.indent,
     blocksIndicator: g.blocksIndicator,
     blockedByIndicator: g.blockedByIndicator,
+    isEpic: parentIds.has(g.task.id),
   }))
 }
 
 const ID_W = 12
 const STATUS_W = 16
 
-const PRIORITY_LABELS = ['lowest', 'low', 'normal', 'high', 'highest'] as const
 
 function padOrTruncate(text: string, width: number): string {
   if (text.length > width) return text.slice(0, width - 1) + '…'
@@ -132,30 +134,30 @@ function buildPreviewLines(
   const lines: string[] = []
 
   const p = (task.priority ?? 3) as Priority
+  const children = getChildren(allTasks, task.id)
+  const hierarchyEmoji = children.length > 0 ? EMOJI.epic : task.parent ? EMOJI.child : ''
   lines.push(
-    `${BOLD}${task.id}${RESET} ${FG_GRAY}${task.type}${RESET} ${statusColor(task.status)}${task.status}${RESET}`,
+    `${hierarchyEmoji}${priorityEmoji(p)} ${BOLD}${task.id}${RESET} ${FG_GRAY}${task.type}${RESET} ${statusColor(task.status)}${task.status}${RESET}`,
   )
-  lines.push(`  ${priorityEmoji(p)} Priority: ${p}-${PRIORITY_LABELS[p - 1]}`)
   lines.push(`${BOLD}${task.title}${RESET}`)
   lines.push('')
 
-  const children = getChildren(allTasks, task.id)
   const blockedBy = getBlockedBy(allTasks, task.id)
   const hasRelationships = task.parent || children.length > 0 || (task.blocks && task.blocks.length > 0) || blockedBy.length > 0
 
   if (hasRelationships) {
     lines.push(`${UNDERLINE}Relationships${RESET}`)
     if (task.parent) {
-      lines.push(`  Parent: ${FG_CYAN}${task.parent}${RESET}`)
+      lines.push(`  ${EMOJI.epic} Parent: ${FG_CYAN}${task.parent}${RESET}`)
     }
     if (children.length > 0) {
-      lines.push(`  Children: ${FG_CYAN}${children.map((c) => c.id).join(', ')}${RESET}`)
+      lines.push(`  ${EMOJI.child} Children: ${FG_CYAN}${children.map((c) => c.id).join(', ')}${RESET}`)
     }
     if (task.blocks && task.blocks.length > 0) {
-      lines.push(`  Blocks: ${FG_RED}${task.blocks.join(', ')}${RESET}`)
+      lines.push(`  ${EMOJI.blocks} Blocks: ${FG_RED}${task.blocks.join(', ')}${RESET}`)
     }
     if (blockedBy.length > 0) {
-      lines.push(`  Blocked by: ${FG_RED}${blockedBy.map((t) => t.id).join(', ')}${RESET}`)
+      lines.push(`  ${EMOJI.blocked_by} Blocked by: ${FG_RED}${blockedBy.map((t) => t.id).join(', ')}${RESET}`)
     }
     lines.push('')
   }
@@ -253,7 +255,8 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
       const priEmoji = priorityEmoji((entry.task.priority ?? 3) as Priority)
       const blockedByEmoji = entry.blockedByIndicator ? EMOJI.blocked_by : ''
       const blocksEmoji = entry.blocksIndicator ? EMOJI.blocks : ''
-      const compactStatus = `${entry.task.status} ${priEmoji}${blockedByEmoji}${blocksEmoji}`
+      const hierarchyEmoji = entry.isEpic ? EMOJI.epic : entry.task.parent ? EMOJI.child : ''
+      const compactStatus = `${entry.task.status} ${hierarchyEmoji}${priEmoji}${blockedByEmoji}${blocksEmoji}`
 
       if (isSelected) {
         const row = formatRow(

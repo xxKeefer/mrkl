@@ -151,6 +151,7 @@ describe('makeListState', () => {
           indent: 0,
           blocksIndicator: null,
           blockedByIndicator: null,
+          isEpic: false,
         }],
       }, { label: 'Archive', entries: [] }],
     })
