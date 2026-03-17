@@ -2,8 +2,10 @@
 id: MRKL-114
 title: list preview - children overflow
 type: fix
-status: todo
+status: closed
 created: '2026-03-12'
+parent: MRKL-124
+priority: 3
 ---
 
 ## Description

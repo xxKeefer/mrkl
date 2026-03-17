@@ -4,6 +4,7 @@ title: ai navigable tasks folder
 type: feat
 status: todo
 created: '2026-03-02'
+priority: 1
 ---
 
 ## Description
@@ -20,3 +21,4 @@ created: '2026-03-02'
   - maybe need to run a prd on this i kinda want to prio simplicity
 
 ## Acceptance Criteria
+

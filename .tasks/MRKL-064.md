@@ -4,6 +4,7 @@ title: subtasking
 type: feat
 status: todo
 created: '2026-03-10'
+priority: 2
 ---
 
 ## Description

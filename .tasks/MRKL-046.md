@@ -4,6 +4,7 @@ title: remove migration script
 type: chore
 status: todo
 created: '2026-03-07'
+priority: 5
 ---
 
 ## Description

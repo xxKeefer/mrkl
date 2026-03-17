@@ -4,6 +4,8 @@ title: figure out how to handle merge conflicts
 type: feat
 status: todo
 created: '2026-03-01'
+parent: MRKL-126
+priority: 1
 ---
 
 ## Description

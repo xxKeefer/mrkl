@@ -4,6 +4,7 @@ title: flaky test
 type: perf
 status: todo
 created: '2026-03-12'
+priority: 4
 ---
 
 ## Description

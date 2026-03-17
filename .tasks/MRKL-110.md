@@ -4,11 +4,14 @@ title: responsive list layout
 type: feat
 status: todo
 created: '2026-03-12'
+parent: MRKL-132
+priority: 3
 ---
 
 ## Description
 
-if the terminal is narrow instead of spliting the view veritcally with the list on the left and the preview on the right. it should split horizontally with the list on top (minimum ten items in view) and the preview on the bottom (cut off if the preview would extend past the bottom of the terminal)
+When the terminal is narrow, split the list view horizontally (list on top, preview on bottom) instead of vertically. List shows minimum 10 items; preview is truncated at terminal bottom.
 
 ## Acceptance Criteria
 
+- [ ] List view switches to horizontal split below a configurable column threshold|List panel shows at least 10 items in horizontal mode|Preview panel truncates at terminal bottom edge|Vertical split still used at wider widths

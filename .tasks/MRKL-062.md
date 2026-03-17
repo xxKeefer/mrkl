@@ -4,6 +4,7 @@ title: decompose create-tui into focused modules
 type: refactor
 status: todo
 created: '2026-03-09'
+priority: 2
 ---
 
 ## Description
