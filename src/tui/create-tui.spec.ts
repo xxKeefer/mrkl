@@ -258,6 +258,42 @@ describe('interaction snapshots', () => {
     expect(screen).toMatchSnapshot()
   })
 
+  it('Tab moves to next field (same as arrow down)', async () => {
+    tui = spawnTui('create', { cols: 80, rows: 24 })
+    await tui.waitForContent('feat')
+
+    // Get screen with arrow down for reference
+    const refTui = spawnTui('create', { cols: 80, rows: 24 })
+    await refTui.waitForContent('feat')
+    refTui.write('\x1b[B') // arrow down
+    await new Promise((r) => setTimeout(r, 200))
+    const arrowScreen = refTui.readScreen()
+    refTui.kill()
+
+    // Tab should produce same result
+    tui.write('\t')
+    await new Promise((r) => setTimeout(r, 200))
+    const tabScreen = tui.readScreen()
+    expect(tabScreen).toBe(arrowScreen)
+  })
+
+  it('Shift+Tab moves to previous field (same as arrow up)', async () => {
+    tui = spawnTui('create', { cols: 80, rows: 24 })
+    await tui.waitForContent('feat')
+    tui.write('\t') // Tab → priority
+    await new Promise((r) => setTimeout(r, 200))
+    tui.write('\x1b[Z') // Shift+Tab → back to type
+    await new Promise((r) => setTimeout(r, 200))
+    const screen = tui.readScreen()
+
+    // Should be back on type field — pointer on feat row
+    const refTui = spawnTui('create', { cols: 80, rows: 24 })
+    const initialScreen = await refTui.waitForContent('feat')
+    refTui.kill()
+
+    expect(screen).toBe(initialScreen)
+  })
+
   it('left/right arrows cycle type options', async () => {
     tui = spawnTui('create', { cols: 80, rows: 24 })
     await tui.waitForContent('feat')

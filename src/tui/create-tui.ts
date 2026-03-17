@@ -677,6 +677,12 @@ function runForm<T>(
 
           if (data[i + 1] === '[') {
             const arrow = data[i + 2]
+            // Shift+Tab (CSI Z)
+            if (arrow === 'Z') {
+              moveToField(state.activeField - 1)
+              i += 2
+              continue
+            }
             if (arrow === 'A') {
               moveToField(state.activeField - 1)
               i += 2
@@ -735,6 +741,13 @@ function runForm<T>(
           cleanup()
           resolve(null)
           return
+        }
+
+        // Tab — move to next field
+        if (ch === '\t') {
+          moveToField(state.activeField + 1)
+          render(state, stdout)
+          continue
         }
 
         // Ctrl+N — insert newline (reliable cross-terminal fallback)
