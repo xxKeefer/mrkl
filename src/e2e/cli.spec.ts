@@ -389,6 +389,141 @@ describe('cli e2e — interactive edit flow', () => {
     const data = parseTaskFile(taskPath)
     expect(data.title).toBe('original title updated')
   })
+
+  it('setting parent via TUI edit persists to task file', { timeout: 15000 }, async () => {
+    seedTaskFile(dir, 'TEST-001', 'epic task', 'feat')
+    seedTaskFile(dir, 'TEST-002', 'child task', 'feat')
+
+    tui = spawnTui('list', { cols: 80, rows: 24, cwd: dir })
+    await tui.waitForContent('TEST-002')
+    // Select TEST-002 (arrow down then Enter to open edit)
+    tui.write('\x1b[B') // highlight TEST-002
+    await new Promise((r) => setTimeout(r, 200))
+    tui.write('\r')
+    await tui.waitForContent('Edit Task', 8000)
+    await new Promise((r) => setTimeout(r, 300))
+
+    // Navigate: type(0) → status(1) → priority(2) → title(3) → desc(4) → flag(5) → parent(6)
+    for (let i = 0; i < 6; i++) {
+      tui.write('\x1b[B')
+      await new Promise((r) => setTimeout(r, 150))
+    }
+    await new Promise((r) => setTimeout(r, 200))
+
+    // Type parent ID to filter autocomplete
+    tui.write('epic')
+    await tui.waitForContent('epic task')
+    // Enter to select highlighted suggestion
+    tui.write('\r')
+    await new Promise((r) => setTimeout(r, 200))
+
+    // Now on +Block field — Enter with empty input submits
+    tui.write('\r')
+    await new Promise((r) => setTimeout(r, 200))
+
+    // After edit, list view re-appears — press Esc to exit
+    await tui.waitForContent('TEST-002', 8000)
+    tui.write('\x1b')
+
+    const code = await tui.exitCode
+    expect(code).toBe(0)
+
+    const data = parseTaskFile(join(dir, '.tasks', 'TEST-002.md'))
+    expect(data.parent).toBe('TEST-001')
+  })
+
+  it('existing parent survives TUI edit of other fields', { timeout: 15000 }, async () => {
+    seedTaskFile(dir, 'TEST-001', 'epic task', 'feat')
+    // Seed child with parent already set
+    writeFileSync(
+      join(dir, '.tasks', 'TEST-002.md'),
+      `---\nid: TEST-002\ntitle: child task\ntype: feat\nstatus: todo\ncreated: '2026-01-01'\nparent: TEST-001\nblocks:\n  - TEST-001\n---\n\n## Description\n\n\n\n## Acceptance Criteria\n\n`,
+    )
+
+    tui = spawnTui('list', { cols: 80, rows: 24, cwd: dir })
+    await tui.waitForContent('TEST-002')
+    tui.write('\x1b[B')
+    await new Promise((r) => setTimeout(r, 200))
+    tui.write('\r')
+    await tui.waitForContent('Edit Task', 8000)
+    await new Promise((r) => setTimeout(r, 300))
+
+    // Navigate to title: type(0) → status(1) → priority(2) → title(3)
+    for (let i = 0; i < 3; i++) {
+      tui.write('\x1b[B')
+      await new Promise((r) => setTimeout(r, 150))
+    }
+    await new Promise((r) => setTimeout(r, 200))
+
+    // Append to title
+    tui.write(' updated')
+    await tui.waitForContent('child task updated')
+
+    // Enter through: title → desc → flag → parent → block entry → +Block (empty = submit)
+    for (let i = 0; i < 6; i++) {
+      tui.write('\r')
+      await new Promise((r) => setTimeout(r, 200))
+    }
+
+    await tui.waitForContent('TEST-002', 8000)
+    tui.write('\x1b')
+
+    const code = await tui.exitCode
+    expect(code).toBe(0)
+
+    const data = parseTaskFile(join(dir, '.tasks', 'TEST-002.md'))
+    expect(data.title).toBe('child task updated')
+    expect(data.parent).toBe('TEST-001')
+    expect(data.blocks).toEqual(['TEST-001'])
+  })
+
+  it('clearing parent via TUI edit removes it from task file', { timeout: 15000 }, async () => {
+    seedTaskFile(dir, 'TEST-001', 'epic task', 'feat')
+    // Seed child with parent already set
+    writeFileSync(
+      join(dir, '.tasks', 'TEST-002.md'),
+      `---\nid: TEST-002\ntitle: child task\ntype: feat\nstatus: todo\ncreated: '2026-01-01'\nparent: TEST-001\n---\n\n## Description\n\n\n\n## Acceptance Criteria\n\n`,
+    )
+
+    tui = spawnTui('list', { cols: 80, rows: 24, cwd: dir })
+    await tui.waitForContent('TEST-002')
+    tui.write('\x1b[B')
+    await new Promise((r) => setTimeout(r, 200))
+    tui.write('\r')
+    await tui.waitForContent('Edit Task', 8000)
+    await new Promise((r) => setTimeout(r, 300))
+
+    // Navigate to parent: type(0) → status(1) → priority(2) → title(3) → desc(4) → flag(5) → parent(6)
+    for (let i = 0; i < 6; i++) {
+      tui.write('\x1b[B')
+      await new Promise((r) => setTimeout(r, 150))
+    }
+    await new Promise((r) => setTimeout(r, 200))
+
+    // Clear the parent field — backspace enough to clear the label
+    for (let i = 0; i < 30; i++) {
+      tui.write('\x7f')
+    }
+    await new Promise((r) => setTimeout(r, 200))
+
+    // Enter on empty parent → clears it
+    tui.write('\r')
+    await new Promise((r) => setTimeout(r, 200))
+
+    // +Block field — Enter with empty input submits
+    tui.write('\r')
+    await new Promise((r) => setTimeout(r, 200))
+
+    await tui.waitForContent('TEST-002', 8000)
+    tui.write('\x1b')
+
+    const code = await tui.exitCode
+    expect(code).toBe(0)
+
+    const data = parseTaskFile(join(dir, '.tasks', 'TEST-002.md'))
+    expect(data.title).toBe('child task')
+    expect(data.parent).toBeUndefined()
+  })
 })
 
 describe('cli e2e — edit command (non-interactive)', () => {

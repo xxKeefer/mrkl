@@ -885,8 +885,8 @@ export async function interactiveEdit(
         acceptance_criteria: criteria.length > 0 ? criteria : undefined,
         priority,
         flag: state.flag.trim() || undefined,
-        parent: state.parent || undefined,
-        blocks: state.blocks.length > 0 ? [...state.blocks] : undefined,
+        parent: state.parent || '',
+        blocks: [...state.blocks],
       }
     },
   )

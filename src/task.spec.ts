@@ -25,6 +25,7 @@ import {
   groupByEpic,
   buildRelationshipIndicators,
   patchTask,
+  updateTask,
 } from './task.js'
 import type { TaskData } from './types.js'
 
@@ -1284,6 +1285,71 @@ describe('task CRUD operations', () => {
       expect(patched.title).toBe('updated multi')
       expect(patched.description).toBe('added desc')
       expect(patched.status).toBe('todo')
+    })
+  })
+
+  describe('updateTask', () => {
+    it('persists parent to task file', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'epic' })
+      createTask({ dir: tmp, type: 'feat', title: 'child' })
+
+      const updated = updateTask(tmp, 'TEST-002', {
+        type: 'feat',
+        status: 'todo',
+        title: 'child',
+        parent: 'TEST-001',
+      })
+
+      expect(updated.parent).toBe('TEST-001')
+      const { task: reloaded } = findTaskFile(tmp, 'TEST-002')
+      expect(reloaded.parent).toBe('TEST-001')
+    })
+
+    it('persists blocks to task file', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'blocked' })
+      createTask({ dir: tmp, type: 'feat', title: 'blocker' })
+
+      const updated = updateTask(tmp, 'TEST-002', {
+        type: 'feat',
+        status: 'todo',
+        title: 'blocker',
+        blocks: ['TEST-001'],
+      })
+
+      expect(updated.blocks).toEqual(['TEST-001'])
+      const { task: reloaded } = findTaskFile(tmp, 'TEST-002')
+      expect(reloaded.blocks).toEqual(['TEST-001'])
+    })
+
+    it('preserves existing parent when update omits it', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'epic' })
+      createTask({ dir: tmp, type: 'feat', title: 'child', parent: 'TEST-001' })
+
+      const updated = updateTask(tmp, 'TEST-002', {
+        type: 'feat',
+        status: 'todo',
+        title: 'child',
+      })
+
+      expect(updated.parent).toBe('TEST-001')
+      const { task: reloaded } = findTaskFile(tmp, 'TEST-002')
+      expect(reloaded.parent).toBe('TEST-001')
+    })
+
+    it('clears parent when update sets empty string', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'epic' })
+      createTask({ dir: tmp, type: 'feat', title: 'child', parent: 'TEST-001' })
+
+      const updated = updateTask(tmp, 'TEST-002', {
+        type: 'feat',
+        status: 'todo',
+        title: 'child',
+        parent: '',
+      })
+
+      expect(updated.parent).toBeFalsy()
+      const { task: reloaded } = findTaskFile(tmp, 'TEST-002')
+      expect(reloaded.parent).toBeUndefined()
     })
   })
 })

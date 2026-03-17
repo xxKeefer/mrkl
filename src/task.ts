@@ -397,7 +397,7 @@ export function updateTask(
   }
 
   if (updates.parent !== undefined) {
-    task.parent = updates.parent
+    task.parent = updates.parent || undefined
   }
   if (updates.blocks !== undefined) {
     task.blocks = updates.blocks?.length ? updates.blocks : undefined
