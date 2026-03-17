@@ -4,7 +4,7 @@ title: editing parent in tui broken
 type: fix
 status: todo
 created: '2026-03-10'
-parent: MRKL-125
+parent: MRKL-132
 priority: 5
 ---
 

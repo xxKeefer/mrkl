@@ -4,7 +4,7 @@ title: responsive design - create and edit tuis
 type: fix
 status: todo
 created: '2026-03-10'
-parent: MRKL-124
+parent: MRKL-132
 priority: 3
 ---
 

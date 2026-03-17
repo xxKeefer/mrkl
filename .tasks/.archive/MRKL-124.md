@@ -2,7 +2,7 @@
 id: MRKL-124
 title: responsive tui design
 type: feat
-status: todo
+status: closed
 created: '2026-03-15'
 priority: 3
 ---

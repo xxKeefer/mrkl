@@ -4,7 +4,7 @@ title: responsive list layout
 type: feat
 status: todo
 created: '2026-03-12'
-parent: MRKL-124
+parent: MRKL-132
 priority: 3
 ---
 

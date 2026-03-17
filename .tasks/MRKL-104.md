@@ -4,7 +4,7 @@ title: tab cycle in tuis
 type: feat
 status: todo
 created: '2026-03-10'
-parent: MRKL-125
+parent: MRKL-132
 priority: 4
 ---
 

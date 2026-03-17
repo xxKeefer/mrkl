@@ -2,7 +2,7 @@
 id: MRKL-125
 title: tui interaction fixes
 type: fix
-status: todo
+status: closed
 created: '2026-03-15'
 priority: 4
 ---

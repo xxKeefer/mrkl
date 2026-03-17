@@ -4,7 +4,7 @@ title: create tui - empty blocks should not complete task
 type: fix
 status: todo
 created: '2026-03-12'
-parent: MRKL-125
+parent: MRKL-132
 priority: 5
 ---
 
