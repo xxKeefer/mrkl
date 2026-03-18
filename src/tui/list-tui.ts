@@ -125,6 +125,29 @@ function wrapText(text: string, width: number): string[] {
   return result
 }
 
+const EMOJI_RE = /[\u2700-\u27BF\u2600-\u26FF\u2B50-\u2B55\u{1F300}-\u{1F9FF}]/gu
+function visualWidth(text: string): number {
+  return text.replace(/\uFE0F/g, '').replace(EMOJI_RE, 'XX').length
+}
+
+function wrapRelationshipIds(label: string, ids: string[], width: number, color: string): string[] {
+  const prefix = `  ${label}: `
+  const indent = ' '.repeat(visualWidth(prefix))
+  const lines: string[] = []
+  let current = prefix
+  for (let i = 0; i < ids.length; i++) {
+    const token = i < ids.length - 1 ? `${ids[i]}, ` : ids[i]
+    if (visualWidth(current + token) > width && current !== prefix) {
+      lines.push(current.trimEnd())
+      current = indent + token
+    } else {
+      current += token
+    }
+  }
+  if (current.trim()) lines.push(current.trimEnd())
+  return lines.map((l, i) => i === 0 ? l.replace(prefix, `${prefix}${color}`) + RESET : `${color}${l}${RESET}`)
+}
+
 function buildPreviewLines(
   task: TaskData | undefined,
   width: number,
@@ -151,13 +174,13 @@ function buildPreviewLines(
       lines.push(`  ${EMOJI.epic} Parent: ${FG_CYAN}${task.parent}${RESET}`)
     }
     if (children.length > 0) {
-      lines.push(`  ${EMOJI.child} Children: ${FG_CYAN}${children.map((c) => c.id).join(', ')}${RESET}`)
+      lines.push(...wrapRelationshipIds(`${EMOJI.child} Children`, children.map((c) => c.id), width, FG_CYAN))
     }
     if (task.blocks && task.blocks.length > 0) {
-      lines.push(`  ${EMOJI.blocks} Blocks: ${FG_RED}${task.blocks.join(', ')}${RESET}`)
+      lines.push(...wrapRelationshipIds(`${EMOJI.blocks} Blocks`, task.blocks, width, FG_RED))
     }
     if (blockedBy.length > 0) {
-      lines.push(`  ${EMOJI.blocked_by} Blocked by: ${FG_RED}${blockedBy.map((t) => t.id).join(', ')}${RESET}`)
+      lines.push(...wrapRelationshipIds(`${EMOJI.blocked_by} Blocked by`, blockedBy.map((t) => t.id), width, FG_RED))
     }
     lines.push('')
   }

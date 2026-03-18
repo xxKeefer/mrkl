@@ -383,3 +383,29 @@ cy notification service infrastructur… │
                       │                 
                       │                 "
 `;
+
+exports[`render snapshots > wraps long relationship ID lists with aligned continuation lines 1`] = `
+"[Tasks]   Archive                                                               
+                                                                                
+>                                                                               
+────────────────────────────────────────────┬───────────────────────────────────
+ID          STATUS          TITLE           │ Preview                           
+────────────────────────────────────────────┼───────────────────────────────────
+MRKL-050    todo ⏫🚧        blocker task    │ ⏫ MRKL-050 feat todo               
+MRKL-051    todo ⏹️🛑       task a          │ blocker task                        
+MRKL-052    todo ⏹️🛑       task b          │                                     
+MRKL-053    todo ⏹️🛑       task c          │ Relationships                       
+MRKL-054    todo ⏹️🛑       task d          │   🚧 Blocks: MRKL-051, MRKL-052,     
+MRKL-055    todo ⏹️🛑       task e          │              MRKL-053, MRKL-054,    
+                                            │              MRKL-055             
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+────────────────────────────────────────────┴───────────────────────────────────
+6/6 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search  "
+`;

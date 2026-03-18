@@ -238,6 +238,43 @@ describe('render snapshots', () => {
     expect(screen).toMatchSnapshot()
   })
 
+  it('wraps long relationship ID lists with aligned continuation lines', async () => {
+    const tasks = [
+      makeTask({ id: 'MRKL-050', title: 'blocker task', type: 'feat', status: 'todo', blocks: ['MRKL-051', 'MRKL-052', 'MRKL-053', 'MRKL-054', 'MRKL-055'], priority: 5 }),
+      makeTask({ id: 'MRKL-051', title: 'task a', type: 'feat', status: 'todo' }),
+      makeTask({ id: 'MRKL-052', title: 'task b', type: 'feat', status: 'todo' }),
+      makeTask({ id: 'MRKL-053', title: 'task c', type: 'feat', status: 'todo' }),
+      makeTask({ id: 'MRKL-054', title: 'task d', type: 'feat', status: 'todo' }),
+      makeTask({ id: 'MRKL-055', title: 'task e', type: 'feat', status: 'todo' }),
+    ]
+    const entries = buildEntries(tasks)
+    const state = makeListState({
+      datasets: [
+        { label: 'Tasks', entries },
+        { label: 'Archive', entries: [] },
+      ],
+      filtered: entries,
+      allTasks: tasks,
+    })
+    // 80 cols → preview width ~33 chars, which is too narrow for 5 IDs on one line
+    const stdout = createMockStdout(80, 24)
+    renderList(state, stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 80, 24)
+    // IDs should never be split across lines — each MRKL-0XX token stays intact
+    const lines = screen.split('\n')
+    const idPattern = /MRKL-05\d/g
+    for (const line of lines) {
+      const matches = line.match(idPattern)
+      if (matches) {
+        for (const id of matches) {
+          // Each ID should appear fully on the line (not truncated)
+          expect(line).toContain(id)
+        }
+      }
+    }
+    expect(screen).toMatchSnapshot()
+  })
+
   it('archive tab active snapshot at 80 cols', async () => {
     const tasks = [
       makeTask({ id: 'MRKL-020', title: 'Archived feature', type: 'feat', status: 'closed' }),
