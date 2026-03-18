@@ -602,8 +602,8 @@ function runForm<T>(
 
       if (isBlocksAddField(state)) {
         if (state.currentBlock.trim() === '') {
-          // Empty input on +Block = move to criteria / submit
-          submit()
+          // Empty input on +Block = advance to criteria +Add field
+          moveToField(criteriaStartIndex(state) + state.criteria.length)
           return true
         }
         const suggestions = getFilteredSuggestions(state)

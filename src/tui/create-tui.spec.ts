@@ -333,8 +333,8 @@ describe('interaction snapshots', () => {
       await new Promise((r) => setTimeout(r, 200))
       tui.write('Test task')
       await tui.waitForContent('Test task')
-      // Enter through: title → desc → flag → parent → blocks +Add → criteria +Add (empty = submit)
-      for (let i = 0; i < 5; i++) {
+      // Enter through: title → desc → flag → parent → +Block → +Add (empty = submit)
+      for (let i = 0; i < 6; i++) {
         tui.write('\r')
         await new Promise((r) => setTimeout(r, 100))
       }
@@ -451,7 +451,7 @@ describe('autocomplete interaction snapshots', () => {
     expect(screen).toMatchSnapshot()
   })
 
-  it('Enter on empty +Block field skips without selecting a suggestion', async () => {
+  it('Enter on empty +Block field advances to criteria instead of submitting', async () => {
     tui = spawnTui('create', { cols: 80, rows: 24, cwd: tempDir })
     await tui.waitForContent('feat')
     // Navigate to +Block field (index 6): type→priority→title→desc→flag→parent→+Block
@@ -466,6 +466,8 @@ describe('autocomplete interaction snapshots', () => {
     const screen = tui.readScreen()
     // Should NOT have added any blocks (no "Blocks 1" label)
     expect(screen).not.toMatch(/Blocks\s+1/)
+    // Form should still be visible — focus moved to criteria +Add, not submitted
+    expect(screen).toMatch(/\+ Add/)
     expect(screen).toMatchSnapshot()
   })
 })

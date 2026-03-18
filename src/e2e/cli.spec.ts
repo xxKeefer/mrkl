@@ -225,8 +225,8 @@ describe('cli e2e — interactive create flow', () => {
     await new Promise((r) => setTimeout(r, 200))
     tui.write('My interactive task')
     await tui.waitForContent('My interactive task')
-    // Enter through: title → desc → flag → parent → blocks +Add → criteria +Add (empty = submit)
-    for (let i = 0; i < 5; i++) {
+    // Enter through: title → desc → flag → parent → +Block → +Add (empty = submit)
+    for (let i = 0; i < 6; i++) {
       tui.write('\r')
       await new Promise((r) => setTimeout(r, 100))
     }
@@ -251,7 +251,7 @@ describe('cli e2e — interactive create flow', () => {
     await new Promise((r) => setTimeout(r, 200))
     tui.write('Bug fix title')
     await tui.waitForContent('Bug fix title')
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 6; i++) {
       tui.write('\r')
       await new Promise((r) => setTimeout(r, 100))
     }
@@ -271,7 +271,7 @@ describe('cli e2e — interactive create flow', () => {
     await new Promise((r) => setTimeout(r, 200))
     tui.write('My interactive task')
     await tui.waitForContent('My interactive task')
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 6; i++) {
       tui.write('\r')
       await new Promise((r) => setTimeout(r, 100))
     }
@@ -372,8 +372,8 @@ describe('cli e2e — interactive edit flow', () => {
     tui.write(' updated')
     await tui.waitForContent('Original title updated', 8000)
 
-    // Enter through: title → desc → flag → parent → +Block (empty = submit)
-    for (let i = 0; i < 5; i++) {
+    // Enter through: title → desc → flag → parent → +Block → +Add (empty = submit)
+    for (let i = 0; i < 6; i++) {
       tui.write('\r')
       await new Promise((r) => setTimeout(r, 150))
     }
@@ -417,7 +417,10 @@ describe('cli e2e — interactive edit flow', () => {
     tui.write('\r')
     await new Promise((r) => setTimeout(r, 200))
 
-    // Now on +Block field — Enter with empty input submits
+    // Now on +Block field — Enter advances to +Add criteria
+    tui.write('\r')
+    await new Promise((r) => setTimeout(r, 200))
+    // +Add criteria — Enter with empty input submits
     tui.write('\r')
     await new Promise((r) => setTimeout(r, 200))
 
@@ -459,8 +462,8 @@ describe('cli e2e — interactive edit flow', () => {
     tui.write(' updated')
     await tui.waitForContent('child task updated')
 
-    // Enter through: title → desc → flag → parent → block entry → +Block (empty = submit)
-    for (let i = 0; i < 6; i++) {
+    // Enter through: title → desc → flag → parent → block entry → +Block → +Add (empty = submit)
+    for (let i = 0; i < 7; i++) {
       tui.write('\r')
       await new Promise((r) => setTimeout(r, 200))
     }
@@ -510,7 +513,10 @@ describe('cli e2e — interactive edit flow', () => {
     tui.write('\r')
     await new Promise((r) => setTimeout(r, 200))
 
-    // +Block field — Enter with empty input submits
+    // +Block field — Enter advances to +Add criteria
+    tui.write('\r')
+    await new Promise((r) => setTimeout(r, 200))
+    // +Add criteria — Enter with empty input submits
     tui.write('\r')
     await new Promise((r) => setTimeout(r, 200))
 

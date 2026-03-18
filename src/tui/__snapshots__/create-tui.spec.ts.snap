@@ -1,18 +1,17 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`autocomplete interaction snapshots > Enter on empty +Block field skips without selecting a suggestion 1`] = `
+exports[`autocomplete interaction snapshots > Enter on empty +Block field advances to criteria instead of submitting 1`] = `
 "                                                                                
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
-  Title cannot be empty                                                         
   Type              feat                                                        
   Priority          ⏹️ 3-normal                                                  
-› Title                                                                         
+  Title           ····················                                          
   Description     ····················                                          
   Flag            ····················                                          
   Parent          type to search...                                             
   + Block         type to search...                                             
-  + Add           ····················                                          
+› + Add                                                                         
   ────────────────────────────────────────────────────────────                  
   ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter submit  Esc quit   "
 `;
@@ -172,21 +171,7 @@ exports[`interaction snapshots > left/right arrows cycle type options 2`] = `
   ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter submit  Esc quit   "
 `;
 
-exports[`interaction snapshots > pressing Enter on filled form triggers submit 1`] = `
-"                                                                                
-  Create Task                                                                   
-  ────────────────────────────────────────────────────────────                  
-  Type              feat                                                        
-  Priority          ⏹️ 3-normal                                                  
-  Title           Test task                                                     
-  Description     ····················                                          
-  Flag            ····················                                          
-  Parent          type to search...                                             
-› + Block                                                                       
-  + Add           ····················                                          
-  ────────────────────────────────────────────────────────────                  
-  ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter submit  Esc quit   "
-`;
+exports[`interaction snapshots > pressing Enter on filled form triggers submit 1`] = `"                                                                                "`;
 
 exports[`interaction snapshots > typing characters into title field shows text on screen 1`] = `
 "                                                                                
