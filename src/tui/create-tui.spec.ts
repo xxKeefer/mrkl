@@ -401,7 +401,7 @@ describe('autocomplete interaction snapshots', () => {
     tui.write('\x1b[B\x1b[B\x1b[B\x1b[B\x1b[B')
     await new Promise((r) => setTimeout(r, 300))
     tui.write('auth')
-    const screen = await tui.waitForContent('Auth epic')
+    const screen = await tui.waitForContent('auth epic')
     expect(screen).toMatchSnapshot()
   })
 
@@ -424,11 +424,11 @@ describe('autocomplete interaction snapshots', () => {
     tui.write('\x1b[B\x1b[B\x1b[B\x1b[B\x1b[B')
     await new Promise((r) => setTimeout(r, 300))
     tui.write('auth')
-    await tui.waitForContent('Auth epic')
+    await tui.waitForContent('auth epic')
     tui.write('\x1b[C') // highlight "MRKL-003 - Auth tests" (index 1)
     await new Promise((r) => setTimeout(r, 200))
     tui.write('\r') // select it
-    await tui.waitForContent('Auth tests')
+    await tui.waitForContent('auth tests')
     const screen = tui.readScreen()
     expect(screen).toMatchSnapshot()
   })

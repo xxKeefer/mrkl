@@ -9,7 +9,7 @@ exports[`cli e2e — interactive edit flow > edit shows pre-populated form with 
 › Type            ◂ feat ▸                                                      
   Status            todo                                                        
   Priority          ⏹️ 3-normal                                                  
-  Title           Original title                                                
+  Title           original title                                                
   Description     ····················                                          
   Flag            ····················                                          
   Parent          type to search...                                             
@@ -27,8 +27,8 @@ exports[`cli e2e — interactive list flow > list renders pre-seeded tasks 1`] =
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
-TEST-001    todo ⏹️         First seeded t… │ ⏹️ TEST-001 feat todo               
-TEST-002    todo ⏹️         Second seeded … │ First seeded task                  
+TEST-001    todo ⏹️         first seeded t… │ ⏹️ TEST-001 feat todo               
+TEST-002    todo ⏹️         second seeded … │ first seeded task                  
                                             │                                   
                                             │                                   
                                             │                                   

@@ -27,9 +27,9 @@ exports[`autocomplete interaction snapshots > Enter on empty parent field skips 
   Flag            ····················                                          
   Parent          type to search...                                             
 › + Block                                                                       
-                    → MRKL-001 - Auth epic                                      
-                      MRKL-002 - Fix login bug                                  
-                      MRKL-003 - Auth tests                                     
+                    → MRKL-001 - auth epic                                      
+                      MRKL-002 - fix login bug                                  
+                      MRKL-003 - auth tests                                     
   + Add           ····················                                          
   ────────────────────────────────────────────────────────────                  
   ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter submit  Esc quit   "
@@ -45,8 +45,8 @@ exports[`autocomplete interaction snapshots > Enter selects highlighted suggesti
   Description     ····················                                          
   Flag            ····················                                          
 › Parent          auth                                                          
-                      MRKL-001 - Auth epic                                      
-                    → MRKL-003 - Auth tests                                     
+                      MRKL-001 - auth epic                                      
+                    → MRKL-003 - auth tests                                     
   + Block         type to search...                                             
   + Add           ····················                                          
   ────────────────────────────────────────────────────────────                  
@@ -63,9 +63,9 @@ exports[`autocomplete interaction snapshots > right arrow navigates suggestion h
   Description     ····················                                          
   Flag            ····················                                          
 › Parent          MRKL                                                          
-                      MRKL-001 - Auth epic                                      
-                    → MRKL-002 - Fix login bug                                  
-                      MRKL-003 - Auth tests                                     
+                      MRKL-001 - auth epic                                      
+                    → MRKL-002 - fix login bug                                  
+                      MRKL-003 - auth tests                                     
   + Block         type to search...                                             
   + Add           ····················                                          
   ────────────────────────────────────────────────────────────                  
@@ -82,9 +82,9 @@ exports[`autocomplete interaction snapshots > typing in parent field shows filte
   Description     ····················                                          
   Flag            ····················                                          
 › Parent                                                                        
-                    → MRKL-001 - Auth epic                                      
-                      MRKL-002 - Fix login bug                                  
-                      MRKL-003 - Auth tests                                     
+                    → MRKL-001 - auth epic                                      
+                      MRKL-002 - fix login bug                                  
+                      MRKL-003 - auth tests                                     
   + Block         type to search...                                             
   + Add           ····················                                          
   ────────────────────────────────────────────────────────────                  

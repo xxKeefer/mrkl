@@ -149,5 +149,10 @@ describe('template', () => {
       const result = parse(content, 'TEST-001.md')
       expect(result).toEqual(task)
     })
+    it('normalizes whitespace-padded titles', () => {
+      const content = `---\nid: TEST-001\ntitle: '  foo  '\ntype: feat\nstatus: todo\ncreated: '2026-03-01'\n---\n\n## Description\n\n\n\n## Acceptance Criteria\n\n`
+      const result = parse(content, 'TEST-001.md')
+      expect(result.title).toBe('foo')
+    })
   })
 })

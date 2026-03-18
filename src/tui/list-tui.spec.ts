@@ -381,7 +381,7 @@ describe('interaction snapshots', () => {
     tui = spawnTui('list', { cols: 80, rows: 24, cwd: tempDir })
     await tui.waitForContent('MRKL-001')
     tui.write('auth')
-    const screen = await tui.waitForContent('Auth epic')
+    const screen = await tui.waitForContent('auth epic')
     expect(screen).toMatchSnapshot()
   })
 
@@ -389,7 +389,7 @@ describe('interaction snapshots', () => {
     tui = spawnTui('list', { cols: 80, rows: 24, cwd: tempDir })
     await tui.waitForContent('MRKL-001')
     tui.write('\t')
-    const screen = await tui.waitForContent('Old feature')
+    const screen = await tui.waitForContent('old feature')
     expect(screen).toMatchSnapshot()
   })
 
@@ -423,7 +423,7 @@ describe('interaction snapshots', () => {
     // Wait for the watcher debounce + re-render
     const updated = await tui.waitForContent('MRKL-006', 3000)
     expect(updated).toContain('MRKL-006')
-    expect(updated).toContain('Live reload')
+    expect(updated).toContain('live reload')
   })
 
   it('live reloads when a task file is deleted on disk', async () => {

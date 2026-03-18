@@ -343,11 +343,11 @@ describe('cli e2e — interactive edit flow', () => {
     await tui.waitForContent('TEST-001')
     tui.write('\r')
     await tui.waitForContent('Edit Task')
-    await tui.waitForContent('Original title')
+    await tui.waitForContent('original title')
 
     const screen = tui.readScreen()
     expect(screen).toContain('Edit Task')
-    expect(screen).toContain('Original title')
+    expect(screen).toContain('original title')
     expect(screen).toMatchSnapshot()
   })
 
@@ -370,7 +370,7 @@ describe('cli e2e — interactive edit flow', () => {
 
     // Append to existing title
     tui.write(' updated')
-    await tui.waitForContent('Original title updated', 8000)
+    await tui.waitForContent('original title updated', 8000)
 
     // Enter through: title → desc → flag → parent → +Block → +Add (empty = submit)
     for (let i = 0; i < 6; i++) {
