@@ -17,6 +17,8 @@ import type {
   ListFilter,
   PatchTaskOpts,
   PruneResult,
+  SortDirection,
+  SortField,
   Status,
   TaskData,
 } from './types.js'
@@ -360,6 +362,37 @@ export function groupByEpic(tasks: TaskData[]): GroupedTask[] {
   }
 
   return result
+}
+
+const STATUS_ORDER: Record<string, number> = { todo: 0, 'in-progress': 1, done: 2, closed: 3 }
+
+export function sortTasks(tasks: TaskData[], field: SortField, direction: SortDirection): TaskData[] {
+  if (field === 'none') return [...tasks]
+  const dir = direction === 'desc' ? -1 : 1
+  return [...tasks].sort((a, b) => {
+    let cmp = 0
+    switch (field) {
+      case 'priority':
+        cmp = (a.priority ?? 0) - (b.priority ?? 0)
+        break
+      case 'status':
+        cmp = (STATUS_ORDER[a.status] ?? 0) - (STATUS_ORDER[b.status] ?? 0)
+        break
+      case 'created':
+        cmp = a.created.localeCompare(b.created)
+        break
+      case 'blocks':
+        cmp = (a.blocks?.length ?? 0) - (b.blocks?.length ?? 0)
+        break
+      case 'blocked': {
+        const aBlocked = tasks.some((t) => t.blocks?.includes(a.id)) ? 1 : 0
+        const bBlocked = tasks.some((t) => t.blocks?.includes(b.id)) ? 1 : 0
+        cmp = aBlocked - bBlocked
+        break
+      }
+    }
+    return cmp * dir
+  })
 }
 
 export function resolveTaskId(dir: string, id: string): string {

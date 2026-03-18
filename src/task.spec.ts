@@ -26,6 +26,7 @@ import {
   buildRelationshipIndicators,
   patchTask,
   updateTask,
+  sortTasks,
 } from './task.js'
 import type { TaskData } from './types.js'
 
@@ -268,6 +269,66 @@ describe('cascadeClose', () => {
     const archived = listArchivedTasks({ dir })
     expect(archived).toHaveLength(1)
     expect(archived[0].status).toBe('closed')
+  })
+})
+
+describe('sortTasks', () => {
+  const tasks: TaskData[] = [
+    makeTask({ id: 'T-001', title: 'low priority', status: 'todo', priority: 1, created: '2026-01-03' }),
+    makeTask({ id: 'T-002', title: 'high priority', status: 'done', priority: 5, created: '2026-01-01' }),
+    makeTask({ id: 'T-003', title: 'mid priority blocker', status: 'in-progress', priority: 3, created: '2026-01-02', blocks: ['T-001'] }),
+    makeTask({ id: 'T-004', title: 'no priority', status: 'todo', created: '2026-01-04' }),
+  ]
+
+  it('sorts by priority descending', () => {
+    const sorted = sortTasks(tasks, 'priority', 'desc')
+    expect(sorted.map((t) => t.id)).toEqual(['T-002', 'T-003', 'T-001', 'T-004'])
+  })
+
+  it('sorts by priority ascending', () => {
+    const sorted = sortTasks(tasks, 'priority', 'asc')
+    expect(sorted.map((t) => t.id)).toEqual(['T-004', 'T-001', 'T-003', 'T-002'])
+  })
+
+  it('sorts by status descending (done > in-progress > todo)', () => {
+    const sorted = sortTasks(tasks, 'status', 'desc')
+    expect(sorted.map((t) => t.id)).toEqual(['T-002', 'T-003', 'T-001', 'T-004'])
+  })
+
+  it('sorts by status ascending', () => {
+    const sorted = sortTasks(tasks, 'status', 'asc')
+    expect(sorted.map((t) => t.id)).toEqual(['T-001', 'T-004', 'T-003', 'T-002'])
+  })
+
+  it('sorts by created descending', () => {
+    const sorted = sortTasks(tasks, 'created', 'desc')
+    expect(sorted.map((t) => t.id)).toEqual(['T-004', 'T-001', 'T-003', 'T-002'])
+  })
+
+  it('sorts by created ascending', () => {
+    const sorted = sortTasks(tasks, 'created', 'asc')
+    expect(sorted.map((t) => t.id)).toEqual(['T-002', 'T-003', 'T-001', 'T-004'])
+  })
+
+  it('sorts by blocks descending (has-blocks first)', () => {
+    const sorted = sortTasks(tasks, 'blocks', 'desc')
+    expect(sorted[0].id).toBe('T-003')
+  })
+
+  it('sorts by blocked descending (is-blocked first)', () => {
+    const sorted = sortTasks(tasks, 'blocked', 'desc')
+    expect(sorted[0].id).toBe('T-001')
+  })
+
+  it('returns original order for sort field none', () => {
+    const sorted = sortTasks(tasks, 'none', 'desc')
+    expect(sorted.map((t) => t.id)).toEqual(tasks.map((t) => t.id))
+  })
+
+  it('does not mutate the input array', () => {
+    const original = [...tasks]
+    sortTasks(tasks, 'priority', 'desc')
+    expect(tasks.map((t) => t.id)).toEqual(original.map((t) => t.id))
   })
 })
 

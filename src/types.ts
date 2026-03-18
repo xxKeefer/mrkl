@@ -80,6 +80,12 @@ export interface GroupedTask {
   blockedByIndicator: string | null // e.g. "◄⛔ MRKL-005"
 }
 
+export const SORT_FIELDS = ['none', 'priority', 'status', 'created', 'blocks', 'blocked'] as const
+
+export type SortField = (typeof SORT_FIELDS)[number]
+
+export type SortDirection = 'asc' | 'desc'
+
 export interface PatchTaskOpts {
   type?: TaskType
   status?: Status
