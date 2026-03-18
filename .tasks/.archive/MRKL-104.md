@@ -2,8 +2,9 @@
 id: MRKL-104
 title: tab cycle in tuis
 type: feat
-status: todo
+status: done
 created: '2026-03-10'
+flag: completed
 parent: MRKL-132
 priority: 4
 ---
@@ -14,4 +15,4 @@ Tab and Shift+Tab should navigate between fields in TUI forms, matching Up/Down 
 
 ## Acceptance Criteria
 
-- [ ] Tab moves focus to the next field in create and edit TUIs|Shift+Tab moves focus to the previous field|Behavior matches existing Up/Down arrow navigation
+- [x] Tab moves focus to the next field in create and edit TUIs|Shift+Tab moves focus to the previous field|Behavior matches existing Up/Down arrow navigation
