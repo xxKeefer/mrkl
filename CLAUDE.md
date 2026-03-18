@@ -26,3 +26,6 @@ IMPORTANT: when using skills that ask for a task tracker, use mrkl to attempt to
 - TUI snapshot testing via `src/tui/tui-test-harness.ts` + `@xterm/headless` + `node-pty`
 - CLI e2e tests in `src/e2e/cli.spec.ts`
 - Verify: `pnpm lint && pnpm typecheck && pnpm test`
+
+# Task Completion
+- After implementation passes lint/typecheck/tests, run `pn dev done <TASK-ID>` before committing
