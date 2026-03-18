@@ -1,5 +1,31 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`interaction snapshots > --search flag pre-fills query and filters results 1`] = `
+"[Tasks]   Archive                                                               
+                                                                                
+>                                                                               
+────────────────────────────────────────────┬───────────────────────────────────
+ID          STATUS          TITLE           │ Preview                           
+────────────────────────────────────────────┼───────────────────────────────────
+MRKL-001    todo ⏫          auth epic       │ ⏫ MRKL-001 feat todo              
+MRKL-003    todo 🔽         auth tests      │ auth epic                          
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+────────────────────────────────────────────┴───────────────────────────────────
+2/2 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search  "
+`;
+
 exports[`interaction snapshots > Enter selects the highlighted task and opens edit TUI 1`] = `
 "                                                                                
   Edit Task MRKL-001                                                            

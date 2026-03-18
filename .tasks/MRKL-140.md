@@ -4,6 +4,7 @@ title: list tui column misalignment from emoji visual width
 type: fix
 status: todo
 created: '2026-03-18'
+parent: MRKL-132
 priority: 3
 ---
 

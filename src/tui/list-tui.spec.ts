@@ -446,6 +446,19 @@ describe('interaction snapshots', () => {
     expect(code).toBe(0)
   })
 
+  it('--search flag pre-fills query and filters results', async () => {
+    tui = spawnTui('list --search auth', { cols: 80, rows: 24, cwd: tempDir })
+    const screen = await tui.waitForContent('auth epic')
+    // Search bar should show "> auth" (query pre-filled)
+    expect(screen).toMatch(/^>\s*auth\s*$/m)
+    // Only auth-related tasks should appear
+    expect(screen).toContain('auth epic')
+    expect(screen).toContain('auth tests')
+    // Non-matching tasks should be filtered out
+    expect(screen).not.toContain('update ci')
+    expect(screen).not.toContain('dashboard')
+  })
+
   it('live reloads when a new task file is created on disk', async () => {
     tui = spawnTui('list', { cols: 80, rows: 24, cwd: tempDir })
     await tui.waitForContent('MRKL-001')

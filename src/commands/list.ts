@@ -114,7 +114,7 @@ export default defineCommand({
       })
 
       while (true) {
-        const selected = await interactiveList(currentTasks, currentArchived, reload)
+        const selected = await interactiveList(currentTasks, currentArchived, reload, args.search as string | undefined)
         if (!selected) break
 
         const result = await interactiveEdit(selected, currentTasks)

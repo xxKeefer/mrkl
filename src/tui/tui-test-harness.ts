@@ -29,7 +29,7 @@ export function spawnTui(
 
   const cliPath = resolve(PROJECT_ROOT, 'src/cli.ts')
 
-  const pty = nodePty.spawn(TSX_BIN, [cliPath, command], {
+  const pty = nodePty.spawn(TSX_BIN, [cliPath, ...command.split(/\s+/)], {
     name: 'xterm-256color',
     cols,
     rows,

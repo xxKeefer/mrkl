@@ -329,6 +329,7 @@ export async function interactiveList(
   tasks: TaskData[],
   archivedTasks: TaskData[],
   onReload?: ReloadFn,
+  initialQuery?: string,
 ): Promise<TaskData | null> {
   const { stdin, stdout } = process
 
@@ -340,7 +341,7 @@ export async function interactiveList(
   let currentTasks = tasks
   let currentArchived = archivedTasks
   let activeTab = 0
-  let query = ''
+  let query = initialQuery ?? ''
   let selectedIndex = 0
   let scrollOffset = 0
 
