@@ -56,8 +56,8 @@ export interface CreateTaskOpts {
 
 export interface ListFilter {
   dir: string
-  type?: TaskType
-  status?: Status
+  type?: string
+  status?: string
 }
 
 export interface EditTaskResult {

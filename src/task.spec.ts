@@ -535,6 +535,21 @@ describe('task CRUD operations', () => {
       expect(listTasks({ dir: tmp, status: 'todo' })).toHaveLength(3)
       expect(listTasks({ dir: tmp, status: 'done' })).toHaveLength(0)
     })
+    it('filters by comma-separated multi-value type', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'feature' })
+      createTask({ dir: tmp, type: 'fix', title: 'bugfix' })
+      createTask({ dir: tmp, type: 'chore', title: 'chore' })
+
+      expect(listTasks({ dir: tmp, type: 'feat,fix' })).toHaveLength(2)
+      expect(listTasks({ dir: tmp, type: 'chore' })).toHaveLength(1)
+    })
+    it('filters by comma-separated multi-value status', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'one' })
+      createTask({ dir: tmp, type: 'feat', title: 'two' })
+
+      expect(listTasks({ dir: tmp, status: 'todo,in-progress' })).toHaveLength(2)
+      expect(listTasks({ dir: tmp, status: 'done,closed' })).toHaveLength(0)
+    })
     it('returns empty array when no tasks exist', () => {
       expect(listTasks({ dir: tmp })).toEqual([])
     })

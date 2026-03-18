@@ -103,8 +103,14 @@ export function listTasks(filter: ListFilter): TaskData[] {
     }
   })
 
-  if (filter.type) tasks = tasks.filter((t) => t.type === filter.type)
-  if (filter.status) tasks = tasks.filter((t) => t.status === filter.status)
+  if (filter.type) {
+    const types = filter.type.split(',')
+    tasks = tasks.filter((t) => types.includes(t.type))
+  }
+  if (filter.status) {
+    const statuses = filter.status.split(',')
+    tasks = tasks.filter((t) => statuses.includes(t.status))
+  }
 
   return tasks
 }
@@ -194,8 +200,14 @@ export function listArchivedTasks(filter: ListFilter): TaskData[] {
     }
   })
 
-  if (filter.type) tasks = tasks.filter((t) => t.type === filter.type)
-  if (filter.status) tasks = tasks.filter((t) => t.status === filter.status)
+  if (filter.type) {
+    const types = filter.type.split(',')
+    tasks = tasks.filter((t) => types.includes(t.type))
+  }
+  if (filter.status) {
+    const statuses = filter.status.split(',')
+    tasks = tasks.filter((t) => statuses.includes(t.status))
+  }
 
   return tasks
 }
