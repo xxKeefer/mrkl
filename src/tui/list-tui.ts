@@ -1,6 +1,5 @@
 import { watch, type FSWatcher } from 'node:fs'
 import { join } from 'node:path'
-import { Fzf } from 'fzf'
 import type { TaskData, Priority } from '../types.js'
 import { EMOJI, priorityEmoji } from '../emoji.js'
 import { groupByEpic, getChildren, getBlockedBy } from '../task.js'
@@ -23,7 +22,7 @@ import {
   FG_GRAY,
 } from './ansi.js'
 
-export interface FzfEntry {
+export interface ListEntry {
   task: TaskData
   searchText: string
   indent: number
@@ -37,8 +36,8 @@ export interface ListRenderState {
   query: string
   selectedIndex: number
   scrollOffset: number
-  datasets: Array<{ label: string; entries: FzfEntry[] }>
-  filtered: FzfEntry[]
+  datasets: Array<{ label: string; entries: ListEntry[] }>
+  filtered: ListEntry[]
   allTasks: TaskData[]
 }
 
@@ -57,7 +56,7 @@ function statusColor(status: string): string {
   }
 }
 
-export function buildEntries(tasks: TaskData[]): FzfEntry[] {
+export function buildEntries(tasks: TaskData[]): ListEntry[] {
   const parentIds = new Set(tasks.filter((t) => t.parent).map((t) => t.parent!))
   const grouped = groupByEpic(tasks)
   return grouped.map((g) => ({
@@ -345,11 +344,11 @@ export async function interactiveList(
   let selectedIndex = 0
   let scrollOffset = 0
 
-  function getFiltered(): FzfEntry[] {
+  function getFiltered(): ListEntry[] {
     const entries = datasets[activeTab].entries
     if (!query) return entries
-    const fzf = new Fzf(entries, { selector: (e: FzfEntry) => e.searchText })
-    return fzf.find(query).map((r: { item: FzfEntry }) => r.item)
+    const q = query.toLowerCase()
+    return entries.filter((e) => e.searchText.toLowerCase().includes(q))
   }
 
   function render(): void {

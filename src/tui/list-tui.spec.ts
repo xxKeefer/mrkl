@@ -7,7 +7,7 @@ import type { ListRenderState } from './list-tui.js'
 import { makeTask, makeListState, createMockStdout, renderToScreen, spawnTui, type TuiProcess } from './tui-test-harness.js'
 
 describe('buildEntries', () => {
-  it('produces FzfEntry[] from flat tasks', () => {
+  it('produces ListEntry[] from flat tasks', () => {
     const tasks = [
       makeTask({ id: 'MRKL-001', title: 'First', type: 'feat', status: 'todo' }),
       makeTask({ id: 'MRKL-002', title: 'Second', type: 'fix', status: 'in-progress' }),
@@ -444,6 +444,19 @@ describe('interaction snapshots', () => {
     tui.write('\x1b')
     const code = await tui.exitCode
     expect(code).toBe(0)
+  })
+
+  it('search uses exact substring matching not fuzzy', async () => {
+    tui = spawnTui('list', { cols: 80, rows: 24, cwd: tempDir })
+    await tui.waitForContent('MRKL-001')
+    // Type "003" — should match only MRKL-003, not fuzzy-match others
+    tui.write('003')
+    // Wait for filter to show 1/5 count (only MRKL-003 matches)
+    const screen = await tui.waitForContent('1/5')
+    expect(screen).toContain('MRKL-003')
+    expect(screen).not.toContain('MRKL-001')
+    expect(screen).not.toContain('MRKL-004')
+    expect(screen).not.toContain('MRKL-005')
   })
 
   it('--search flag pre-fills query and filters results', async () => {

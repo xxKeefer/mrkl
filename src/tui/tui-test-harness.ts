@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 import type { TaskData } from '../types.js'
 import type { FormState, FormMode } from './create-tui.js'
 import type { ListRenderState } from './list-tui.js'
-export type { FzfEntry, ListRenderState } from './list-tui.js'
+export type { ListEntry, ListRenderState } from './list-tui.js'
 
 const PROJECT_ROOT = resolve(fileURLToPath(import.meta.url), '../../..')
 const TSX_BIN = resolve(PROJECT_ROOT, 'node_modules/.bin/tsx')

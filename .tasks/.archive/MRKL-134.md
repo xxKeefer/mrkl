@@ -2,8 +2,9 @@
 id: MRKL-134
 title: replace fuzzy search with exact substring matching
 type: fix
-status: todo
+status: done
 created: '2026-03-17'
+flag: completed
 parent: MRKL-132
 priority: 4
 ---
@@ -14,6 +15,6 @@ Replace Fzf fuzzy matching with case-insensitive exact substring filter. Searchi
 
 ## Acceptance Criteria
 
-- [ ] Searching 116 returns only tasks containing the literal substring 116
-- [ ] Search is case-insensitive
-- [ ] fzf dependency is removed from package.json
+- [x] Searching 116 returns only tasks containing the literal substring 116
+- [x] Search is case-insensitive
+- [x] fzf dependency is removed from package.json
