@@ -37,6 +37,11 @@ export default defineCommand({
       alias: 'p',
       description: 'Plain text output (no interactive TUI)',
     },
+    search: {
+      type: 'string',
+      alias: 'S',
+      description: 'Filter by substring match on id, title, or description',
+    },
   },
   async run({ args }) {
     const dir = process.cwd()
@@ -45,6 +50,7 @@ export default defineCommand({
         dir,
         type: args.type as TaskType | undefined,
         status: args.status as Status | undefined,
+        search: args.search as string | undefined,
       }
 
       const tasks = listTasks(filter)

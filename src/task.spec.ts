@@ -550,6 +550,16 @@ describe('task CRUD operations', () => {
       expect(listTasks({ dir: tmp, status: 'todo,in-progress' })).toHaveLength(2)
       expect(listTasks({ dir: tmp, status: 'done,closed' })).toHaveLength(0)
     })
+    it('filters by search substring on id, title, and description', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'auth login', description: 'handles oauth' })
+      createTask({ dir: tmp, type: 'fix', title: 'fix button', description: 'broken submit' })
+      createTask({ dir: tmp, type: 'feat', title: 'dashboard', description: 'auth tokens display' })
+
+      expect(listTasks({ dir: tmp, search: 'auth' })).toHaveLength(2)
+      expect(listTasks({ dir: tmp, search: 'button' })).toHaveLength(1)
+      expect(listTasks({ dir: tmp, search: 'TEST-001' })).toHaveLength(1)
+      expect(listTasks({ dir: tmp, search: 'nonexistent' })).toHaveLength(0)
+    })
     it('returns empty array when no tasks exist', () => {
       expect(listTasks({ dir: tmp })).toEqual([])
     })

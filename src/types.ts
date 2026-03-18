@@ -58,6 +58,7 @@ export interface ListFilter {
   dir: string
   type?: string
   status?: string
+  search?: string
 }
 
 export interface EditTaskResult {

@@ -111,6 +111,14 @@ export function listTasks(filter: ListFilter): TaskData[] {
     const statuses = filter.status.split(',')
     tasks = tasks.filter((t) => statuses.includes(t.status))
   }
+  if (filter.search) {
+    const q = filter.search.toLowerCase()
+    tasks = tasks.filter((t) =>
+      t.id.toLowerCase().includes(q) ||
+      t.title.toLowerCase().includes(q) ||
+      t.description.toLowerCase().includes(q),
+    )
+  }
 
   return tasks
 }
@@ -207,6 +215,14 @@ export function listArchivedTasks(filter: ListFilter): TaskData[] {
   if (filter.status) {
     const statuses = filter.status.split(',')
     tasks = tasks.filter((t) => statuses.includes(t.status))
+  }
+  if (filter.search) {
+    const q = filter.search.toLowerCase()
+    tasks = tasks.filter((t) =>
+      t.id.toLowerCase().includes(q) ||
+      t.title.toLowerCase().includes(q) ||
+      t.description.toLowerCase().includes(q),
+    )
   }
 
   return tasks
