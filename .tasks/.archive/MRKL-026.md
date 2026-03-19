@@ -2,8 +2,11 @@
 id: MRKL-026
 title: allow multiplayer planning flow
 type: feat
-status: todo
+status: closed
 created: '2026-03-02'
+flag: >-
+  Superseded: temporal IDs (MRKL-126) eliminate counter/sync entirely, making
+  multiplayer planning flow unnecessary
 parent: MRKL-126
 priority: 1
 ---

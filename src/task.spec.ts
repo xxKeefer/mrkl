@@ -2,14 +2,13 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { mkdtempSync, mkdirSync, existsSync, readFileSync, writeFileSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
-import { initConfig } from './config.js'
 import { render } from './template.js'
 import {
   createTask,
   listTasks,
   listArchivedTasks,
   closeTask,
-  resolveTaskId,
+  matchTaskId,
   normalizeTitle,
   parseCutoffDate,
   pruneTasks,
@@ -41,13 +40,56 @@ function makeTask(overrides: Partial<TaskData> & { id: string; title: string }):
 
 function setupProject(dir: string): void {
   mkdirSync(join(dir, '.tasks', '.archive'), { recursive: true })
-  writeFileSync(join(dir, 'mrkl.toml'), 'prefix = "TEST"\ntasks_dir = ".tasks"\nverbose_files = false\n')
-  writeFileSync(join(dir, '.tasks', '.counter'), '10')
 }
 
 function writeTask(dir: string, task: TaskData): void {
   writeFileSync(join(dir, '.tasks', `${task.id}.md`), render(task))
 }
+
+describe('matchTaskId', () => {
+  let dir: string
+
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), 'mrkl-test-'))
+    mkdirSync(join(dir, '.tasks', '.archive'), { recursive: true })
+  })
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('returns full ID when prefix uniquely matches one task', () => {
+    writeTask(dir, makeTask({ id: 'abc-def123', title: 'temporal task' }))
+    expect(matchTaskId('abc', dir)).toBe('abc-def123')
+  })
+
+  it('matches old PREFIX-NNN format tasks', () => {
+    writeTask(dir, makeTask({ id: 'TEST-001', title: 'old format' }))
+    expect(matchTaskId('TEST-001', dir)).toBe('TEST-001')
+  })
+
+  it('matches case-insensitively', () => {
+    writeTask(dir, makeTask({ id: 'TEST-001', title: 'case test' }))
+    expect(matchTaskId('test-001', dir)).toBe('TEST-001')
+  })
+
+  it('throws not found when no tasks match', () => {
+    writeTask(dir, makeTask({ id: 'abc-def123', title: 'unrelated' }))
+    expect(() => matchTaskId('zzz', dir)).toThrow('not found')
+  })
+
+  it('throws ambiguous when multiple tasks match prefix', () => {
+    writeTask(dir, makeTask({ id: 'abc-def111', title: 'first' }))
+    writeTask(dir, makeTask({ id: 'abc-def222', title: 'second' }))
+    expect(() => matchTaskId('abc', dir)).toThrow('ambiguous')
+  })
+
+  it('also searches archive directory', () => {
+    const archived = makeTask({ id: 'TEST-005', title: 'archived', status: 'closed' })
+    writeFileSync(join(dir, '.tasks', '.archive', `${archived.id}.md`), render(archived))
+    expect(matchTaskId('TEST-005', dir)).toBe('TEST-005')
+  })
+})
 
 describe('getActiveChildren', () => {
   let dir: string
@@ -275,7 +317,7 @@ describe('task CRUD operations', () => {
 
   beforeEach(() => {
     tmp = mkdtempSync(join(tmpdir(), 'mrkl-test-'))
-    initConfig(tmp, { prefix: 'TEST', verbose_files: true })
+    mkdirSync(join(tmp, '.tasks', '.archive'), { recursive: true })
   })
 
   afterEach(() => {
@@ -354,30 +396,25 @@ describe('task CRUD operations', () => {
   })
 
   describe('createTask', () => {
-    it('creates a file with correct name format and returns TaskData', () => {
+    it('creates a file with temporal ID and returns TaskData', () => {
       const task = createTask({ dir: tmp, type: 'feat', title: 'add login' })
-      expect(task.id).toBe('TEST-001')
+      expect(task.id).toMatch(/^[0-9a-z]{3,}-[0-9a-z]{6}$/)
       expect(task.type).toBe('feat')
       expect(task.title).toBe('add login')
       expect(task.status).toBe('todo')
-      expect(
-        existsSync(join(tmp, '.tasks', 'TEST-001 feat - add login.md')),
-      ).toBe(true)
+      expect(existsSync(join(tmp, '.tasks', `${task.id}.md`))).toBe(true)
     })
 
     it('writes correct frontmatter and body', () => {
-      createTask({
+      const task = createTask({
         dir: tmp,
         type: 'fix',
         title: 'broken auth',
         description: 'Fix the login bug.',
         acceptance_criteria: ['login works', 'tests pass'],
       })
-      const content = readFileSync(
-        join(tmp, '.tasks', 'TEST-001 fix - broken auth.md'),
-        'utf-8',
-      )
-      expect(content).toContain('id: TEST-001')
+      const content = readFileSync(join(tmp, '.tasks', `${task.id}.md`), 'utf-8')
+      expect(content).toContain(`id: ${task.id}`)
       expect(content).toContain('type: fix')
       expect(content).toContain('status: todo')
       expect(content).toContain('## Description')
@@ -385,59 +422,50 @@ describe('task CRUD operations', () => {
       expect(content).toContain('- [ ] login works')
       expect(content).toContain('- [ ] tests pass')
     })
-    it('normalises the title in the filename on disk', () => {
-      createTask({ dir: tmp, type: 'feat', title: '  My <Cool> Title  ' })
-      expect(
-        existsSync(join(tmp, '.tasks', 'TEST-001 feat - my cool title.md')),
-      ).toBe(true)
-    })
+
     it('returns normalised title in TaskData', () => {
       const task = createTask({ dir: tmp, type: 'feat', title: 'Feat/Login' })
       expect(task.title).toBe('feat-login')
     })
+
     it('throws when title is empty after normalisation', () => {
       expect(() =>
         createTask({ dir: tmp, type: 'feat', title: '***' }),
       ).toThrow('Title is empty after normalisation')
     })
-    it('increments counter across creates', () => {
+
+    it('generates unique IDs across creates', async () => {
       const t1 = createTask({ dir: tmp, type: 'feat', title: 'first' })
+      await new Promise((r) => setTimeout(r, 5))
       const t2 = createTask({ dir: tmp, type: 'fix', title: 'second' })
-      expect(t1.id).toBe('TEST-001')
-      expect(t2.id).toBe('TEST-002')
+      expect(t1.id).not.toBe(t2.id)
     })
 
     it('creates task with valid parent in frontmatter', () => {
-      createTask({ dir: tmp, type: 'feat', title: 'epic' })
+      const epic = createTask({ dir: tmp, type: 'feat', title: 'epic' })
       const child = createTask({
         dir: tmp,
         type: 'feat',
         title: 'child',
-        parent: 'TEST-001',
+        parent: epic.id,
       })
-      expect(child.parent).toBe('TEST-001')
-      const content = readFileSync(
-        join(tmp, '.tasks', 'TEST-002 feat - child.md'),
-        'utf-8',
-      )
-      expect(content).toContain('parent: TEST-001')
+      expect(child.parent).toBe(epic.id)
+      const content = readFileSync(join(tmp, '.tasks', `${child.id}.md`), 'utf-8')
+      expect(content).toContain(`parent: ${epic.id}`)
     })
 
     it('creates task with valid blocks in frontmatter', () => {
-      createTask({ dir: tmp, type: 'feat', title: 'blocked task' })
+      const blocked = createTask({ dir: tmp, type: 'feat', title: 'blocked task' })
       const blocker = createTask({
         dir: tmp,
         type: 'fix',
         title: 'blocker',
-        blocks: ['TEST-001'],
+        blocks: [blocked.id],
       })
-      expect(blocker.blocks).toEqual(['TEST-001'])
-      const content = readFileSync(
-        join(tmp, '.tasks', 'TEST-002 fix - blocker.md'),
-        'utf-8',
-      )
+      expect(blocker.blocks).toEqual([blocked.id])
+      const content = readFileSync(join(tmp, '.tasks', `${blocker.id}.md`), 'utf-8')
       expect(content).toContain('blocks:')
-      expect(content).toContain('TEST-001')
+      expect(content).toContain(blocked.id)
     })
 
     it('rejects nonexistent parent', () => {
@@ -446,62 +474,40 @@ describe('task CRUD operations', () => {
           dir: tmp,
           type: 'feat',
           title: 'orphan',
-          parent: 'TEST-999',
+          parent: 'zzz-zzzzzz',
         }),
       ).toThrow('not found')
     })
 
     it('rejects archived parent', () => {
-      createTask({ dir: tmp, type: 'feat', title: 'soon archived' })
-      closeTask(tmp, 'TEST-001')
+      const task = createTask({ dir: tmp, type: 'feat', title: 'soon archived' })
+      closeTask(tmp, task.id)
       expect(() =>
         createTask({
           dir: tmp,
           type: 'feat',
           title: 'child of archived',
-          parent: 'TEST-001',
+          parent: task.id,
         }),
       ).toThrow('not found')
     })
 
     it('rejects parent that already has a parent (no nested epics)', () => {
-      createTask({ dir: tmp, type: 'feat', title: 'grandparent' })
-      createTask({
+      const gp = createTask({ dir: tmp, type: 'feat', title: 'grandparent' })
+      const p = createTask({
         dir: tmp,
         type: 'feat',
         title: 'parent',
-        parent: 'TEST-001',
+        parent: gp.id,
       })
       expect(() =>
         createTask({
           dir: tmp,
           type: 'feat',
           title: 'grandchild',
-          parent: 'TEST-002',
+          parent: p.id,
         }),
       ).toThrow('already has a parent')
-    })
-
-    it('resolves numeric IDs for parent', () => {
-      createTask({ dir: tmp, type: 'feat', title: 'epic' })
-      const child = createTask({
-        dir: tmp,
-        type: 'feat',
-        title: 'child',
-        parent: '1',
-      })
-      expect(child.parent).toBe('TEST-001')
-    })
-
-    it('resolves numeric IDs for blocks', () => {
-      createTask({ dir: tmp, type: 'feat', title: 'blocked' })
-      const blocker = createTask({
-        dir: tmp,
-        type: 'fix',
-        title: 'blocker',
-        blocks: ['1'],
-      })
-      expect(blocker.blocks).toEqual(['TEST-001'])
     })
 
     it('rejects nonexistent blocks target', () => {
@@ -510,24 +516,31 @@ describe('task CRUD operations', () => {
           dir: tmp,
           type: 'feat',
           title: 'bad blocker',
-          blocks: ['TEST-999'],
+          blocks: ['zzz-zzzzzz'],
         }),
       ).toThrow('not found')
+    })
+
+    it('auto-creates .tasks/.archive/ if missing', () => {
+      const bare = mkdtempSync(join(tmpdir(), 'mrkl-bare-'))
+      const task = createTask({ dir: bare, type: 'feat', title: 'first ever' })
+      expect(existsSync(join(bare, '.tasks', `${task.id}.md`))).toBe(true)
+      expect(existsSync(join(bare, '.tasks', '.archive'))).toBe(true)
+      rmSync(bare, { recursive: true, force: true })
     })
   })
 
   describe('listTasks', () => {
     it('returns all active tasks', () => {
-      createTask({ dir: tmp, type: 'feat', title: 'one' })
-      createTask({ dir: tmp, type: 'fix', title: 'two' })
+      writeTask(tmp, makeTask({ id: 'aaa-000001', title: 'one', type: 'feat' }))
+      writeTask(tmp, makeTask({ id: 'aaa-000002', title: 'two', type: 'fix' }))
       const tasks = listTasks({ dir: tmp })
       expect(tasks).toHaveLength(2)
-      expect(tasks.map((t) => t.id)).toEqual(['TEST-001', 'TEST-002'])
     })
     it('filters by type and status', () => {
-      createTask({ dir: tmp, type: 'feat', title: 'feature one' })
-      createTask({ dir: tmp, type: 'fix', title: 'bugfix one' })
-      createTask({ dir: tmp, type: 'feat', title: 'feature two' })
+      writeTask(tmp, makeTask({ id: 'aaa-000001', title: 'feature one', type: 'feat' }))
+      writeTask(tmp, makeTask({ id: 'aaa-000002', title: 'bugfix one', type: 'fix' }))
+      writeTask(tmp, makeTask({ id: 'aaa-000003', title: 'feature two', type: 'feat' }))
 
       expect(listTasks({ dir: tmp, type: 'feat' })).toHaveLength(2)
       expect(listTasks({ dir: tmp, type: 'fix' })).toHaveLength(1)
@@ -538,245 +551,90 @@ describe('task CRUD operations', () => {
       expect(listTasks({ dir: tmp })).toEqual([])
     })
     it('skips files that fail to parse', () => {
-      createTask({ dir: tmp, type: 'feat', title: 'valid task' })
+      const task = createTask({ dir: tmp, type: 'feat', title: 'valid task' })
       writeFileSync(
         join(tmp, '.tasks', 'not-a-task.md'),
         '# Just a README\nNo frontmatter here.',
       )
       const tasks = listTasks({ dir: tmp })
       expect(tasks).toHaveLength(1)
-      expect(tasks[0].id).toBe('TEST-001')
+      expect(tasks[0].id).toBe(task.id)
     })
   })
 
   describe('closeTask', () => {
     it('moves task to .archive and updates status to closed', () => {
-      createTask({ dir: tmp, type: 'feat', title: 'close me' })
-      closeTask(tmp, 'TEST-001')
+      const task = createTask({ dir: tmp, type: 'feat', title: 'close me' })
+      closeTask(tmp, task.id)
 
-      expect(
-        existsSync(join(tmp, '.tasks', 'TEST-001 feat - close me.md')),
-      ).toBe(false)
-      const archivePath = join(
-        tmp,
-        '.tasks',
-        '.archive',
-        'TEST-001 feat - close me.md',
-      )
+      expect(existsSync(join(tmp, '.tasks', `${task.id}.md`))).toBe(false)
+      const archivePath = join(tmp, '.tasks', '.archive', `${task.id}.md`)
       expect(existsSync(archivePath)).toBe(true)
       const content = readFileSync(archivePath, 'utf-8')
       expect(content).toContain('status: closed')
     })
-    it('accepts lowercase id', () => {
-      createTask({ dir: tmp, type: 'feat', title: 'lower case' })
-      closeTask(tmp, 'test-001')
-      const archivePath = join(
-        tmp,
-        '.tasks',
-        '.archive',
-        'TEST-001 feat - lower case.md',
-      )
-      expect(existsSync(archivePath)).toBe(true)
-    })
+
     it('throws if task ID not found', () => {
-      expect(() => closeTask(tmp, 'TEST-999')).toThrow(
-        'Task TEST-999 not found',
-      )
+      expect(() => closeTask(tmp, 'zzz-zzzzzz')).toThrow('not found')
     })
+
     it('writes closed reason to frontmatter when provided', () => {
-      createTask({ dir: tmp, type: 'feat', title: 'with reason' })
-      closeTask(tmp, 'TEST-001', 'duplicate')
-      const archivePath = join(
-        tmp,
-        '.tasks',
-        '.archive',
-        'TEST-001 feat - with reason.md',
-      )
+      const task = createTask({ dir: tmp, type: 'feat', title: 'with reason' })
+      closeTask(tmp, task.id, 'duplicate')
+      const archivePath = join(tmp, '.tasks', '.archive', `${task.id}.md`)
       const content = readFileSync(archivePath, 'utf-8')
       expect(content).toContain('flag: duplicate')
       expect(content).toContain('status: closed')
     })
-    it('does not write closed field when no reason provided', () => {
-      createTask({ dir: tmp, type: 'feat', title: 'no reason' })
-      closeTask(tmp, 'TEST-001')
-      const archivePath = join(
-        tmp,
-        '.tasks',
-        '.archive',
-        'TEST-001 feat - no reason.md',
-      )
+
+    it('does not write flag when no reason provided', () => {
+      const task = createTask({ dir: tmp, type: 'feat', title: 'no reason' })
+      closeTask(tmp, task.id)
+      const archivePath = join(tmp, '.tasks', '.archive', `${task.id}.md`)
       const content = readFileSync(archivePath, 'utf-8')
       expect(content).not.toContain('flag:')
-    })
-    it('resolves numeric-only ID using project prefix', () => {
-      createTask({ dir: tmp, type: 'feat', title: 'numeric id' })
-      closeTask(tmp, '1')
-      const archivePath = join(
-        tmp,
-        '.tasks',
-        '.archive',
-        'TEST-001 feat - numeric id.md',
-      )
-      expect(existsSync(archivePath)).toBe(true)
-    })
-    it('resolves zero-padded numeric ID', () => {
-      createTask({ dir: tmp, type: 'feat', title: 'padded id' })
-      closeTask(tmp, '001')
-      const archivePath = join(
-        tmp,
-        '.tasks',
-        '.archive',
-        'TEST-001 feat - padded id.md',
-      )
-      expect(existsSync(archivePath)).toBe(true)
-    })
-  })
-
-  describe('resolveTaskId', () => {
-    it('prefixes numeric-only ID with config prefix', () => {
-      expect(resolveTaskId(tmp, '1')).toBe('TEST-001')
-    })
-    it('pads numeric ID to 3 digits', () => {
-      expect(resolveTaskId(tmp, '42')).toBe('TEST-042')
-    })
-    it('leaves already-padded numeric ID as-is', () => {
-      expect(resolveTaskId(tmp, '001')).toBe('TEST-001')
-    })
-    it('passes through full ID unchanged', () => {
-      expect(resolveTaskId(tmp, 'TEST-001')).toBe('TEST-001')
     })
   })
 
   describe('closeTask with status=done', () => {
     it('moves task to .archive with status done and flag completed', () => {
-      createTask({ dir: tmp, type: 'feat', title: 'done me' })
-      closeTask(tmp, 'TEST-001', 'completed', 'done')
+      const task = createTask({ dir: tmp, type: 'feat', title: 'done me' })
+      closeTask(tmp, task.id, 'completed', 'done')
 
-      expect(
-        existsSync(join(tmp, '.tasks', 'TEST-001 feat - done me.md')),
-      ).toBe(false)
-      const archivePath = join(
-        tmp,
-        '.tasks',
-        '.archive',
-        'TEST-001 feat - done me.md',
-      )
+      expect(existsSync(join(tmp, '.tasks', `${task.id}.md`))).toBe(false)
+      const archivePath = join(tmp, '.tasks', '.archive', `${task.id}.md`)
       expect(existsSync(archivePath)).toBe(true)
       const content = readFileSync(archivePath, 'utf-8')
       expect(content).toContain('status: done')
       expect(content).toContain('flag: completed')
     })
+
     it('checks acceptance criteria when status is done', () => {
-      createTask({
+      const task = createTask({
         dir: tmp,
         type: 'feat',
         title: 'with acs',
         acceptance_criteria: ['login works', 'tests pass'],
       })
-      closeTask(tmp, 'TEST-001', 'completed', 'done')
-      const archivePath = join(
-        tmp,
-        '.tasks',
-        '.archive',
-        'TEST-001 feat - with acs.md',
-      )
+      closeTask(tmp, task.id, 'completed', 'done')
+      const archivePath = join(tmp, '.tasks', '.archive', `${task.id}.md`)
       const content = readFileSync(archivePath, 'utf-8')
       expect(content).toContain('- [x] login works')
       expect(content).toContain('- [x] tests pass')
       expect(content).not.toContain('- [ ]')
     })
+
     it('does not check criteria when status is closed', () => {
-      createTask({
+      const task = createTask({
         dir: tmp,
         type: 'feat',
         title: 'closed acs',
         acceptance_criteria: ['should stay unchecked'],
       })
-      closeTask(tmp, 'TEST-001', 'duplicate')
-      const archivePath = join(
-        tmp,
-        '.tasks',
-        '.archive',
-        'TEST-001 feat - closed acs.md',
-      )
+      closeTask(tmp, task.id, 'duplicate')
+      const archivePath = join(tmp, '.tasks', '.archive', `${task.id}.md`)
       const content = readFileSync(archivePath, 'utf-8')
       expect(content).toContain('- [ ] should stay unchecked')
-    })
-    it('resolves numeric ID', () => {
-      createTask({ dir: tmp, type: 'feat', title: 'numeric done' })
-      closeTask(tmp, '1', 'completed', 'done')
-      const archivePath = join(
-        tmp,
-        '.tasks',
-        '.archive',
-        'TEST-001 feat - numeric done.md',
-      )
-      expect(existsSync(archivePath)).toBe(true)
-    })
-  })
-
-  describe('createTask with verbose_files false', () => {
-    let nonVerboseTmp: string
-
-    beforeEach(() => {
-      nonVerboseTmp = mkdtempSync(join(tmpdir(), 'mrkl-test-nv-'))
-      initConfig(nonVerboseTmp, { prefix: 'TEST', verbose_files: false })
-    })
-
-    afterEach(() => {
-      rmSync(nonVerboseTmp, { recursive: true, force: true })
-    })
-
-    it('produces non-verbose filename', () => {
-      const task = createTask({
-        dir: nonVerboseTmp,
-        type: 'feat',
-        title: 'add login',
-      })
-      expect(task.id).toBe('TEST-001')
-      expect(existsSync(join(nonVerboseTmp, '.tasks', 'TEST-001.md'))).toBe(
-        true,
-      )
-    })
-
-    it('listTasks works with non-verbose filenames', () => {
-      createTask({ dir: nonVerboseTmp, type: 'feat', title: 'one' })
-      createTask({ dir: nonVerboseTmp, type: 'fix', title: 'two' })
-      const tasks = listTasks({ dir: nonVerboseTmp })
-      expect(tasks).toHaveLength(2)
-      expect(tasks.map((t) => t.id)).toEqual(['TEST-001', 'TEST-002'])
-    })
-
-    it('closeTask with done status works with non-verbose filenames', () => {
-      createTask({ dir: nonVerboseTmp, type: 'feat', title: 'done me' })
-      closeTask(nonVerboseTmp, 'TEST-001', 'completed', 'done')
-      expect(existsSync(join(nonVerboseTmp, '.tasks', 'TEST-001.md'))).toBe(
-        false,
-      )
-      expect(
-        existsSync(join(nonVerboseTmp, '.tasks', '.archive', 'TEST-001.md')),
-      ).toBe(true)
-      const content = readFileSync(
-        join(nonVerboseTmp, '.tasks', '.archive', 'TEST-001.md'),
-        'utf-8',
-      )
-      expect(content).toContain('status: done')
-    })
-
-    it('closeTask works with non-verbose filenames', () => {
-      createTask({ dir: nonVerboseTmp, type: 'feat', title: 'close me' })
-      closeTask(nonVerboseTmp, 'TEST-001')
-      expect(existsSync(join(nonVerboseTmp, '.tasks', 'TEST-001.md'))).toBe(
-        false,
-      )
-      expect(
-        existsSync(join(nonVerboseTmp, '.tasks', '.archive', 'TEST-001.md')),
-      ).toBe(true)
-      const content = readFileSync(
-        join(nonVerboseTmp, '.tasks', '.archive', 'TEST-001.md'),
-        'utf-8',
-      )
-      expect(content).toContain('status: closed')
     })
   })
 
@@ -1020,13 +878,6 @@ describe('task CRUD operations', () => {
       })
     })
 
-    it('resolveTaskId usage before calling helpers', () => {
-      const tasks = makeTasks()
-      const resolvedId = resolveTaskId(tmp, '1')
-      expect(resolvedId).toBe('TEST-001')
-      const children = getChildren(tasks, resolvedId)
-      expect(children).toHaveLength(2)
-    })
   })
 
   describe('executePrune', () => {
@@ -1156,12 +1007,12 @@ describe('task CRUD operations', () => {
     })
 
     it('works with closeTask done integration', () => {
-      createTask({ dir: tmp, type: 'feat', title: 'to archive' })
-      closeTask(tmp, 'TEST-001', 'completed', 'done')
+      const task = createTask({ dir: tmp, type: 'feat', title: 'to archive' })
+      closeTask(tmp, task.id, 'completed', 'done')
 
       const tasks = listArchivedTasks({ dir: tmp })
       expect(tasks).toHaveLength(1)
-      expect(tasks[0].id).toBe('TEST-001')
+      expect(tasks[0].id).toBe(task.id)
       expect(tasks[0].status).toBe('done')
     })
 
@@ -1187,7 +1038,7 @@ describe('task CRUD operations', () => {
 
   describe('patchTask', () => {
     it('updates only title and preserves all other fields', () => {
-      createTask({
+      const task = createTask({
         dir: tmp,
         type: 'feat',
         title: 'original title',
@@ -1195,7 +1046,7 @@ describe('task CRUD operations', () => {
         acceptance_criteria: ['keep this ac'],
       })
 
-      const patched = patchTask(tmp, 'TEST-001', { title: 'new title' })
+      const patched = patchTask(tmp, task.id, { title: 'new title' })
 
       expect(patched.title).toBe('new title')
       expect(patched.type).toBe('feat')
@@ -1204,20 +1055,17 @@ describe('task CRUD operations', () => {
       expect(patched.acceptance_criteria).toEqual(['keep this ac'])
     })
 
-    it('updates type and renames verbose filename', () => {
-      createTask({ dir: tmp, type: 'feat', title: 'rename me' })
-      expect(existsSync(join(tmp, '.tasks', 'TEST-001 feat - rename me.md'))).toBe(true)
+    it('updates type without renaming file', () => {
+      const task = createTask({ dir: tmp, type: 'feat', title: 'rename me' })
 
-      const patched = patchTask(tmp, 'TEST-001', { type: 'fix' })
+      const patched = patchTask(tmp, task.id, { type: 'fix' })
 
       expect(patched.type).toBe('fix')
-      expect(patched.title).toBe('rename me')
-      expect(existsSync(join(tmp, '.tasks', 'TEST-001 fix - rename me.md'))).toBe(true)
-      expect(existsSync(join(tmp, '.tasks', 'TEST-001 feat - rename me.md'))).toBe(false)
+      expect(existsSync(join(tmp, '.tasks', `${task.id}.md`))).toBe(true)
     })
 
     it('updates description and acceptance criteria', () => {
-      createTask({
+      const task = createTask({
         dir: tmp,
         type: 'feat',
         title: 'update content',
@@ -1225,7 +1073,7 @@ describe('task CRUD operations', () => {
         acceptance_criteria: ['old ac'],
       })
 
-      const patched = patchTask(tmp, 'TEST-001', {
+      const patched = patchTask(tmp, task.id, {
         description: 'new desc',
         acceptance_criteria: ['new ac 1', 'new ac 2'],
       })
@@ -1235,46 +1083,46 @@ describe('task CRUD operations', () => {
       expect(patched.title).toBe('update content')
     })
 
-    it('updates parent with validation', () => {
-      createTask({ dir: tmp, type: 'feat', title: 'epic' })
-      createTask({ dir: tmp, type: 'feat', title: 'child' })
+    it('updates parent', () => {
+      const epic = createTask({ dir: tmp, type: 'feat', title: 'epic' })
+      const child = createTask({ dir: tmp, type: 'feat', title: 'child' })
 
-      const patched = patchTask(tmp, 'TEST-002', { parent: 'TEST-001' })
+      const patched = patchTask(tmp, child.id, { parent: epic.id })
 
-      expect(patched.parent).toBe('TEST-001')
+      expect(patched.parent).toBe(epic.id)
     })
 
     it('clears parent when set to null', () => {
-      createTask({ dir: tmp, type: 'feat', title: 'epic' })
-      createTask({ dir: tmp, type: 'feat', title: 'child', parent: 'TEST-001' })
+      const epic = createTask({ dir: tmp, type: 'feat', title: 'epic' })
+      const child = createTask({ dir: tmp, type: 'feat', title: 'child', parent: epic.id })
 
-      const patched = patchTask(tmp, 'TEST-002', { parent: null })
+      const patched = patchTask(tmp, child.id, { parent: null })
 
       expect(patched.parent).toBeUndefined()
     })
 
-    it('updates blocks with validation', () => {
-      createTask({ dir: tmp, type: 'feat', title: 'blocked' })
-      createTask({ dir: tmp, type: 'feat', title: 'blocker' })
+    it('updates blocks', () => {
+      const blocked = createTask({ dir: tmp, type: 'feat', title: 'blocked' })
+      const blocker = createTask({ dir: tmp, type: 'feat', title: 'blocker' })
 
-      const patched = patchTask(tmp, 'TEST-002', { blocks: ['TEST-001'] })
+      const patched = patchTask(tmp, blocker.id, { blocks: [blocked.id] })
 
-      expect(patched.blocks).toEqual(['TEST-001'])
+      expect(patched.blocks).toEqual([blocked.id])
     })
 
     it('clears blocks when set to null', () => {
-      createTask({ dir: tmp, type: 'feat', title: 'blocked' })
-      createTask({ dir: tmp, type: 'feat', title: 'blocker', blocks: ['TEST-001'] })
+      const blocked = createTask({ dir: tmp, type: 'feat', title: 'blocked' })
+      const blocker = createTask({ dir: tmp, type: 'feat', title: 'blocker', blocks: [blocked.id] })
 
-      const patched = patchTask(tmp, 'TEST-002', { blocks: null })
+      const patched = patchTask(tmp, blocker.id, { blocks: null })
 
       expect(patched.blocks).toBeUndefined()
     })
 
     it('updates multiple fields simultaneously', () => {
-      createTask({ dir: tmp, type: 'feat', title: 'multi update' })
+      const task = createTask({ dir: tmp, type: 'feat', title: 'multi update' })
 
-      const patched = patchTask(tmp, 'TEST-001', {
+      const patched = patchTask(tmp, task.id, {
         type: 'fix',
         title: 'updated multi',
         description: 'added desc',

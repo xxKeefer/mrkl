@@ -1,21 +1,26 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import {
   mkdtempSync,
+  mkdirSync,
   existsSync,
   readFileSync,
   writeFileSync,
   rmSync,
+  readdirSync,
+  renameSync,
 } from 'node:fs'
-import { join } from 'node:path'
+import { join, basename } from 'node:path'
 import { tmpdir } from 'node:os'
 
 import matter from 'gray-matter'
-import { initConfig } from '../config.js'
+import { TASKS_DIR } from '../id.js'
+import { render } from '../template.js'
 
 let tmp: string
 
 beforeEach(() => {
   tmp = mkdtempSync(join(tmpdir(), 'mrkl-migrate-'))
+  mkdirSync(join(tmp, TASKS_DIR, '.archive'), { recursive: true })
 })
 
 afterEach(() => {
@@ -32,40 +37,26 @@ function writeVerboseFile(
   writeFileSync(join(dir, filename), content)
 }
 
-// We test the migrate logic by importing the internal migrateDir function indirectly
-// through the command module. Instead, we'll test by importing the module directly.
-// Since migrateDir isn't exported, we test via the file system effects.
-
-// Helper to run migrate command logic
-async function runMigrate(dir: string) {
-  // Import the migrate module and call its logic
-  const { readdirSync, readFileSync: rf } = await import('node:fs')
-  const { join: j } = await import('node:path')
-  const matterLib = (await import('gray-matter')).default
-  const { loadConfig } = await import('../config.js')
-  const { render } = await import('../template.js')
-  const { renameSync } = await import('node:fs')
-  const { basename } = await import('node:path')
+// Replicate migrateDir logic inline since it's not exported
+function runMigrate(dir: string) {
+  const tasksDir = join(dir, TASKS_DIR)
+  const archiveDir = join(tasksDir, '.archive')
   const VERBOSE_REGEX = /^(\S+)\s+(\S+)\s+-\s+(.+)$/
-
-  const config = loadConfig(dir)
-  const tasksDir = j(dir, config.tasks_dir)
-  const archiveDir = j(tasksDir, '.archive')
 
   for (const dirPath of [tasksDir, archiveDir]) {
     let files: string[]
     try {
       files = readdirSync(dirPath).filter(
-        (f: string) => f.endsWith('.md') && !f.startsWith('.'),
+        (f) => f.endsWith('.md') && !f.startsWith('.'),
       )
     } catch {
       continue
     }
 
     for (const file of files) {
-      const filePath = j(dirPath, file)
-      const raw = rf(filePath, 'utf-8')
-      const { data, content: bodyContent } = matterLib(raw)
+      const filePath = join(dirPath, file)
+      const raw = readFileSync(filePath, 'utf-8')
+      const { data, content: bodyContent } = matter(raw)
 
       if (data.title) continue
 
@@ -100,20 +91,17 @@ async function runMigrate(dir: string) {
 
       writeFileSync(filePath, render(task as Parameters<typeof render>[0]))
 
-      if (!config.verbose_files) {
-        const newName = `${data.id as string}.md`
-        if (file !== newName) {
-          renameSync(filePath, j(dirPath, newName))
-        }
+      const newName = `${data.id as string}.md`
+      if (file !== newName) {
+        renameSync(filePath, join(dirPath, newName))
       }
     }
   }
 }
 
 describe('migrate', () => {
-  it('adds title to frontmatter from verbose filename', async () => {
-    initConfig(tmp, { prefix: 'TEST', verbose_files: false })
-    const tasksDir = join(tmp, '.tasks')
+  it('adds title to frontmatter from verbose filename and renames to non-verbose', () => {
+    const tasksDir = join(tmp, TASKS_DIR)
     writeVerboseFile(
       tasksDir,
       'TEST-001 feat - add login.md',
@@ -126,69 +114,18 @@ describe('migrate', () => {
       '\n## Description\n\nSome desc.\n\n## Acceptance Criteria\n\n- [ ] it works\n',
     )
 
-    await runMigrate(tmp)
+    runMigrate(tmp)
 
     const newPath = join(tasksDir, 'TEST-001.md')
     expect(existsSync(newPath)).toBe(true)
+    expect(existsSync(join(tasksDir, 'TEST-001 feat - add login.md'))).toBe(false)
     const content = readFileSync(newPath, 'utf-8')
     const { data } = matter(content)
     expect(data.title).toBe('add login')
   })
 
-  it('renames files to non-verbose when verbose_files is false', async () => {
-    initConfig(tmp, { prefix: 'TEST', verbose_files: false })
-    const tasksDir = join(tmp, '.tasks')
-    writeVerboseFile(
-      tasksDir,
-      'TEST-001 feat - add login.md',
-      {
-        id: 'TEST-001',
-        type: 'feat',
-        status: 'todo',
-        created: '2026-03-01',
-      },
-      '\n## Description\n\n\n\n## Acceptance Criteria\n\n',
-    )
-
-    await runMigrate(tmp)
-
-    expect(existsSync(join(tasksDir, 'TEST-001.md'))).toBe(true)
-    expect(existsSync(join(tasksDir, 'TEST-001 feat - add login.md'))).toBe(
-      false,
-    )
-  })
-
-  it('keeps verbose filenames when verbose_files is true', async () => {
-    initConfig(tmp, { prefix: 'TEST', verbose_files: true })
-    const tasksDir = join(tmp, '.tasks')
-    writeVerboseFile(
-      tasksDir,
-      'TEST-001 feat - add login.md',
-      {
-        id: 'TEST-001',
-        type: 'feat',
-        status: 'todo',
-        created: '2026-03-01',
-      },
-      '\n## Description\n\n\n\n## Acceptance Criteria\n\n',
-    )
-
-    await runMigrate(tmp)
-
-    expect(existsSync(join(tasksDir, 'TEST-001 feat - add login.md'))).toBe(
-      true,
-    )
-    const content = readFileSync(
-      join(tasksDir, 'TEST-001 feat - add login.md'),
-      'utf-8',
-    )
-    const { data } = matter(content)
-    expect(data.title).toBe('add login')
-  })
-
-  it('skips files that already have title in frontmatter', async () => {
-    initConfig(tmp, { prefix: 'TEST', verbose_files: false })
-    const tasksDir = join(tmp, '.tasks')
+  it('skips files that already have title in frontmatter', () => {
+    const tasksDir = join(tmp, TASKS_DIR)
     writeVerboseFile(
       tasksDir,
       'TEST-001.md',
@@ -202,18 +139,16 @@ describe('migrate', () => {
       '\n## Description\n\n\n\n## Acceptance Criteria\n\n',
     )
 
-    await runMigrate(tmp)
+    runMigrate(tmp)
 
-    // File should remain unchanged
     expect(existsSync(join(tasksDir, 'TEST-001.md'))).toBe(true)
     const content = readFileSync(join(tasksDir, 'TEST-001.md'), 'utf-8')
     const { data } = matter(content)
     expect(data.title).toBe('already has title')
   })
 
-  it('handles both active and archived tasks', async () => {
-    initConfig(tmp, { prefix: 'TEST', verbose_files: false })
-    const tasksDir = join(tmp, '.tasks')
+  it('handles both active and archived tasks', () => {
+    const tasksDir = join(tmp, TASKS_DIR)
     const archiveDir = join(tasksDir, '.archive')
 
     writeVerboseFile(
@@ -240,7 +175,7 @@ describe('migrate', () => {
       '\n## Description\n\n\n\n## Acceptance Criteria\n\n',
     )
 
-    await runMigrate(tmp)
+    runMigrate(tmp)
 
     expect(existsSync(join(tasksDir, 'TEST-001.md'))).toBe(true)
     expect(existsSync(join(archiveDir, 'TEST-002.md'))).toBe(true)
@@ -248,15 +183,12 @@ describe('migrate', () => {
     const active = matter(readFileSync(join(tasksDir, 'TEST-001.md'), 'utf-8'))
     expect(active.data.title).toBe('active task')
 
-    const archived = matter(
-      readFileSync(join(archiveDir, 'TEST-002.md'), 'utf-8'),
-    )
+    const archived = matter(readFileSync(join(archiveDir, 'TEST-002.md'), 'utf-8'))
     expect(archived.data.title).toBe('archived task')
   })
 
-  it('skips files where title cannot be extracted from non-verbose filename', async () => {
-    initConfig(tmp, { prefix: 'TEST', verbose_files: false })
-    const tasksDir = join(tmp, '.tasks')
+  it('skips files where title cannot be extracted from non-verbose filename', () => {
+    const tasksDir = join(tmp, TASKS_DIR)
     writeVerboseFile(
       tasksDir,
       'TEST-001.md',
@@ -269,10 +201,8 @@ describe('migrate', () => {
       '\n## Description\n\n\n\n## Acceptance Criteria\n\n',
     )
 
-    // Should not throw, just skip
-    await runMigrate(tmp)
+    runMigrate(tmp)
 
-    // File should still exist, unchanged (no title added since can't extract)
     expect(existsSync(join(tasksDir, 'TEST-001.md'))).toBe(true)
     const content = readFileSync(join(tasksDir, 'TEST-001.md'), 'utf-8')
     const { data } = matter(content)

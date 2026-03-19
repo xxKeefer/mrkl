@@ -33,8 +33,6 @@ function makeTask(overrides: Partial<TaskData> & { id: string; title: string }):
 
 function setupProject(dir: string): void {
   mkdirSync(join(dir, '.tasks', '.archive'), { recursive: true })
-  writeFileSync(join(dir, 'mrkl.toml'), 'prefix = "TEST"\ntasks_dir = ".tasks"\nverbose_files = false\n')
-  writeFileSync(join(dir, '.tasks', '.counter'), '10')
 }
 
 function writeTask(dir: string, task: TaskData): void {
