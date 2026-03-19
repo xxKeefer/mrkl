@@ -302,6 +302,7 @@ describe('cli e2e — interactive list flow', () => {
     tui = spawnTui('list', { cols: 80, rows: 24, cwd: dir })
     await tui.waitForContent('TEST-001')
     await tui.waitForContent('TEST-002')
+    await tui.waitForContent('2/2 tasks')
 
     const screen = tui.readScreen()
     expect(screen).toContain('TEST-001')
