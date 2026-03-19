@@ -2,8 +2,11 @@
 id: MRKL-140
 title: temporal base36 ids
 type: feat
-status: todo
+status: closed
 created: '2026-03-19'
+flag: >-
+  Superseded: scope absorbed into parent MRKL-126 which now implements the
+  temporal IDs plan directly
 parent: MRKL-126
 priority: 3
 ---
