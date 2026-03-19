@@ -1,22 +1,18 @@
+import { mkdirSync } from 'node:fs'
+import { join } from 'node:path'
 import { defineCommand } from 'citty'
 import { logger } from '../logger.js'
-import { initConfig } from '../config.js'
+import { TASKS_DIR } from '../id.js'
 
 export default defineCommand({
   meta: {
     name: 'init',
     description: 'Initialize mrkl in the current project',
   },
-  args: {
-    prefix: {
-      type: 'string',
-      description: 'Project prefix for task IDs (e.g., VON)',
-    },
-  },
-  run({ args }) {
+  run() {
     const dir = process.cwd()
     try {
-      initConfig(dir, { prefix: args.prefix })
+      mkdirSync(join(dir, TASKS_DIR, '.archive'), { recursive: true })
       logger.celebrate('mrkl initialized')
     } catch (err) {
       logger.error(String((err as Error).message))
