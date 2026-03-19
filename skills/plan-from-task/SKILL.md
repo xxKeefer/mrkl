@@ -11,8 +11,8 @@ Create implementation plans from mrkl task files and execute them.
 
 The user provides a task reference in one of two forms:
 
-- **File path**: `@".tasks/PROJ-001 feat - user auth.md"` or `implement .tasks/PROJ-001...`
-- **Task ID**: `PROJ-001` or `mrkl-042` (case-insensitive)
+- **File path**: `@".tasks/fub-09a3k1.md"` or `implement .tasks/fub-09a3k1...`
+- **Task ID**: `fub-09a3k1` or `MRKL-042` (case-insensitive, prefix-matched)
 
 ## Workflow
 
@@ -25,10 +25,10 @@ Parse the YAML frontmatter and markdown body. Task files follow this structure:
 
 ```markdown
 ---
-id: PROJ-001
+id: fub-09a3k1
 type: feat
 status: todo
-created: '2026-03-01'
+created: '2026-03-20'
 ---
 
 ## Description
