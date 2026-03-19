@@ -281,6 +281,67 @@ describe('cli e2e — interactive create flow', () => {
   })
 })
 
+describe('cli e2e — plain list with --sortby', () => {
+  let dir: string
+  let tui: TuiProcess | null = null
+
+  beforeEach(() => {
+    dir = setupTempDir()
+    writeFileSync(
+      join(dir, '.tasks', 'TEST-001.md'),
+      `---\nid: TEST-001\ntitle: low priority task\ntype: feat\nstatus: todo\npriority: 1\ncreated: '2026-01-03'\n---\n\n## Description\n\n\n\n## Acceptance Criteria\n\n`,
+    )
+    writeFileSync(
+      join(dir, '.tasks', 'TEST-002.md'),
+      `---\nid: TEST-002\ntitle: high priority task\ntype: fix\nstatus: done\npriority: 5\ncreated: '2026-01-01'\n---\n\n## Description\n\n\n\n## Acceptance Criteria\n\n`,
+    )
+    writeFileSync(
+      join(dir, '.tasks', 'TEST-003.md'),
+      `---\nid: TEST-003\ntitle: mid priority task\ntype: chore\nstatus: in-progress\npriority: 3\ncreated: '2026-01-02'\n---\n\n## Description\n\n\n\n## Acceptance Criteria\n\n`,
+    )
+  })
+
+  afterEach(() => {
+    tui?.kill()
+    tui = null
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('--sortby priority:desc outputs tasks sorted by priority descending', async () => {
+    tui = spawnTui('list --plain --sortby priority:desc', { cols: 80, rows: 24, cwd: dir })
+    const screen = await tui.waitForContent('TEST-001')
+    const lines = screen.split('\n').filter((l) => l.includes('TEST-'))
+    expect(lines[0]).toContain('TEST-002')
+    expect(lines[1]).toContain('TEST-003')
+    expect(lines[2]).toContain('TEST-001')
+  })
+
+  it('--sortby priority:asc outputs tasks sorted by priority ascending', async () => {
+    tui = spawnTui('list --plain --sortby priority:asc', { cols: 80, rows: 24, cwd: dir })
+    const screen = await tui.waitForContent('TEST-001')
+    const lines = screen.split('\n').filter((l) => l.includes('TEST-'))
+    expect(lines[0]).toContain('TEST-001')
+    expect(lines[1]).toContain('TEST-003')
+    expect(lines[2]).toContain('TEST-002')
+  })
+
+  it('--sortby defaults direction to desc when omitted', async () => {
+    tui = spawnTui('list --plain --sortby status', { cols: 80, rows: 24, cwd: dir })
+    const screen = await tui.waitForContent('TEST-001')
+    const lines = screen.split('\n').filter((l) => l.includes('TEST-'))
+    expect(lines[0]).toContain('TEST-002')
+    expect(lines[1]).toContain('TEST-003')
+    expect(lines[2]).toContain('TEST-001')
+  })
+
+  it('sorted output is flat without tree prefixes', async () => {
+    tui = spawnTui('list --plain --sortby priority:desc', { cols: 80, rows: 24, cwd: dir })
+    const screen = await tui.waitForContent('TEST-001')
+    expect(screen).not.toContain('├')
+    expect(screen).not.toContain('└')
+  })
+})
+
 describe('cli e2e — interactive list flow', () => {
   let dir: string
   let tui: TuiProcess | null = null
