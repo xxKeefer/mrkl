@@ -3,7 +3,7 @@ import { logger } from '../logger.js'
 import { readdirSync, readFileSync, writeFileSync, renameSync } from 'node:fs'
 import { join, basename } from 'node:path'
 import matter from 'gray-matter'
-import { loadConfig } from '../config.js'
+import { TASKS_DIR } from '../id.js'
 import { render } from '../template.js'
 import type { TaskData, TaskType, Status } from '../types.js'
 
@@ -11,7 +11,6 @@ const VERBOSE_REGEX = /^(\S+)\s+(\S+)\s+-\s+(.+)$/
 
 function migrateDir(
   dirPath: string,
-  verboseFiles: boolean,
 ): { migrated: number; skipped: number; warnings: string[] } {
   let migrated = 0
   let skipped = 0
@@ -74,11 +73,9 @@ function migrateDir(
 
     writeFileSync(filePath, render(task))
 
-    if (!verboseFiles) {
-      const newName = `${data.id as string}.md`
-      if (file !== newName) {
-        renameSync(filePath, join(dirPath, newName))
-      }
+    const newName = `${data.id as string}.md`
+    if (file !== newName) {
+      renameSync(filePath, join(dirPath, newName))
     }
 
     migrated++
@@ -95,12 +92,11 @@ export default defineCommand({
   run() {
     const dir = process.cwd()
     try {
-      const config = loadConfig(dir)
-      const tasksDir = join(dir, config.tasks_dir)
+      const tasksDir = join(dir, TASKS_DIR)
       const archiveDir = join(tasksDir, '.archive')
 
-      const active = migrateDir(tasksDir, config.verbose_files)
-      const archived = migrateDir(archiveDir, config.verbose_files)
+      const active = migrateDir(tasksDir)
+      const archived = migrateDir(archiveDir)
 
       const totalMigrated = active.migrated + archived.migrated
       const totalSkipped = active.skipped + archived.skipped

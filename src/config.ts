@@ -1,7 +1,11 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parse, stringify } from 'smol-toml'
-import type { Config } from './types.js'
+interface Config {
+  prefix: string
+  tasks_dir: string
+  verbose_files: boolean
+}
 
 const CONFIG_PATHS = [join('.config', 'mrkl', 'mrkl.toml'), 'mrkl.toml']
 

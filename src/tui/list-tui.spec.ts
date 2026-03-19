@@ -328,12 +328,6 @@ describe('interaction snapshots', () => {
   beforeAll(() => {
     tempDir = mkdtempSync(join(tmpdir(), 'mrkl-list-interaction-'))
     mkdirSync(join(tempDir, '.tasks', '.archive'), { recursive: true })
-    mkdirSync(join(tempDir, '.config', 'mrkl'), { recursive: true })
-    writeFileSync(
-      join(tempDir, '.config', 'mrkl', 'mrkl.toml'),
-      'prefix = "MRKL"\ntasks_dir = ".tasks"\nverbose_files = false\n',
-    )
-    writeFileSync(join(tempDir, '.config', 'mrkl', 'mrkl_counter'), '5')
     seedTaskFile(tempDir, 'MRKL-001', 'Auth epic', 'feat', 'todo', 5)
     seedTaskFile(tempDir, 'MRKL-002', 'Fix login bug', 'fix', 'in-progress', 4)
     seedTaskFile(tempDir, 'MRKL-003', 'Auth tests', 'test', 'todo', 2)
