@@ -23,7 +23,7 @@ quit                                                                            
 exports[`cli e2e — interactive list flow > list renders pre-seeded tasks 1`] = `
 "[Tasks]   Archive                                                               
                                                                                 
->                                                                               
+                                                                                
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
@@ -43,5 +43,6 @@ TEST-002    todo ⏹️         second seeded … │ first seeded task
                                             │                                   
                                             │                                   
 ────────────────────────────────────────────┴───────────────────────────────────
-2/2 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search  "
+2/2 tasks  ↑↓: navigate  /: search  s: sort  d: direction  Tab: switch  Esc: qui
+t                                                                               "
 `;
