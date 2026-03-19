@@ -21,7 +21,7 @@ quit                                                                            
 exports[`interaction snapshots > Tab key switches between Tasks and Archive 1`] = `
 " Tasks   [Archive]                                                              
                                                                                 
->                                                                               
+                                                                                
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
@@ -41,13 +41,14 @@ MRKL-099    closed ⏹️       old feature     │ ⏹️ MRKL-099 feat closed
                                             │                                   
                                             │                                   
 ────────────────────────────────────────────┴───────────────────────────────────
-1/1 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search  "
+1/1 tasks  ↑↓: navigate  /: search  s: sort  d: direction  Tab: switch  Esc: qui
+t                                                                               "
 `;
 
 exports[`interaction snapshots > arrow down moves selection to next task 1`] = `
 "[Tasks]   Archive                                                               
                                                                                 
->                                                                               
+                                                                                
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
@@ -67,13 +68,14 @@ MRKL-005    todo ⏹️         dashboard layo… │
                                             │                                   
                                             │                                   
 ────────────────────────────────────────────┴───────────────────────────────────
-5/5 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search  "
+5/5 tasks  ↑↓: navigate  /: search  s: sort  d: direction  Tab: switch  Esc: qui
+t                                                                               "
 `;
 
 exports[`interaction snapshots > arrow up moves selection back to previous task 1`] = `
 "[Tasks]   Archive                                                               
                                                                                 
->                                                                               
+                                                                                
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
@@ -93,13 +95,14 @@ MRKL-005    todo ⏹️         dashboard layo… │
                                             │                                   
                                             │                                   
 ────────────────────────────────────────────┴───────────────────────────────────
-5/5 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search  "
+5/5 tasks  ↑↓: navigate  /: search  s: sort  d: direction  Tab: switch  Esc: qui
+t                                                                               "
 `;
 
 exports[`interaction snapshots > initial render shows task list with first item selected 1`] = `
 "[Tasks]   Archive                                                               
                                                                                 
->                                                                               
+                                                                                
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
@@ -119,13 +122,14 @@ MRKL-005    todo ⏹️         dashboard layo… │
                                             │                                   
                                             │                                   
 ────────────────────────────────────────────┴───────────────────────────────────
-5/5 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search  "
+5/5 tasks  ↑↓: navigate  /: search  s: sort  d: direction  Tab: switch  Esc: qui
+t                                                                               "
 `;
 
 exports[`interaction snapshots > typing characters filters the task list 1`] = `
 "[Tasks]   Archive                                                               
                                                                                 
->                                                                               
+                                                                                
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
@@ -145,13 +149,14 @@ MRKL-005    todo ⏹️         dashboard layo… │
                                             │                                   
                                             │                                   
 ────────────────────────────────────────────┴───────────────────────────────────
-5/5 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search  "
+5/5 tasks  ↑↓: navigate  /: search  s: sort  d: direction  Tab: switch  Esc: qui
+t                                                                               "
 `;
 
 exports[`render snapshots > archive tab active snapshot at 80 cols 1`] = `
 " Tasks   [Archive]                                                              
                                                                                 
->                                                                               
+                                                                                
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
@@ -171,13 +176,14 @@ MRKL-021    done ⏹️         Old bugfix      │ Archived feature
                                             │                                   
                                             │                                   
 ────────────────────────────────────────────┴───────────────────────────────────
-2/2 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search  "
+2/2 tasks  ↑↓: navigate  /: search  s: sort  d: direction  Tab: switch  Esc: qui
+t                                                                               "
 `;
 
 exports[`render snapshots > basic task list snapshot at 80 cols 1`] = `
 "[Tasks]   Archive                                                               
                                                                                 
->                                                                               
+                                                                                
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
@@ -197,13 +203,14 @@ MRKL-006    todo ⏹️         Write integrat… │
                                             │                                   
                                             │                                   
 ────────────────────────────────────────────┴───────────────────────────────────
-6/6 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search  "
+6/6 tasks  ↑↓: navigate  /: search  s: sort  d: direction  Tab: switch  Esc: qui
+t                                                                               "
 `;
 
 exports[`render snapshots > blocking indicators snapshot at 80 cols 1`] = `
 "[Tasks]   Archive                                                               
                                                                                 
->                                                                               
+                                                                                
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
@@ -223,13 +230,14 @@ MRKL-012    todo ⏹️🛑       Frontend integ… │
                                             │                                   
                                             │                                   
 ────────────────────────────────────────────┴───────────────────────────────────
-3/3 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search  "
+3/3 tasks  ↑↓: navigate  /: search  s: sort  d: direction  Tab: switch  Esc: qui
+t                                                                               "
 `;
 
 exports[`render snapshots > empty task list snapshot at 40 cols 1`] = `
 "[Tasks]   Archive                       
                                         
->                                       
+                                        
 ──────────────────────┬─────────────────
 ID          STATUS          TITL… │ Prev
 iew                                     
@@ -250,13 +258,13 @@ iew
                       │                 
                       │                 
 ──────────────────────┴─────────────────
-0/0 tasks  ↑↓: navigate  Tab: switch  En"
+0/0 tasks  ↑↓: navigate  /: search  s: s"
 `;
 
 exports[`render snapshots > empty task list snapshot at 80 cols 1`] = `
 "[Tasks]   Archive                                                               
                                                                                 
->                                                                               
+                                                                                
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
@@ -276,13 +284,14 @@ ID          STATUS          TITLE           │ Preview
                                             │                                   
                                             │                                   
 ────────────────────────────────────────────┴───────────────────────────────────
-0/0 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search  "
+0/0 tasks  ↑↓: navigate  /: search  s: sort  d: direction  Tab: switch  Esc: qui
+t                                                                               "
 `;
 
 exports[`render snapshots > empty task list snapshot at 120 cols 1`] = `
 "[Tasks]   Archive                                                                                                       
                                                                                                                         
->                                                                                                                       
+                                                                                                                        
 ──────────────────────────────────────────────────────────────────┬─────────────────────────────────────────────────────
 ID          STATUS          TITLE                                 │ Preview                                             
 ──────────────────────────────────────────────────────────────────┼─────────────────────────────────────────────────────
@@ -302,13 +311,13 @@ ID          STATUS          TITLE                                 │ Preview
                                                                   │                                                     
                                                                   │                                                     
 ──────────────────────────────────────────────────────────────────┴─────────────────────────────────────────────────────
-0/0 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search                                          "
+0/0 tasks  ↑↓: navigate  /: search  s: sort  d: direction  Tab: switch  Esc: quit                                       "
 `;
 
 exports[`render snapshots > epic grouping snapshot at 80 cols 1`] = `
 "[Tasks]   Archive                                                               
                                                                                 
->                                                                               
+                                                                                
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
@@ -328,13 +337,14 @@ MRKL-005    todo ⏹️         Update README   │   ❇️ Children: MRKL-002,
                                             │                                   
                                             │                                   
 ────────────────────────────────────────────┴───────────────────────────────────
-5/5 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search  "
+5/5 tasks  ↑↓: navigate  /: search  s: sort  d: direction  Tab: switch  Esc: qui
+t                                                                               "
 `;
 
 exports[`render snapshots > scroll offset snapshot at 80 cols 1`] = `
 "[Tasks]   Archive                                                               
                                                                                 
->                                                                               
+                                                                                
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
@@ -354,13 +364,14 @@ MRKL-016    todo ⏹️         Task number 16  │
 MRKL-017    in-progress ⏹️  Task number 17  │                                    
 MRKL-018    done ⏹️         Task number 18  │                                    
 ────────────────────────────────────────────┴───────────────────────────────────
-20/20 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search"
+20/20 tasks  ↑↓: navigate  /: search  s: sort  d: direction  Tab: switch  Esc: q
+uit                                                                             "
 `;
 
 exports[`render snapshots > title truncation snapshot at 40 cols 1`] = `
 "[Tasks]   Archive                       
                                         
->                                       
+                                        
 ──────────────────────┬─────────────────
 ID          STATUS          TITL… │ Prev
 iew                                     
@@ -387,7 +398,7 @@ cy notification service infrastructur… │
 exports[`render snapshots > wraps long relationship ID lists with aligned continuation lines 1`] = `
 "[Tasks]   Archive                                                               
                                                                                 
->                                                                               
+                                                                                
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
@@ -407,5 +418,6 @@ MRKL-055    todo ⏹️🛑       task e          │              MRKL-053, MRK
                                             │                                   
                                             │                                   
 ────────────────────────────────────────────┴───────────────────────────────────
-6/6 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search  "
+6/6 tasks  ↑↓: navigate  /: search  s: sort  d: direction  Tab: switch  Esc: qui
+t                                                                               "
 `;

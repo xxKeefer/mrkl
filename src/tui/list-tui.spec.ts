@@ -417,7 +417,7 @@ describe('interaction snapshots', () => {
   it('typing characters filters the task list', async () => {
     tui = spawnTui('list', { cols: 80, rows: 24, cwd: tempDir })
     await tui.waitForContent('MRKL-001')
-    tui.write('auth')
+    tui.write('/auth')
     const screen = await tui.waitForContent('auth epic')
     expect(screen).toMatchSnapshot()
   })
@@ -450,7 +450,7 @@ describe('interaction snapshots', () => {
     tui = spawnTui('list', { cols: 80, rows: 24, cwd: tempDir })
     await tui.waitForContent('MRKL-001')
     // Type "003" — should match only MRKL-003, not fuzzy-match others
-    tui.write('003')
+    tui.write('/003')
     // Wait for filter to show 1/5 count (only MRKL-003 matches)
     const screen = await tui.waitForContent('1/5')
     expect(screen).toContain('MRKL-003')
@@ -462,14 +462,40 @@ describe('interaction snapshots', () => {
   it('--search flag pre-fills query and filters results', async () => {
     tui = spawnTui('list --search auth', { cols: 80, rows: 24, cwd: tempDir })
     const screen = await tui.waitForContent('auth epic')
-    // Search bar should show "> auth" (query pre-filled)
-    expect(screen).toMatch(/^>\s*auth\s*$/m)
+    // Search bar should show "/ auth" (query pre-filled, not in active search mode)
+    expect(screen).toMatch(/^\/\s*auth\s*$/m)
     // Only auth-related tasks should appear
     expect(screen).toContain('auth epic')
     expect(screen).toContain('auth tests')
     // Non-matching tasks should be filtered out
     expect(screen).not.toContain('update ci')
     expect(screen).not.toContain('dashboard')
+  })
+
+  it('pressing s cycles sort field and flattens display', async () => {
+    tui = spawnTui('list', { cols: 80, rows: 24, cwd: tempDir })
+    await tui.waitForContent('MRKL-001')
+    // Press 's' to cycle to priority sort
+    tui.write('s')
+    const screen = await tui.waitForContent('priority')
+    // Should show sort indicator in status bar
+    expect(screen).toMatch(/priority/i)
+    // Tasks should be reordered by priority (MRKL-001 p5 first, then MRKL-002 p4)
+    const lines = screen.split('\n')
+    const idx001 = lines.findIndex((l) => l.includes('MRKL-001'))
+    const idx002 = lines.findIndex((l) => l.includes('MRKL-002'))
+    expect(idx001).toBeLessThan(idx002)
+  })
+
+  it('pressing d toggles sort direction', async () => {
+    tui = spawnTui('list', { cols: 80, rows: 24, cwd: tempDir })
+    await tui.waitForContent('MRKL-001')
+    // Press 's' for priority sort (desc by default), then 'd' to toggle to asc
+    tui.write('s')
+    await tui.waitForContent('priority')
+    tui.write('d')
+    const screen = await tui.waitForContent('▲')
+    expect(screen).toContain('▲')
   })
 
   it('live reloads when a new task file is created on disk', async () => {

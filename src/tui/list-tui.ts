@@ -1,8 +1,9 @@
 import { watch, type FSWatcher } from 'node:fs'
 import { join } from 'node:path'
-import type { TaskData, Priority } from '../types.js'
+import type { TaskData, Priority, SortField, SortDirection } from '../types.js'
+import { SORT_FIELDS } from '../types.js'
 import { EMOJI, priorityEmoji } from '../emoji.js'
-import { groupByEpic, getChildren, getBlockedBy } from '../task.js'
+import { groupByEpic, getChildren, getBlockedBy, sortTasks } from '../task.js'
 import { loadConfig } from '../config.js'
 import {
   ESC,
@@ -34,8 +35,11 @@ export interface ListEntry {
 export interface ListRenderState {
   activeTab: number
   query: string
+  searchMode: boolean
   selectedIndex: number
   scrollOffset: number
+  sortField: SortField
+  sortDirection: SortDirection
   datasets: Array<{ label: string; entries: ListEntry[] }>
   filtered: ListEntry[]
   allTasks: TaskData[]
@@ -226,7 +230,13 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
   buf.push('')
 
   // Search input
-  buf.push(`${FG_CYAN}>${RESET} ${state.query}${UNDERLINE} ${RESET}`)
+  if (state.searchMode) {
+    buf.push(`${FG_CYAN}/${RESET} ${state.query}${UNDERLINE} ${RESET}`)
+  } else if (state.query) {
+    buf.push(`${FG_GRAY}/ ${state.query}${RESET}`)
+  } else {
+    buf.push('')
+  }
 
   // Separator
   const listWidth = Math.floor(cols * 0.55)
@@ -315,8 +325,12 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
     `${FG_GRAY}${'─'.repeat(listWidth)}┴${'─'.repeat(previewWidth + 2)}${RESET}`,
   )
   const countInfo = `${filtered.length}/${datasets[state.activeTab].entries.length}`
+  const sortInfo = state.sortField !== 'none' ? `  sort: ${state.sortField} ${state.sortDirection === 'desc' ? '▼' : '▲'}` : ''
+  const helpText = state.searchMode
+    ? 'Type to filter  Esc: done'
+    : '↑↓: navigate  /: search  s: sort  d: direction  Tab: switch  Esc: quit'
   buf.push(
-    `${FG_GRAY}${countInfo} tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search${RESET}`,
+    `${FG_GRAY}${countInfo} tasks${sortInfo}  ${helpText}${RESET}`,
   )
 
   stdout.write(CLEAR_SCREEN + buf.join('\n'))
@@ -341,22 +355,38 @@ export async function interactiveList(
   let currentArchived = archivedTasks
   let activeTab = 0
   let query = initialQuery ?? ''
+  let searchMode = false
   let selectedIndex = 0
   let scrollOffset = 0
+  let sortField: SortField = 'none'
+  let sortDirection: SortDirection = 'desc'
 
   function getFiltered(): ListEntry[] {
     const entries = datasets[activeTab].entries
-    if (!query) return entries
-    const q = query.toLowerCase()
-    return entries.filter((e) => e.searchText.toLowerCase().includes(q))
+    let result = entries
+    if (query) {
+      const q = query.toLowerCase()
+      result = result.filter((e) => e.searchText.toLowerCase().includes(q))
+    }
+    if (sortField !== 'none') {
+      const sortedTasks = sortTasks(result.map((e) => e.task), sortField, sortDirection)
+      result = sortedTasks.map((t) => {
+        const entry = result.find((e) => e.task.id === t.id)!
+        return { ...entry, indent: 0 }
+      })
+    }
+    return result
   }
 
   function render(): void {
     const state: ListRenderState = {
       activeTab,
       query,
+      searchMode,
       selectedIndex,
       scrollOffset,
+      sortField,
+      sortDirection,
       datasets,
       filtered: getFiltered(),
       allTasks: activeTab === 0 ? currentTasks : currentArchived,
@@ -445,6 +475,11 @@ export async function interactiveList(
             i += 2
             continue
           }
+          // Esc in search mode exits search
+          if (searchMode) {
+            searchMode = false
+            continue
+          }
           // Plain Esc = exit
           cleanup()
           resolve(null)
@@ -456,6 +491,32 @@ export async function interactiveList(
           cleanup()
           resolve(null)
           return
+        }
+
+        // Search mode input
+        if (searchMode) {
+          if (ch === '\x7f' || ch === '\b') {
+            if (query.length > 0) {
+              query = query.slice(0, -1)
+              selectedIndex = 0
+              scrollOffset = 0
+            }
+            continue
+          }
+          if (ch >= ' ' && ch <= '~') {
+            query += ch
+            selectedIndex = 0
+            scrollOffset = 0
+          }
+          continue
+        }
+
+        // Command mode keys
+
+        // / enters search mode
+        if (ch === '/') {
+          searchMode = true
+          continue
         }
 
         // Tab
@@ -475,21 +536,19 @@ export async function interactiveList(
           return
         }
 
-        // Backspace
-        if (ch === '\x7f' || ch === '\b') {
-          if (query.length > 0) {
-            query = query.slice(0, -1)
-            selectedIndex = 0
-            scrollOffset = 0
-          }
-          continue
-        }
-
-        // Printable characters
-        if (ch >= ' ' && ch <= '~') {
-          query += ch
+        // Sort controls
+        if (ch === 's') {
+          const idx = SORT_FIELDS.indexOf(sortField)
+          sortField = SORT_FIELDS[(idx + 1) % SORT_FIELDS.length]
           selectedIndex = 0
           scrollOffset = 0
+          continue
+        }
+        if (ch === 'd') {
+          sortDirection = sortDirection === 'desc' ? 'asc' : 'desc'
+          selectedIndex = 0
+          scrollOffset = 0
+          continue
         }
       }
 

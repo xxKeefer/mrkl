@@ -173,8 +173,11 @@ export function makeListState(overrides?: Partial<ListRenderState>): ListRenderS
   return {
     activeTab: 0,
     query: '',
+    searchMode: false,
     selectedIndex: 0,
     scrollOffset: 0,
+    sortField: 'none',
+    sortDirection: 'desc',
     datasets: [
       { label: 'Tasks', entries: [] },
       { label: 'Archive', entries: [] },
