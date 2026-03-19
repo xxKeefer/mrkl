@@ -144,11 +144,10 @@ describe('cli e2e — done command', () => {
     expect(data.status).toBe('done')
   })
 
-  it('resolves numeric shorthand IDs', async () => {
+  it('resolves task by prefix match', async () => {
     seedTaskFile(dir, 'TEST-002', 'Another task', 'fix')
-    writeFileSync(join(dir, '.config', 'mrkl', 'mrkl_counter'), '2')
 
-    const result = await runCli(['done', '2'], dir)
+    const result = await runCli(['done', 'TEST-002'], dir)
 
     expect(result.exitCode).toBe(0)
     expect(existsSync(join(dir, '.tasks', '.archive', 'TEST-002.md'))).toBe(true)

@@ -43,9 +43,9 @@ export function createTask(opts: CreateTaskOpts): TaskData {
   const today = new Date().toISOString().slice(0, 10)
 
   const resolvedParent = opts.parent
-    ? resolveTaskId(opts.dir, opts.parent)
+    ? matchTaskId(opts.parent, opts.dir)
     : undefined
-  const resolvedBlocks = opts.blocks?.map((b) => resolveTaskId(opts.dir, b))
+  const resolvedBlocks = opts.blocks?.map((b) => matchTaskId(b, opts.dir))
 
   if (resolvedParent || resolvedBlocks?.length) {
     const activeTasks = listTasks({ dir: opts.dir })
@@ -334,12 +334,37 @@ export function groupByEpic(tasks: TaskData[]): GroupedTask[] {
   return result
 }
 
-export function resolveTaskId(dir: string, id: string): string {
-  if (/^\d+$/.test(id)) {
-    const config = loadConfig(dir)
-    return `${config.prefix}-${id.padStart(3, '0')}`
+function extractIdFromFilename(filename: string): string {
+  const withoutExt = filename.replace(/\.md$/, '')
+  const spaceIdx = withoutExt.indexOf(' ')
+  return spaceIdx === -1 ? withoutExt : withoutExt.slice(0, spaceIdx)
+}
+
+export function matchTaskId(prefix: string, dir: string): string {
+  const tasksDir = join(dir, '.tasks')
+  const prefixLower = prefix.toLowerCase()
+
+  const scanDir = (dirPath: string): string[] => {
+    if (!existsSync(dirPath)) return []
+    return readdirSync(dirPath)
+      .filter((f) => f.endsWith('.md') && !f.startsWith('.'))
+      .map(extractIdFromFilename)
+      .filter((id) => id.toLowerCase().startsWith(prefixLower))
   }
-  return id
+
+  const activeMatches = scanDir(tasksDir)
+  const archiveMatches = scanDir(join(tasksDir, '.archive'))
+  const allMatches = [...new Set([...activeMatches, ...archiveMatches])]
+
+  if (allMatches.length === 0) {
+    throw new Error(`Task matching "${prefix}" not found`)
+  }
+  if (allMatches.length > 1) {
+    throw new Error(
+      `Prefix "${prefix}" is ambiguous — matches: ${allMatches.join(', ')}`,
+    )
+  }
+  return allMatches[0]
 }
 
 export function findTaskFile(
@@ -349,7 +374,7 @@ export function findTaskFile(
   const config = loadConfig(dir)
   const tasksDir = join(dir, config.tasks_dir)
   const archiveDir = join(tasksDir, '.archive')
-  const resolved = resolveTaskId(dir, id)
+  const resolved = matchTaskId(id, dir)
   const idUpper = resolved.toUpperCase()
 
   // Search active tasks first
@@ -464,7 +489,7 @@ export function closeTask(
   const config = loadConfig(dir)
   const tasksDir = join(dir, config.tasks_dir)
 
-  const resolved = resolveTaskId(dir, id)
+  const resolved = matchTaskId(id, dir)
   const idUpper = resolved.toUpperCase()
   const file = readdirSync(tasksDir).find(
     (f) => f.endsWith('.md') && f.toUpperCase().startsWith(idUpper),

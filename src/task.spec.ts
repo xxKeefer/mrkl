@@ -9,7 +9,7 @@ import {
   listTasks,
   listArchivedTasks,
   closeTask,
-  resolveTaskId,
+  matchTaskId,
   normalizeTitle,
   parseCutoffDate,
   pruneTasks,
@@ -48,6 +48,51 @@ function setupProject(dir: string): void {
 function writeTask(dir: string, task: TaskData): void {
   writeFileSync(join(dir, '.tasks', `${task.id}.md`), render(task))
 }
+
+describe('matchTaskId', () => {
+  let dir: string
+
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), 'mrkl-test-'))
+    mkdirSync(join(dir, '.tasks', '.archive'), { recursive: true })
+  })
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('returns full ID when prefix uniquely matches one task', () => {
+    writeTask(dir, makeTask({ id: 'abc-def123', title: 'temporal task' }))
+    expect(matchTaskId('abc', dir)).toBe('abc-def123')
+  })
+
+  it('matches old PREFIX-NNN format tasks', () => {
+    writeTask(dir, makeTask({ id: 'TEST-001', title: 'old format' }))
+    expect(matchTaskId('TEST-001', dir)).toBe('TEST-001')
+  })
+
+  it('matches case-insensitively', () => {
+    writeTask(dir, makeTask({ id: 'TEST-001', title: 'case test' }))
+    expect(matchTaskId('test-001', dir)).toBe('TEST-001')
+  })
+
+  it('throws not found when no tasks match', () => {
+    writeTask(dir, makeTask({ id: 'abc-def123', title: 'unrelated' }))
+    expect(() => matchTaskId('zzz', dir)).toThrow('not found')
+  })
+
+  it('throws ambiguous when multiple tasks match prefix', () => {
+    writeTask(dir, makeTask({ id: 'abc-def111', title: 'first' }))
+    writeTask(dir, makeTask({ id: 'abc-def222', title: 'second' }))
+    expect(() => matchTaskId('abc', dir)).toThrow('ambiguous')
+  })
+
+  it('also searches archive directory', () => {
+    const archived = makeTask({ id: 'TEST-005', title: 'archived', status: 'closed' })
+    writeFileSync(join(dir, '.tasks', '.archive', `${archived.id}.md`), render(archived))
+    expect(matchTaskId('TEST-005', dir)).toBe('TEST-005')
+  })
+})
 
 describe('getActiveChildren', () => {
   let dir: string
@@ -482,24 +527,24 @@ describe('task CRUD operations', () => {
       ).toThrow('already has a parent')
     })
 
-    it('resolves numeric IDs for parent', () => {
+    it('resolves parent by prefix match', () => {
       createTask({ dir: tmp, type: 'feat', title: 'epic' })
       const child = createTask({
         dir: tmp,
         type: 'feat',
         title: 'child',
-        parent: '1',
+        parent: 'TEST-001',
       })
       expect(child.parent).toBe('TEST-001')
     })
 
-    it('resolves numeric IDs for blocks', () => {
+    it('resolves blocks by prefix match', () => {
       createTask({ dir: tmp, type: 'feat', title: 'blocked' })
       const blocker = createTask({
         dir: tmp,
         type: 'fix',
         title: 'blocker',
-        blocks: ['1'],
+        blocks: ['TEST-001'],
       })
       expect(blocker.blocks).toEqual(['TEST-001'])
     })
@@ -580,7 +625,7 @@ describe('task CRUD operations', () => {
     })
     it('throws if task ID not found', () => {
       expect(() => closeTask(tmp, 'TEST-999')).toThrow(
-        'Task TEST-999 not found',
+        'not found',
       )
     })
     it('writes closed reason to frontmatter when provided', () => {
@@ -608,42 +653,16 @@ describe('task CRUD operations', () => {
       const content = readFileSync(archivePath, 'utf-8')
       expect(content).not.toContain('flag:')
     })
-    it('resolves numeric-only ID using project prefix', () => {
-      createTask({ dir: tmp, type: 'feat', title: 'numeric id' })
-      closeTask(tmp, '1')
+    it('resolves task by prefix match', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'prefix close' })
+      closeTask(tmp, 'TEST-001')
       const archivePath = join(
         tmp,
         '.tasks',
         '.archive',
-        'TEST-001 feat - numeric id.md',
+        'TEST-001 feat - prefix close.md',
       )
       expect(existsSync(archivePath)).toBe(true)
-    })
-    it('resolves zero-padded numeric ID', () => {
-      createTask({ dir: tmp, type: 'feat', title: 'padded id' })
-      closeTask(tmp, '001')
-      const archivePath = join(
-        tmp,
-        '.tasks',
-        '.archive',
-        'TEST-001 feat - padded id.md',
-      )
-      expect(existsSync(archivePath)).toBe(true)
-    })
-  })
-
-  describe('resolveTaskId', () => {
-    it('prefixes numeric-only ID with config prefix', () => {
-      expect(resolveTaskId(tmp, '1')).toBe('TEST-001')
-    })
-    it('pads numeric ID to 3 digits', () => {
-      expect(resolveTaskId(tmp, '42')).toBe('TEST-042')
-    })
-    it('leaves already-padded numeric ID as-is', () => {
-      expect(resolveTaskId(tmp, '001')).toBe('TEST-001')
-    })
-    it('passes through full ID unchanged', () => {
-      expect(resolveTaskId(tmp, 'TEST-001')).toBe('TEST-001')
     })
   })
 
@@ -702,14 +721,14 @@ describe('task CRUD operations', () => {
       const content = readFileSync(archivePath, 'utf-8')
       expect(content).toContain('- [ ] should stay unchecked')
     })
-    it('resolves numeric ID', () => {
-      createTask({ dir: tmp, type: 'feat', title: 'numeric done' })
-      closeTask(tmp, '1', 'completed', 'done')
+    it('resolves by prefix match', () => {
+      createTask({ dir: tmp, type: 'feat', title: 'prefix done' })
+      closeTask(tmp, 'TEST', 'completed', 'done')
       const archivePath = join(
         tmp,
         '.tasks',
         '.archive',
-        'TEST-001 feat - numeric done.md',
+        'TEST-001 feat - prefix done.md',
       )
       expect(existsSync(archivePath)).toBe(true)
     })
@@ -1020,13 +1039,6 @@ describe('task CRUD operations', () => {
       })
     })
 
-    it('resolveTaskId usage before calling helpers', () => {
-      const tasks = makeTasks()
-      const resolvedId = resolveTaskId(tmp, '1')
-      expect(resolvedId).toBe('TEST-001')
-      const children = getChildren(tasks, resolvedId)
-      expect(children).toHaveLength(2)
-    })
   })
 
   describe('executePrune', () => {
