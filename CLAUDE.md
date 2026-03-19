@@ -3,6 +3,9 @@ IMPORTANT: the latest version of mrkl can be called via: `pn dev <command> <flag
 
 IMPORTANT: when using skills that ask for a task tracker, use mrkl to attempt to perform the action. if it can not be done simulate the output and let the user know that mrkl is not feature complete
 
+# Ubiquitous Language
+Use only the canonical terms defined in [UBIQUITOUS_LANGUAGE.md](UBIQUITOUS_LANGUAGE.md). Never use the "aliases to avoid" column. When introducing new domain concepts, add them to the glossary before writing code.
+
 # MRKL Design Philosophy
 - things should be simple. code, command. config. files. all should be terse, precise, easy to use and read
 - all mrkl commands should have an interactive tui mode if given no arguments
