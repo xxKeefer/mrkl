@@ -2,8 +2,9 @@
 id: MRKL-127
 title: counter merge driver and gitattributes
 type: feat
-status: todo
+status: closed
 created: '2026-03-17'
+flag: superseded by MRKL-140 temporal IDs — merge infrastructure being removed
 parent: MRKL-126
 priority: 5
 ---
