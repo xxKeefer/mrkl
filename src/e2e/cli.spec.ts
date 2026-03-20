@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { execFile } from 'node:child_process'
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync, readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
@@ -37,13 +37,16 @@ function runCli(args: string[], cwd: string): Promise<CliResult> {
 function setupTempDir(): string {
   const dir = mkdtempSync(join(tmpdir(), 'mrkl-e2e-'))
   mkdirSync(join(dir, '.tasks', '.archive'), { recursive: true })
-  mkdirSync(join(dir, '.config', 'mrkl'), { recursive: true })
-  writeFileSync(
-    join(dir, '.config', 'mrkl', 'mrkl.toml'),
-    'prefix = "TEST"\ntasks_dir = ".tasks"\nverbose_files = false\n',
-  )
-  writeFileSync(join(dir, '.config', 'mrkl', 'mrkl_counter'), '0')
   return dir
+}
+
+function findCreatedTaskFile(dir: string): { path: string; data: Record<string, unknown> } {
+  const files = readdirSync(join(dir, '.tasks')).filter(
+    (f) => f.endsWith('.md') && !f.startsWith('.'),
+  )
+  if (files.length === 0) throw new Error('No task files found')
+  const filePath = join(dir, '.tasks', files[files.length - 1])
+  return { path: filePath, data: parseTaskFile(filePath) }
 }
 
 function seedTaskFile(dir: string, id: string, title: string, type: string, status = 'todo'): void {
@@ -73,10 +76,8 @@ describe('cli e2e — create command', () => {
     const result = await runCli(['create', 'feat', 'My new feature'], dir)
 
     expect(result.exitCode).toBe(0)
-    const taskPath = join(dir, '.tasks', 'TEST-001.md')
-    expect(existsSync(taskPath)).toBe(true)
-    const data = parseTaskFile(taskPath)
-    expect(data.id).toBe('TEST-001')
+    const { data } = findCreatedTaskFile(dir)
+    expect(data.id).toMatch(/^[0-9a-z]{3,}-[0-9a-z]{6}$/)
     expect(data.type).toBe('feat')
     expect(data.title).toBe('my new feature')
     expect(data.status).toBe('todo')
@@ -89,7 +90,7 @@ describe('cli e2e — create command', () => {
     )
 
     expect(result.exitCode).toBe(0)
-    const taskPath = join(dir, '.tasks', 'TEST-001.md')
+    const { path: taskPath } = findCreatedTaskFile(dir)
     const content = readFileSync(taskPath, 'utf-8')
     expect(content).toContain('Fix the login')
     expect(content).toContain('Login works')
@@ -102,16 +103,19 @@ describe('cli e2e — create command', () => {
     )
 
     expect(result.exitCode).toBe(0)
-    const data = parseTaskFile(join(dir, '.tasks', 'TEST-001.md'))
+    const { data } = findCreatedTaskFile(dir)
     expect(data.flag).toBe('needs-review')
   })
 
-  it('increments counter for subsequent creates', async () => {
+  it('generates unique temporal IDs for subsequent creates', async () => {
     await runCli(['create', 'feat', 'First task'], dir)
+    await new Promise((r) => setTimeout(r, 10))
     await runCli(['create', 'feat', 'Second task'], dir)
 
-    expect(existsSync(join(dir, '.tasks', 'TEST-001.md'))).toBe(true)
-    expect(existsSync(join(dir, '.tasks', 'TEST-002.md'))).toBe(true)
+    const files = readdirSync(join(dir, '.tasks')).filter(
+      (f) => f.endsWith('.md') && !f.startsWith('.'),
+    )
+    expect(files).toHaveLength(2)
   })
 
   it('errors when only type is provided (missing title)', async () => {
@@ -144,11 +148,10 @@ describe('cli e2e — done command', () => {
     expect(data.status).toBe('done')
   })
 
-  it('resolves numeric shorthand IDs', async () => {
+  it('resolves task by prefix match', async () => {
     seedTaskFile(dir, 'TEST-002', 'Another task', 'fix')
-    writeFileSync(join(dir, '.config', 'mrkl', 'mrkl_counter'), '2')
 
-    const result = await runCli(['done', '2'], dir)
+    const result = await runCli(['done', 'TEST-002'], dir)
 
     expect(result.exitCode).toBe(0)
     expect(existsSync(join(dir, '.tasks', '.archive', 'TEST-002.md'))).toBe(true)
@@ -233,10 +236,8 @@ describe('cli e2e — interactive create flow', () => {
     const code = await tui.exitCode
     expect(code).toBe(0)
 
-    const taskPath = join(dir, '.tasks', 'TEST-001.md')
-    expect(existsSync(taskPath)).toBe(true)
-    const data = parseTaskFile(taskPath)
-    expect(data.id).toBe('TEST-001')
+    const { data } = findCreatedTaskFile(dir)
+    expect(data.id).toMatch(/^[0-9a-z]{3,}-[0-9a-z]{6}$/)
     expect(data.type).toBe('feat')
     expect(data.title).toBe('my interactive task')
     expect(data.status).toBe('todo')
@@ -258,8 +259,7 @@ describe('cli e2e — interactive create flow', () => {
     const code = await tui.exitCode
     expect(code).toBe(0)
 
-    const taskPath = join(dir, '.tasks', 'TEST-001.md')
-    const data = parseTaskFile(taskPath)
+    const { data } = findCreatedTaskFile(dir)
     expect(data.type).toBe('fix')
     expect(data.title).toBe('bug fix title')
   })
@@ -363,6 +363,7 @@ describe('cli e2e — interactive list flow', () => {
     tui = spawnTui('list', { cols: 80, rows: 24, cwd: dir })
     await tui.waitForContent('TEST-001')
     await tui.waitForContent('TEST-002')
+    await tui.waitForContent('2/2 tasks')
 
     const screen = tui.readScreen()
     expect(screen).toContain('TEST-001')

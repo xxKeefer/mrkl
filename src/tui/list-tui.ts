@@ -4,7 +4,7 @@ import type { TaskData, Priority, SortField, SortDirection } from '../types.js'
 import { SORT_FIELDS } from '../types.js'
 import { EMOJI, priorityEmoji } from '../emoji.js'
 import { groupByEpic, getChildren, getBlockedBy, sortTasks } from '../task.js'
-import { loadConfig } from '../config.js'
+import { TASKS_DIR } from '../id.js'
 import {
   ESC,
   ALT_SCREEN_ON,
@@ -422,8 +422,7 @@ export async function interactiveList(
 
   if (onReload) {
     try {
-      const config = loadConfig(process.cwd())
-      const tasksPath = join(process.cwd(), config.tasks_dir)
+      const tasksPath = join(process.cwd(), TASKS_DIR)
       const archivePath = join(tasksPath, '.archive')
 
       const onFsChange = (): void => {

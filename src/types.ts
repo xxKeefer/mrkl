@@ -21,12 +21,6 @@ export const PRIORITIES = [1, 2, 3, 4, 5] as const
 
 export type Priority = (typeof PRIORITIES)[number]
 
-export interface Config {
-  prefix: string
-  tasks_dir: string
-  verbose_files: boolean
-}
-
 export interface TaskData {
   id: string
   type: TaskType

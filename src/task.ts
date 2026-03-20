@@ -4,11 +4,11 @@ import {
   writeFileSync,
   unlinkSync,
   existsSync,
+  mkdirSync,
 } from 'node:fs'
 import { join } from 'node:path'
-import { loadConfig } from './config.js'
 import { EMOJI } from './emoji.js'
-import { nextId } from './counter.js'
+import { generateId, TASKS_DIR } from './id.js'
 import { render, parse } from './template.js'
 import type {
   CreateTaskOpts,
@@ -39,15 +39,17 @@ export function normalizeTitle(raw: string): string {
 }
 
 export function createTask(opts: CreateTaskOpts): TaskData {
-  const config = loadConfig(opts.dir)
-  const num = nextId(opts.dir)
-  const id = `${config.prefix}-${String(num).padStart(3, '0')}`
+  const tasksDir = join(opts.dir, TASKS_DIR)
+  const archiveDir = join(tasksDir, '.archive')
+  mkdirSync(archiveDir, { recursive: true })
+
+  const id = generateId()
   const today = new Date().toISOString().slice(0, 10)
 
   const resolvedParent = opts.parent
-    ? resolveTaskId(opts.dir, opts.parent)
+    ? matchTaskId(opts.parent, opts.dir)
     : undefined
-  const resolvedBlocks = opts.blocks?.map((b) => resolveTaskId(opts.dir, b))
+  const resolvedBlocks = opts.blocks?.map((b) => matchTaskId(b, opts.dir))
 
   if (resolvedParent || resolvedBlocks?.length) {
     const activeTasks = listTasks({ dir: opts.dir })
@@ -77,18 +79,14 @@ export function createTask(opts: CreateTaskOpts): TaskData {
     ...(resolvedBlocks?.length && { blocks: resolvedBlocks }),
   }
 
-  const filename = config.verbose_files
-    ? `${id} ${task.type} - ${task.title}.md`
-    : `${id}.md`
-  const tasksDir = join(opts.dir, config.tasks_dir)
+  const filename = `${id}.md`
   writeFileSync(join(tasksDir, filename), render(task))
 
   return task
 }
 
 export function listTasks(filter: ListFilter): TaskData[] {
-  const config = loadConfig(filter.dir)
-  const tasksDir = join(filter.dir, config.tasks_dir)
+  const tasksDir = join(filter.dir, TASKS_DIR)
 
   const files = readdirSync(tasksDir).filter(
     (f) => f.endsWith('.md') && !f.startsWith('.'),
@@ -152,8 +150,7 @@ function normalizeCreatedDate(created: unknown): string {
 }
 
 export function pruneTasks(dir: string, cutoff: string): PruneResult {
-  const config = loadConfig(dir)
-  const archiveDir = join(dir, config.tasks_dir, '.archive')
+  const archiveDir = join(dir, TASKS_DIR, '.archive')
 
   if (!existsSync(archiveDir)) {
     return { deleted: [], total: 0 }
@@ -182,16 +179,14 @@ export function pruneTasks(dir: string, cutoff: string): PruneResult {
 }
 
 export function executePrune(dir: string, filenames: string[]): void {
-  const config = loadConfig(dir)
-  const archiveDir = join(dir, config.tasks_dir, '.archive')
+  const archiveDir = join(dir, TASKS_DIR, '.archive')
   for (const f of filenames) {
     unlinkSync(join(archiveDir, f))
   }
 }
 
 export function listArchivedTasks(filter: ListFilter): TaskData[] {
-  const config = loadConfig(filter.dir)
-  const archiveDir = join(filter.dir, config.tasks_dir, '.archive')
+  const archiveDir = join(filter.dir, TASKS_DIR, '.archive')
 
   if (!existsSync(archiveDir)) return []
 
@@ -395,22 +390,46 @@ export function sortTasks(tasks: TaskData[], field: SortField, direction: SortDi
   })
 }
 
-export function resolveTaskId(dir: string, id: string): string {
-  if (/^\d+$/.test(id)) {
-    const config = loadConfig(dir)
-    return `${config.prefix}-${id.padStart(3, '0')}`
+function extractIdFromFilename(filename: string): string {
+  const withoutExt = filename.replace(/\.md$/, '')
+  const spaceIdx = withoutExt.indexOf(' ')
+  return spaceIdx === -1 ? withoutExt : withoutExt.slice(0, spaceIdx)
+}
+
+export function matchTaskId(prefix: string, dir: string): string {
+  const tasksDir = join(dir, '.tasks')
+  const prefixLower = prefix.toLowerCase()
+
+  const scanDir = (dirPath: string): string[] => {
+    if (!existsSync(dirPath)) return []
+    return readdirSync(dirPath)
+      .filter((f) => f.endsWith('.md') && !f.startsWith('.'))
+      .map(extractIdFromFilename)
+      .filter((id) => id.toLowerCase().startsWith(prefixLower))
   }
-  return id
+
+  const activeMatches = scanDir(tasksDir)
+  const archiveMatches = scanDir(join(tasksDir, '.archive'))
+  const allMatches = [...new Set([...activeMatches, ...archiveMatches])]
+
+  if (allMatches.length === 0) {
+    throw new Error(`Task matching "${prefix}" not found`)
+  }
+  if (allMatches.length > 1) {
+    throw new Error(
+      `Prefix "${prefix}" is ambiguous — matches: ${allMatches.join(', ')}`,
+    )
+  }
+  return allMatches[0]
 }
 
 export function findTaskFile(
   dir: string,
   id: string,
 ): { filePath: string; task: TaskData; inArchive: boolean } {
-  const config = loadConfig(dir)
-  const tasksDir = join(dir, config.tasks_dir)
+  const tasksDir = join(dir, TASKS_DIR)
   const archiveDir = join(tasksDir, '.archive')
-  const resolved = resolveTaskId(dir, id)
+  const resolved = matchTaskId(id, dir)
   const idUpper = resolved.toUpperCase()
 
   // Search active tasks first
@@ -443,10 +462,8 @@ export function updateTask(
   id: string,
   updates: EditTaskResult,
 ): TaskData {
-  const config = loadConfig(dir)
   const { filePath, task } = findTaskFile(dir, id)
 
-  // Preserve immutable fields (id, created), apply updates
   task.type = updates.type
   task.status = updates.status
   task.title = normalizeTitle(updates.title)
@@ -464,18 +481,6 @@ export function updateTask(
     task.blocks = updates.blocks?.length ? updates.blocks : undefined
   }
 
-  // Handle filename change if verbose_files is enabled
-  if (config.verbose_files) {
-    const parentDir = filePath.substring(0, filePath.lastIndexOf('/'))
-    const newFilename = `${task.id} ${task.type} - ${task.title}.md`
-    const newPath = join(parentDir, newFilename)
-    if (newPath !== filePath) {
-      writeFileSync(newPath, render(task))
-      unlinkSync(filePath)
-      return task
-    }
-  }
-
   writeFileSync(filePath, render(task))
   return task
 }
@@ -485,7 +490,6 @@ export function patchTask(
   id: string,
   patch: PatchTaskOpts,
 ): TaskData {
-  const config = loadConfig(dir)
   const { filePath, task } = findTaskFile(dir, id)
 
   if (patch.type !== undefined) task.type = patch.type
@@ -501,17 +505,6 @@ export function patchTask(
   if (patch.blocks === null) delete task.blocks
   else if (patch.blocks !== undefined) task.blocks = patch.blocks
 
-  if (config.verbose_files) {
-    const parentDir = filePath.substring(0, filePath.lastIndexOf('/'))
-    const newFilename = `${task.id} ${task.type} - ${task.title}.md`
-    const newPath = join(parentDir, newFilename)
-    if (newPath !== filePath) {
-      writeFileSync(newPath, render(task))
-      unlinkSync(filePath)
-      return task
-    }
-  }
-
   writeFileSync(filePath, render(task))
   return task
 }
@@ -522,10 +515,9 @@ export function closeTask(
   reason?: string,
   status: Status = 'closed',
 ): string {
-  const config = loadConfig(dir)
-  const tasksDir = join(dir, config.tasks_dir)
+  const tasksDir = join(dir, TASKS_DIR)
 
-  const resolved = resolveTaskId(dir, id)
+  const resolved = matchTaskId(id, dir)
   const idUpper = resolved.toUpperCase()
   const file = readdirSync(tasksDir).find(
     (f) => f.endsWith('.md') && f.toUpperCase().startsWith(idUpper),

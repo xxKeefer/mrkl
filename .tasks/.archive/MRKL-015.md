@@ -2,8 +2,11 @@
 id: MRKL-015
 title: figure out how to handle merge conflicts
 type: feat
-status: todo
+status: closed
 created: '2026-03-01'
+flag: >-
+  Superseded: temporal IDs (MRKL-126) eliminate counter/sync entirely, making
+  merge conflicts impossible
 parent: MRKL-126
 priority: 1
 ---

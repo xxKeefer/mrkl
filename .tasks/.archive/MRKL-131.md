@@ -2,8 +2,9 @@
 id: MRKL-131
 title: collision warning in create and list
 type: feat
-status: todo
+status: closed
 created: '2026-03-17'
+flag: superseded by MRKL-140 temporal IDs — merge infrastructure being removed
 parent: MRKL-126
 priority: 3
 blocks:

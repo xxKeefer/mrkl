@@ -36,16 +36,16 @@ pnpm add -g @xxkeefer/mrkl
 Or use without installing:
 
 ```sh
-npx @xxkeefer/mrkl init MY_PROJECT
+npx @xxkeefer/mrkl init
 ```
 
 ## Quick Start 🚀
 
 ```sh
 # Initialize in your project root
-mrkl init PROJ
+mrkl init
 
-# Create tasks
+# Create tasks (IDs are generated automatically as temporal base36)
 mrkl create feat "user authentication"
 mrkl create fix "login redirect loop" --desc "Users get stuck after OAuth callback"
 mrkl create feat "dark mode" --ac "toggle in settings" --ac "persists across sessions"
@@ -53,25 +53,24 @@ mrkl create fix "critical bug" --priority 5    # highest priority
 
 # View active tasks
 mrkl list
-# PROJ-001  feat  todo  user authentication
-# PROJ-002  fix   todo  login redirect loop
-# PROJ-003  feat  todo  dark mode
+# fub-09a3k1  feat  todo  user authentication
+# fub-09a3k2  fix   todo  login redirect loop
+# fub-09a3k3  feat  todo  dark mode
 
 # Filter by type or status
 mrkl list --type fix
 mrkl list --status todo
 
 # Mark tasks as done and archive them
-mrkl done PROJ-001
-mrkl done 1 2 3            # multiple tasks, numeric IDs
+mrkl done fub-09a3k1
 
 # All commands have short aliases
-mrkl c feat "dark mode"   # create
-mrkl e 1                   # edit (numeric ID)
-mrkl ls --type fix         # list
-mrkl d 1                   # done (numeric ID)
-mrkl x PROJ-002            # close
-mrkl x 2 -r "duplicate"   # close with reason, numeric ID
+mrkl c feat "dark mode"           # create
+mrkl e fub                        # edit (prefix match)
+mrkl ls --type fix                # list
+mrkl d fub-09a3k1                 # done
+mrkl x fub-09a3k2                 # close
+mrkl x fub-09a3k2 -r "duplicate" # close with reason
 ```
 
 ## Commands 🛠️
@@ -88,22 +87,16 @@ mrkl x 2 -r "duplicate"   # close with reason, numeric ID
 | `migrate_prior_verbose` | —     | Migrate legacy verbose-filename tasks to frontmatter-based format |
 | `install-skills`        | —     | Install bundled Claude Code skills                                |
 
-### `mrkl init <prefix>`
+### `mrkl init`
 
 Initializes mrkl in the current directory.
 
-| Argument | Description                                              |
-| -------- | -------------------------------------------------------- |
-| `prefix` | Project prefix for task IDs (e.g., `PROJ`, `API`, `WEB`) |
-
 Creates:
 
-- `.config/mrkl/mrkl.toml` — project configuration
-- `.config/mrkl/mrkl_counter` — auto-incrementing ID tracker
 - `.tasks/` — active task directory
 - `.tasks/.archive/` — completed task storage
 
-Safe to run multiple times — existing config and counter are preserved.
+Safe to run multiple times — existing directories are preserved.
 
 ### `mrkl create <type> <title> [options]`
 
@@ -137,14 +130,14 @@ Opens an existing task in an interactive TUI form for editing type, status, titl
 
 | Argument | Description                                                                     |
 | -------- | ------------------------------------------------------------------------------- |
-| `id`     | Task ID — full (`PROJ-001`), numeric (`1`), or zero-padded (`001`). Optional.   |
+| `id`     | Task ID or unique prefix (e.g., `fub-09a3k1` or `fub`). Optional.              |
 
 When called without an ID, opens the list TUI to select a task first.
 
 ```sh
 # Edit a specific task
-mrkl edit PROJ-001
-mrkl e 1
+mrkl edit fub-09a3k1
+mrkl e fub
 
 # Pick from list, then edit
 mrkl edit
@@ -178,16 +171,16 @@ Marks one or more tasks as done and archives them.
 
 | Argument | Description                                                                    |
 | -------- | ------------------------------------------------------------------------------ |
-| `id`     | Task ID(s) to mark done — full (`PROJ-001`), numeric (`1`), or zero-padded (`001`) |
+| `id`     | Task ID(s) or unique prefixes to mark done                                     |
 
 Sets the task status to `done`, writes `flag: completed` in frontmatter, auto-checks all acceptance criteria (`- [x]`), and moves the file to `.tasks/.archive/`.
 
 ```sh
 # Mark a single task as done
-mrkl done PROJ-001
+mrkl done fub-09a3k1
 
-# Mark multiple tasks with numeric IDs
-mrkl d 1 2 3
+# Mark multiple tasks
+mrkl d fub-09a3k1 fub-09a3k2
 ```
 
 ### `mrkl close <id...> [options]`
@@ -196,7 +189,7 @@ Closes one or more tasks that won't be done — duplicates, out-of-scope work, e
 
 | Argument | Description                                                                    |
 | -------- | ------------------------------------------------------------------------------ |
-| `id`     | Task ID(s) to close — full (`PROJ-002`), numeric (`2`), or zero-padded (`002`) |
+| `id`     | Task ID(s) or unique prefixes to close                                         |
 
 | Option            | Alias | Description                                        |
 | ----------------- | ----- | -------------------------------------------------- |
@@ -206,13 +199,13 @@ Sets the task status to `closed`, writes the reason as a `flag` in frontmatter (
 
 ```sh
 # Close a single task
-mrkl close PROJ-002
+mrkl close fub-09a3k2
 
-# Close with just the number
-mrkl x 2
+# Close with a prefix match
+mrkl x fub
 
 # Close multiple tasks with a reason
-mrkl x 3 4 5 -r "out of scope"
+mrkl x fub-09a3k3 fub-09a3k4 -r "out of scope"
 ```
 
 ### `mrkl prune <date> [options]`
@@ -313,20 +306,20 @@ Priority is stored as `priority: <1-5>` in task frontmatter and displayed as an 
 
 ## Task File Format 📄
 
-Each task is a markdown file with YAML frontmatter. By default, filenames use the short format:
+Each task is a markdown file with YAML frontmatter. Filenames use the temporal ID:
 
 ```
-.tasks/PROJ-001.md
+.tasks/fub-09a3k1.md
 ```
 
 ```markdown
 ---
-id: PROJ-001
+id: fub-09a3k1
 title: user authentication
 type: feat
 status: todo
 priority: 3
-created: '2026-03-01'
+created: '2026-03-20'
 ---
 
 ## Description
@@ -340,13 +333,7 @@ Implement user authentication with OAuth2.
 - [ ] session persists across refreshes
 ```
 
-With `verbose_files = true`, filenames include the type and title:
-
-```
-.tasks/PROJ-001 feat - user authentication.md
-```
-
-The `title` is always stored in frontmatter regardless of filename format. Use `mrkl edit <id>` to update type, status, title, description, or acceptance criteria via an interactive TUI, or edit task files directly.
+Use `mrkl edit <id>` to update type, status, title, description, or acceptance criteria via an interactive TUI, or edit task files directly.
 
 ## Project Structure 🗂️
 
@@ -354,57 +341,18 @@ After initialization, mrkl adds the following to your project:
 
 ```
 your-project/
-  .config/mrkl/
-    mrkl.toml           # project configuration
-    mrkl_counter        # current task number
   .tasks/
-    PROJ-001.md
-    PROJ-002.md
+    fub-09a3k1.md
+    fub-09a3k2.md
     .archive/
-      PROJ-000.md
+      fub-08z1a0.md
 ```
 
-Commit `.config/mrkl/` and `.tasks/` to version control. They're designed to be tracked alongside your code.
+Commit `.tasks/` to version control. It's designed to be tracked alongside your code.
 
 ## Team Workflow 👥
 
-When using mrkl with **git worktrees** or **protected branches**, task IDs can conflict if multiple branches create tasks concurrently. The fix is a simple convention: **separate planning from execution.**
-
-1. **Plan** — Create tasks on a `planning/` branch, merge to main via PR
-2. **Execute** — Branch feature work from main (which has all tasks)
-3. **Ad-hoc** — Mid-sprint tasks follow the same pattern at smaller scale
-
-```sh
-# Sprint planning
-git checkout -b planning/sprint-3 main
-mrkl create feat "user authentication"
-mrkl create fix "login redirect loop"
-# commit, PR, merge to main
-
-# Feature work (branch from main after planning merges)
-git checkout -b feature/MRKL-019_user-auth main
-# ... do the work ...
-mrkl done MRKL-019
-# commit, PR, merge to main
-```
-
-The counter only increments on planning branches — one at a time — so IDs never conflict. See **[docs/workflow.md](docs/workflow.md)** for the full guide with examples and edge cases.
-
-## Configuration ⚙️
-
-Configuration lives in `.config/mrkl/mrkl.toml` (or `mrkl.toml` at the project root):
-
-```toml
-prefix = "PROJ"
-tasks_dir = ".tasks"
-verbose_files = false
-```
-
-| Key             | Default      | Description                                                         |
-| --------------- | ------------ | ------------------------------------------------------------------- |
-| `prefix`        | _(required)_ | Project prefix for task IDs                                         |
-| `tasks_dir`     | `".tasks"`   | Directory for task files                                            |
-| `verbose_files` | `false`      | Use verbose filenames (`PROJ-001 feat - title.md` vs `PROJ-001.md`) |
+mrkl uses temporal base36 IDs (`ddd-mmmmmm` — days since epoch + milliseconds since midnight). IDs are generated from timestamps, so collisions are near-impossible even when multiple developers create tasks concurrently on different branches. No counter, no config, no sync — just create tasks anywhere and merge.
 
 ## Emoji Keys 🎨
 

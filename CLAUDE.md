@@ -11,9 +11,9 @@ IMPORTANT: when using skills that ask for a task tracker, use mrkl to attempt to
 # Architecture
 - Entry point: `src/cli.ts` — citty `defineCommand` router with subcommands
 - Commands: `src/commands/` — each exports a `defineCommand` (see `close.ts` for reference pattern)
-- Core logic: `src/task.ts` (task CRUD), `src/config.ts` (TOML config), `src/template.ts` (gray-matter frontmatter), `src/counter.ts` (ID sequencing)
+- Core logic: `src/task.ts` (task CRUD), `src/id.ts` (temporal ID generation), `src/template.ts` (gray-matter frontmatter)
 - TUI: `src/tui/` — interactive prompts for commands invoked without arguments
-- Types: `src/types.ts` — `TaskData`, `Status`, `TaskType`, `Config`, etc.
+- Types: `src/types.ts` — `TaskData`, `Status`, `TaskType`, etc.
 - Tasks are markdown files with YAML frontmatter, stored in `.tasks/` (archived to `.tasks/.archive/`)
 - Statuses: `todo | in-progress | done | closed`
 - Task types: `feat | fix | chore | docs | perf | refactor | test | ci | build | style`
