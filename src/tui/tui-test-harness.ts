@@ -178,6 +178,7 @@ export function makeListState(overrides?: Partial<ListRenderState>): ListRenderS
     scrollOffset: 0,
     sortField: 'none',
     sortDirection: 'desc',
+    previewOpen: true,
     datasets: [
       { label: 'Tasks', entries: [] },
       { label: 'Archive', entries: [] },

@@ -178,6 +178,31 @@ describe('render snapshots', () => {
     expect(screen).toMatchSnapshot()
   })
 
+  it('preview hidden snapshot at 80 cols', async () => {
+    const tasks = [
+      makeTask({ id: 'MRKL-001', title: 'Add user authentication', type: 'feat', status: 'todo', priority: 5 }),
+      makeTask({ id: 'MRKL-002', title: 'Fix login redirect bug', type: 'fix', status: 'in-progress', priority: 4 }),
+      makeTask({ id: 'MRKL-003', title: 'Update CI pipeline config', type: 'chore', status: 'done' }),
+    ]
+    const entries = buildEntries(tasks)
+    const state = makeListState({
+      previewOpen: false,
+      datasets: [
+        { label: 'Tasks', entries },
+        { label: 'Archive', entries: [] },
+      ],
+      filtered: entries,
+      allTasks: tasks,
+    })
+    const stdout = createMockStdout(80, 24)
+    renderList(state, stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 80, 24)
+    // No preview separator
+    expect(screen).not.toContain('│')
+    expect(screen).toContain('p: preview')
+    expect(screen).toMatchSnapshot()
+  })
+
   it('basic task list snapshot at 80 cols', async () => {
     const tasks = [
       makeTask({ id: 'MRKL-001', title: 'Add user authentication', type: 'feat', status: 'todo', priority: 5 }),

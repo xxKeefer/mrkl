@@ -5,6 +5,7 @@ import { SORT_FIELDS } from '../types.js'
 import { EMOJI, priorityEmoji } from '../emoji.js'
 import { groupByEpic, getChildren, getBlockedBy, sortTasks } from '../task.js'
 import { TASKS_DIR } from '../id.js'
+import { readState, writeState } from '../state.js'
 import {
   ESC,
   ALT_SCREEN_ON,
@@ -40,6 +41,7 @@ export interface ListRenderState {
   scrollOffset: number
   sortField: SortField
   sortDirection: SortDirection
+  previewOpen: boolean
   datasets: Array<{ label: string; entries: ListEntry[] }>
   filtered: ListEntry[]
   allTasks: TaskData[]
@@ -239,7 +241,7 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
     return
   }
 
-  const { filtered, datasets } = state
+  const { filtered, datasets, previewOpen } = state
   const buf: string[] = []
 
   // Tab bar
@@ -261,22 +263,33 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
     buf.push('')
   }
 
-  // Separator
-  const listWidth = Math.floor(cols * 0.55)
-  const previewWidth = cols - listWidth - 3
-  buf.push(
-    `${FG_GRAY}${'─'.repeat(listWidth)}┬${'─'.repeat(previewWidth + 2)}${RESET}`,
-  )
+  // Layout: preview open → split, preview closed → full width
+  const listWidth = previewOpen ? Math.floor(cols * 0.55) : cols
+  const previewWidth = previewOpen ? cols - listWidth - 3 : 0
 
-  // Column headers (1-char padding before separator)
-  const contentWidth = listWidth - 1
+  // Separator
+  if (previewOpen) {
+    buf.push(
+      `${FG_GRAY}${'─'.repeat(listWidth)}┬${'─'.repeat(previewWidth + 2)}${RESET}`,
+    )
+  } else {
+    buf.push(`${FG_GRAY}${'─'.repeat(cols)}${RESET}`)
+  }
+
+  // Column headers
+  const contentWidth = previewOpen ? listWidth - 1 : cols - 1
   const headerLine = formatRow('ID', 'STATUS', 'TITLE', contentWidth)
-  buf.push(
-    `${BOLD}${headerLine}${RESET} ${FG_GRAY}│${RESET}${BOLD} Preview${RESET}`,
-  )
-  buf.push(
-    `${FG_GRAY}${'─'.repeat(listWidth)}┼${'─'.repeat(previewWidth + 2)}${RESET}`,
-  )
+  if (previewOpen) {
+    buf.push(
+      `${BOLD}${headerLine}${RESET} ${FG_GRAY}│${RESET}${BOLD} Preview${RESET}`,
+    )
+    buf.push(
+      `${FG_GRAY}${'─'.repeat(listWidth)}┼${'─'.repeat(previewWidth + 2)}${RESET}`,
+    )
+  } else {
+    buf.push(`${BOLD}${headerLine}${RESET}`)
+    buf.push(`${FG_GRAY}${'─'.repeat(cols)}${RESET}`)
+  }
 
   // Content area
   const contentRows = rows - 9
@@ -339,19 +352,27 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
       }
     }
 
-    const rightPart = previewLines[i] ?? ''
-    buf.push(`${leftPart}${FG_GRAY}│${RESET} ${rightPart}`)
+    if (previewOpen) {
+      const rightPart = previewLines[i] ?? ''
+      buf.push(`${leftPart}${FG_GRAY}│${RESET} ${rightPart}`)
+    } else {
+      buf.push(leftPart)
+    }
   }
 
   // Bottom bar
-  buf.push(
-    `${FG_GRAY}${'─'.repeat(listWidth)}┴${'─'.repeat(previewWidth + 2)}${RESET}`,
-  )
+  if (previewOpen) {
+    buf.push(
+      `${FG_GRAY}${'─'.repeat(listWidth)}┴${'─'.repeat(previewWidth + 2)}${RESET}`,
+    )
+  } else {
+    buf.push(`${FG_GRAY}${'─'.repeat(cols)}${RESET}`)
+  }
   const countInfo = `${filtered.length}/${datasets[state.activeTab].entries.length}`
   const sortInfo = state.sortField !== 'none' ? `  sort: ${state.sortField} ${state.sortDirection === 'desc' ? '▼' : '▲'}` : ''
   const helpText = state.searchMode
     ? 'Type to filter  Esc: done'
-    : '↑↓: navigate  /: search  s: sort  d: direction  Tab: switch  Esc: quit'
+    : '↑↓: navigate  /: search  s: sort  d: direction  p: preview  Tab: switch  Esc: quit'
   buf.push(
     `${FG_GRAY}${countInfo} tasks${sortInfo}  ${helpText}${RESET}`,
   )
@@ -383,6 +404,7 @@ export async function interactiveList(
   let scrollOffset = 0
   let sortField: SortField = 'none'
   let sortDirection: SortDirection = 'desc'
+  let previewOpen = readState().preview_open
 
   function getFiltered(): ListEntry[] {
     const entries = datasets[activeTab].entries
@@ -410,6 +432,7 @@ export async function interactiveList(
       scrollOffset,
       sortField,
       sortDirection,
+      previewOpen,
       datasets,
       filtered: getFiltered(),
       allTasks: activeTab === 0 ? currentTasks : currentArchived,
@@ -570,6 +593,13 @@ export async function interactiveList(
           sortDirection = sortDirection === 'desc' ? 'asc' : 'desc'
           selectedIndex = 0
           scrollOffset = 0
+          continue
+        }
+
+        // Preview toggle
+        if (ch === 'p') {
+          previewOpen = !previewOpen
+          writeState({ preview_open: previewOpen })
           continue
         }
       }
