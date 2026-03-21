@@ -78,8 +78,16 @@ const STATUS_W = 16
 
 
 function padOrTruncate(text: string, width: number): string {
-  if (text.length > width) return text.slice(0, width - 1) + '…'
-  return text.padEnd(width)
+  const vw = visualWidth(text)
+  if (vw > width) {
+    // Trim characters until visual width fits, then add ellipsis
+    let trimmed = text
+    while (visualWidth(trimmed) > width - 1 && trimmed.length > 0) {
+      trimmed = trimmed.slice(0, -1)
+    }
+    return trimmed + '…'
+  }
+  return text + ' '.repeat(width - vw)
 }
 
 function formatRow(
@@ -128,9 +136,9 @@ function wrapText(text: string, width: number): string[] {
   return result
 }
 
-const EMOJI_RE = /[\u2700-\u27BF\u2600-\u26FF\u2B50-\u2B55\u{1F300}-\u{1F9FF}]/gu
+const EMOJI_RE = /[\u2300-\u23FF\u2600-\u26FF\u2700-\u27BF\u2B50-\u2B55\u{1F300}-\u{1F9FF}]\uFE0F?/gu
 function visualWidth(text: string): number {
-  return text.replace(/\uFE0F/g, '').replace(EMOJI_RE, 'XX').length
+  return text.replace(EMOJI_RE, 'XX').length
 }
 
 function wrapRelationshipIds(label: string, ids: string[], width: number, color: string): string[] {

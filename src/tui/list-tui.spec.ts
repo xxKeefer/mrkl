@@ -322,6 +322,30 @@ describe('render snapshots', () => {
     expect(screen).toMatchSnapshot()
   })
 
+  it('mixed emoji widths snapshot at 80 cols', async () => {
+    // Tasks with different priority+relationship emoji combos that have
+    // different code-unit counts (e.g. ⏫🚧 vs ⏹️🛑).
+    // padOrTruncate uses visualWidth so padding is emoji-aware.
+    const tasks = [
+      makeTask({ id: 'MRKL-001', title: 'Highest priority blocker', type: 'feat', status: 'todo', priority: 5, blocks: ['MRKL-003'] }),
+      makeTask({ id: 'MRKL-002', title: 'Normal priority task', type: 'feat', status: 'in-progress', priority: 3 }),
+      makeTask({ id: 'MRKL-003', title: 'Lowest blocked task', type: 'fix', status: 'todo', priority: 1 }),
+    ]
+    const entries = buildEntries(tasks)
+    const state = makeListState({
+      datasets: [
+        { label: 'Tasks', entries },
+        { label: 'Archive', entries: [] },
+      ],
+      filtered: entries,
+      allTasks: tasks,
+    })
+    const stdout = createMockStdout(80, 24)
+    renderList(state, stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 80, 24)
+    expect(screen).toMatchSnapshot()
+  })
+
   it('title truncation snapshot at 40 cols', async () => {
     const tasks = [
       makeTask({ id: 'MRKL-001', title: 'Implement user authentication with OAuth2 and SAML', type: 'feat', status: 'todo' }),
