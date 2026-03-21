@@ -263,37 +263,45 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
     buf.push('')
   }
 
-  // Layout: preview open → split, preview closed → full width
-  const listWidth = previewOpen ? Math.floor(cols * 0.55) : cols
-  const previewWidth = previewOpen ? cols - listWidth - 3 : 0
+  // Layout modes: vertical split (wide), horizontal split (narrow), no preview
+  const HORIZONTAL_THRESHOLD = 80
+  const horizontal = previewOpen && cols < HORIZONTAL_THRESHOLD
+  const vertical = previewOpen && !horizontal
+  const listWidth = vertical ? Math.floor(cols * 0.55) : cols
+  const previewWidth = vertical ? cols - listWidth - 3 : cols - 2
+  const contentWidth = vertical ? listWidth - 1 : cols - 1
 
   // Separator
-  if (previewOpen) {
-    buf.push(
-      `${FG_GRAY}${'─'.repeat(listWidth)}┬${'─'.repeat(previewWidth + 2)}${RESET}`,
-    )
+  if (vertical) {
+    buf.push(`${FG_GRAY}${'─'.repeat(listWidth)}┬${'─'.repeat(previewWidth + 2)}${RESET}`)
   } else {
     buf.push(`${FG_GRAY}${'─'.repeat(cols)}${RESET}`)
   }
 
   // Column headers
-  const contentWidth = previewOpen ? listWidth - 1 : cols - 1
   const headerLine = formatRow('ID', 'STATUS', 'TITLE', contentWidth)
-  if (previewOpen) {
-    buf.push(
-      `${BOLD}${headerLine}${RESET} ${FG_GRAY}│${RESET}${BOLD} Preview${RESET}`,
-    )
-    buf.push(
-      `${FG_GRAY}${'─'.repeat(listWidth)}┼${'─'.repeat(previewWidth + 2)}${RESET}`,
-    )
+  if (vertical) {
+    buf.push(`${BOLD}${headerLine}${RESET} ${FG_GRAY}│${RESET}${BOLD} Preview${RESET}`)
+    buf.push(`${FG_GRAY}${'─'.repeat(listWidth)}┼${'─'.repeat(previewWidth + 2)}${RESET}`)
   } else {
     buf.push(`${BOLD}${headerLine}${RESET}`)
     buf.push(`${FG_GRAY}${'─'.repeat(cols)}${RESET}`)
   }
 
-  // Content area
-  const contentRows = rows - 9
-  const maxVisible = Math.max(1, contentRows)
+  // Content area — in horizontal mode, reserve rows for preview below
+  const MIN_LIST_ROWS = 10
+  const overhead = 9 // tab bar, search, header, separators, bottom bar
+  const totalContentRows = rows - overhead
+  let maxVisible: number
+  let previewRowCount: number
+  if (horizontal) {
+    // List gets at least MIN_LIST_ROWS, preview gets the rest
+    maxVisible = Math.max(MIN_LIST_ROWS, Math.min(filtered.length, Math.floor(totalContentRows * 0.6)))
+    previewRowCount = Math.max(0, totalContentRows - maxVisible - 1) // -1 for separator
+  } else {
+    maxVisible = Math.max(1, totalContentRows)
+    previewRowCount = 0
+  }
 
   // Clamp selected index
   if (filtered.length === 0) {
@@ -312,7 +320,7 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
   const selectedTask = filtered[state.selectedIndex]?.task
   const previewLines = buildPreviewLines(selectedTask, previewWidth, state.allTasks)
 
-  // Render rows
+  // Render list rows
   for (let i = 0; i < maxVisible; i++) {
     const taskIdx = state.scrollOffset + i
     const entry = filtered[taskIdx]
@@ -332,27 +340,16 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
       const compactStatus = `${entry.task.status} ${hierarchyEmoji}${priEmoji}${blockedByEmoji}${blocksEmoji}`
 
       if (isSelected) {
-        const row = formatRow(
-          entry.task.id,
-          compactStatus,
-          entry.task.title,
-          rowWidth,
-        )
+        const row = formatRow(entry.task.id, compactStatus, entry.task.title, rowWidth)
         leftPart = `${treePrefix ? `${FG_GRAY}${treePrefix}${RESET}` : ''}${INVERSE}${row}${RESET} `
       } else {
         const sc = statusColor(entry.task.status)
-        const coloredRow = colorizeRow(
-          entry.task.id,
-          compactStatus,
-          entry.task.title,
-          rowWidth,
-          sc,
-        )
+        const coloredRow = colorizeRow(entry.task.id, compactStatus, entry.task.title, rowWidth, sc)
         leftPart = `${treePrefix ? `${FG_GRAY}${treePrefix}${RESET}` : ''}${coloredRow} `
       }
     }
 
-    if (previewOpen) {
+    if (vertical) {
       const rightPart = previewLines[i] ?? ''
       buf.push(`${leftPart}${FG_GRAY}│${RESET} ${rightPart}`)
     } else {
@@ -360,11 +357,17 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
     }
   }
 
+  // Horizontal preview below list
+  if (horizontal) {
+    buf.push(`${FG_GRAY}${'─'.repeat(cols)}${RESET}`)
+    for (let i = 0; i < previewRowCount; i++) {
+      buf.push(` ${previewLines[i] ?? ''}`)
+    }
+  }
+
   // Bottom bar
-  if (previewOpen) {
-    buf.push(
-      `${FG_GRAY}${'─'.repeat(listWidth)}┴${'─'.repeat(previewWidth + 2)}${RESET}`,
-    )
+  if (vertical) {
+    buf.push(`${FG_GRAY}${'─'.repeat(listWidth)}┴${'─'.repeat(previewWidth + 2)}${RESET}`)
   } else {
     buf.push(`${FG_GRAY}${'─'.repeat(cols)}${RESET}`)
   }

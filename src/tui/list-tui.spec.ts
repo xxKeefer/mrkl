@@ -178,6 +178,54 @@ describe('render snapshots', () => {
     expect(screen).toMatchSnapshot()
   })
 
+  it('horizontal split snapshot at 70 cols', async () => {
+    const tasks = [
+      makeTask({ id: 'MRKL-001', title: 'Add user authentication', type: 'feat', status: 'todo', priority: 5 }),
+      makeTask({ id: 'MRKL-002', title: 'Fix login redirect bug', type: 'fix', status: 'in-progress', priority: 4 }),
+      makeTask({ id: 'MRKL-003', title: 'Update CI pipeline config', type: 'chore', status: 'done' }),
+    ]
+    const entries = buildEntries(tasks)
+    const state = makeListState({
+      datasets: [
+        { label: 'Tasks', entries },
+        { label: 'Archive', entries: [] },
+      ],
+      filtered: entries,
+      allTasks: tasks,
+    })
+    const stdout = createMockStdout(70, 30)
+    renderList(state, stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 70, 30)
+    // Should not have vertical separator (│) in list rows
+    const lines = screen.split('\n')
+    const dataLines = lines.filter((l: string) => l.includes('MRKL-'))
+    for (const l of dataLines) {
+      expect(l).not.toContain('│')
+    }
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('vertical split still used at 100 cols', async () => {
+    const tasks = [
+      makeTask({ id: 'MRKL-001', title: 'Add user authentication', type: 'feat', status: 'todo', priority: 5 }),
+    ]
+    const entries = buildEntries(tasks)
+    const state = makeListState({
+      datasets: [
+        { label: 'Tasks', entries },
+        { label: 'Archive', entries: [] },
+      ],
+      filtered: entries,
+      allTasks: tasks,
+    })
+    const stdout = createMockStdout(100, 24)
+    renderList(state, stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 100, 24)
+    // Should have vertical separator
+    expect(screen).toContain('│')
+    expect(screen).toMatchSnapshot()
+  })
+
   it('preview hidden snapshot at 80 cols', async () => {
     const tasks = [
       makeTask({ id: 'MRKL-001', title: 'Add user authentication', type: 'feat', status: 'todo', priority: 5 }),

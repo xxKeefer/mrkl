@@ -238,25 +238,25 @@ exports[`render snapshots > empty task list snapshot at 40 cols 1`] = `
 "[Tasks]   Archive                       
                                         
                                         
-──────────────────────┬─────────────────
-ID          STATUS          … │ Preview 
-──────────────────────┼─────────────────
-                      │                 
-                      │                 
-                      │                 
-                      │                 
-                      │                 
-                      │                 
-                      │                 
-                      │                 
-                      │                 
-                      │                 
-                      │                 
-                      │                 
-                      │                 
-                      │                 
-                      │                 
-──────────────────────┴─────────────────
+────────────────────────────────────────
+ID          STATUS          TITLE       
+────────────────────────────────────────
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+────────────────────────────────────────
+                                        
+                                        
+                                        
+                                        
+────────────────────────────────────────
 0/0 tasks  ↑↓: navigate  /: search  s: s
 ort  d: direction  p: preview  Tab: swit"
 `;
@@ -339,6 +339,39 @@ MRKL-005    todo ⏹️         Update README   │   ❇️ Children: MRKL-002,
 ────────────────────────────────────────────┴───────────────────────────────────
 5/5 tasks  ↑↓: navigate  /: search  s: sort  d: direction  p: preview  Tab: swit
 ch  Esc: quit                                                                   "
+`;
+
+exports[`render snapshots > horizontal split snapshot at 70 cols 1`] = `
+"[Tasks]   Archive                                                     
+                                                                      
+                                                                      
+──────────────────────────────────────────────────────────────────────
+ID          STATUS          TITLE                                     
+──────────────────────────────────────────────────────────────────────
+MRKL-001    todo ⏫         Add user authentication                    
+MRKL-002    in-progress 🔼  Fix login redirect bug                     
+MRKL-003    done ⏹️         Update CI pipeline config                  
+                                                                      
+                                                                      
+                                                                      
+                                                                      
+                                                                      
+                                                                      
+                                                                      
+──────────────────────────────────────────────────────────────────────
+ ⏫ MRKL-001 feat todo                                                 
+ Add user authentication                                              
+                                                                      
+                                                                      
+                                                                      
+                                                                      
+                                                                      
+                                                                      
+                                                                      
+                                                                      
+──────────────────────────────────────────────────────────────────────
+3/3 tasks  ↑↓: navigate  /: search  s: sort  d: direction  p: preview 
+ Tab: switch  Esc: quit                                               "
 `;
 
 exports[`render snapshots > mixed emoji widths snapshot at 80 cols 1`] = `
@@ -442,27 +475,53 @@ exports[`render snapshots > title truncation snapshot at 40 cols 1`] = `
 "[Tasks]   Archive                       
                                         
                                         
-──────────────────────┬─────────────────
-ID          STATUS          … │ Preview 
-──────────────────────┼─────────────────
-MRKL-001    todo ⏹️         … │ ⏹️ MRKL-00
-1 feat todo                             
-MRKL-002    in-progress ⏹️  … │ Implement
- user authentication with OAuth2 and SAM
-L                                       
-MRKL-003    done ⏹️         … │          
-                      │                 
-                      │                 
-                      │                 
-                      │                 
-                      │                 
-                      │                 
-                      │                 
-                      │                 
-                      │                 
-                      │                 
-                      │                 
-                      │                 "
+────────────────────────────────────────
+ID          STATUS          TITLE       
+────────────────────────────────────────
+MRKL-001    todo ⏹️         Implement …  
+MRKL-002    in-progress ⏹️  Fix critic…  
+MRKL-003    done ⏹️         Refactor l…  
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+────────────────────────────────────────
+ ⏹️ MRKL-001 feat todo                   
+ Implement user authentication with OAut
+h2 and SAML                             
+                                        
+                                        
+────────────────────────────────────────
+3/3 tasks  ↑↓: navigate  /: search  s: s"
+`;
+
+exports[`render snapshots > vertical split still used at 100 cols 1`] = `
+"[Tasks]   Archive                                                                                   
+                                                                                                    
+                                                                                                    
+───────────────────────────────────────────────────────┬────────────────────────────────────────────
+ID          STATUS          TITLE                      │ Preview                                    
+───────────────────────────────────────────────────────┼────────────────────────────────────────────
+MRKL-001    todo ⏫         Add user authentication    │ ⏫ MRKL-001 feat todo                        
+                                                       │ Add user authentication                    
+                                                       │                                            
+                                                       │                                            
+                                                       │                                            
+                                                       │                                            
+                                                       │                                            
+                                                       │                                            
+                                                       │                                            
+                                                       │                                            
+                                                       │                                            
+                                                       │                                            
+                                                       │                                            
+                                                       │                                            
+                                                       │                                            
+───────────────────────────────────────────────────────┴────────────────────────────────────────────
+1/1 tasks  ↑↓: navigate  /: search  s: sort  d: direction  p: preview  Tab: switch  Esc: quit       "
 `;
 
 exports[`render snapshots > wraps long relationship ID lists with aligned continuation lines 1`] = `
