@@ -2,8 +2,9 @@
 id: MRKL-138
 title: ascii theme option
 type: feat
-status: todo
+status: done
 created: '2026-03-17'
+flag: completed
 parent: MRKL-132
 priority: 3
 ---
@@ -14,7 +15,6 @@ Add theme config in mrkl.toml (emoji or ascii) with ASCII text equivalents for a
 
 ## Acceptance Criteria
 
-- [ ] Setting theme = ascii in mrkl.toml replaces all emoji with ASCII text equivalents
-- [ ] 
-- [ ] All commands respect the theme setting including list create edit done close prune
-- [ ] Default theme is emoji and existing behaviour is unchanged
+- [x] Setting theme = ascii in mrkl.toml replaces all emoji with ASCII text equivalents
+- [x] All commands respect the theme setting including list create edit done close prune
+- [x] Default theme is emoji and existing behaviour is unchanged

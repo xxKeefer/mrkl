@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 import { defineCommand, runMain } from 'citty'
+import { setAsciiMode } from './emoji.js'
+import { readState, writeState } from './state.js'
 import initCommand from './commands/init.js'
 import createCommand from './commands/create.js'
 import listCommand from './commands/list.js'
@@ -9,6 +11,22 @@ import closeCommand from './commands/close.js'
 import editCommand from './commands/edit.js'
 import migrateCommand from './commands/migrate.js'
 import installSkillsCommand from './commands/install-skills.js'
+
+// Global theme flags
+if (process.argv.includes('--no-emoji')) {
+  process.argv = process.argv.filter((a) => a !== '--no-emoji')
+  setAsciiMode(true)
+  try { writeState({ theme: 'ascii' }) } catch { /* .tasks may not exist yet */ }
+} else if (process.argv.includes('--emoji')) {
+  process.argv = process.argv.filter((a) => a !== '--emoji')
+  setAsciiMode(false)
+  try { writeState({ theme: 'emoji' }) } catch { /* .tasks may not exist yet */ }
+} else {
+  try {
+    const state = readState()
+    if (state.theme === 'ascii') setAsciiMode(true)
+  } catch { /* .tasks may not exist yet */ }
+}
 
 export const main = defineCommand({
   meta: {

@@ -7,7 +7,7 @@ import {
   mkdirSync,
 } from 'node:fs'
 import { join } from 'node:path'
-import { EMOJI } from './emoji.js'
+import { getIcon } from './emoji.js'
 import { generateId, TASKS_DIR } from './id.js'
 import { render, parse } from './template.js'
 import type {
@@ -287,13 +287,13 @@ export function buildRelationshipIndicators(
 ): { blocksDisplay: string | null; blockedByDisplay: string | null } {
   const blocksDisplay =
     task.blocks && task.blocks.length > 0
-      ? `${EMOJI.blocks} ${task.blocks.join(', ')}`
+      ? `${getIcon('blocks')} ${task.blocks.join(', ')}`
       : null
 
   const blockedBy = getBlockedBy(tasks, task.id)
   const blockedByDisplay =
     blockedBy.length > 0
-      ? `${EMOJI.blocked_by} ${blockedBy.map((t) => t.id).join(', ')}`
+      ? `${getIcon('blocked_by')} ${blockedBy.map((t) => t.id).join(', ')}`
       : null
 
   return { blocksDisplay, blockedByDisplay }

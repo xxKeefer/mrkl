@@ -2,7 +2,7 @@ import { watch, type FSWatcher } from 'node:fs'
 import { join } from 'node:path'
 import type { TaskData, Priority, SortField, SortDirection } from '../types.js'
 import { SORT_FIELDS } from '../types.js'
-import { EMOJI, priorityEmoji } from '../emoji.js'
+import { getIcon, priorityEmoji } from '../emoji.js'
 import { groupByEpic, getChildren, getBlockedBy, sortTasks } from '../task.js'
 import { TASKS_DIR } from '../id.js'
 import { readState, writeState } from '../state.js'
@@ -171,7 +171,7 @@ function buildPreviewLines(
 
   const p = (task.priority ?? 3) as Priority
   const children = getChildren(allTasks, task.id)
-  const hierarchyEmoji = children.length > 0 ? EMOJI.epic : task.parent ? EMOJI.child : ''
+  const hierarchyEmoji = children.length > 0 ? getIcon('epic') : task.parent ? getIcon('child') : ''
   lines.push(
     `${hierarchyEmoji}${priorityEmoji(p)} ${BOLD}${task.id}${RESET} ${FG_GRAY}${task.type}${RESET} ${statusColor(task.status)}${task.status}${RESET}`,
   )
@@ -184,22 +184,22 @@ function buildPreviewLines(
   if (hasRelationships) {
     lines.push(`${UNDERLINE}Relationships${RESET}`)
     if (task.parent) {
-      lines.push(`  ${EMOJI.epic} Parent: ${FG_CYAN}${task.parent}${RESET}`)
+      lines.push(`  ${getIcon('epic')} Parent: ${FG_CYAN}${task.parent}${RESET}`)
     }
     if (children.length > 0) {
-      lines.push(...wrapRelationshipIds(`${EMOJI.child} Children`, children.map((c) => c.id), width, FG_CYAN))
+      lines.push(...wrapRelationshipIds(`${getIcon('child')} Children`, children.map((c) => c.id), width, FG_CYAN))
     }
     if (task.blocks && task.blocks.length > 0) {
-      lines.push(...wrapRelationshipIds(`${EMOJI.blocks} Blocks`, task.blocks, width, FG_RED))
+      lines.push(...wrapRelationshipIds(`${getIcon('blocks')} Blocks`, task.blocks, width, FG_RED))
     }
     if (blockedBy.length > 0) {
-      lines.push(...wrapRelationshipIds(`${EMOJI.blocked_by} Blocked by`, blockedBy.map((t) => t.id), width, FG_RED))
+      lines.push(...wrapRelationshipIds(`${getIcon('blocked_by')} Blocked by`, blockedBy.map((t) => t.id), width, FG_RED))
     }
     lines.push('')
   }
 
   if (task.flag) {
-    lines.push(`${EMOJI.flag} ${task.flag}`)
+    lines.push(`${getIcon('flag')} ${task.flag}`)
     lines.push('')
   }
 
@@ -333,11 +333,13 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
       const treePrefix = entry.indent === 1 ? '├─' : ''
       const prefixWidth = treePrefix ? 2 : 0
       const rowWidth = contentWidth - prefixWidth
-      const priEmoji = priorityEmoji((entry.task.priority ?? 3) as Priority)
-      const blockedByEmoji = entry.blockedByIndicator ? EMOJI.blocked_by : ''
-      const blocksEmoji = entry.blocksIndicator ? EMOJI.blocks : ''
-      const hierarchyEmoji = entry.isEpic ? EMOJI.epic : entry.task.parent ? EMOJI.child : ''
-      const compactStatus = `${entry.task.status} ${hierarchyEmoji}${priEmoji}${blockedByEmoji}${blocksEmoji}`
+      const indicators = [
+        entry.isEpic ? getIcon('epic') : entry.task.parent ? getIcon('child') : '',
+        priorityEmoji((entry.task.priority ?? 3) as Priority),
+        entry.blockedByIndicator ? getIcon('blocked_by') : '',
+        entry.blocksIndicator ? getIcon('blocks') : '',
+      ].filter(Boolean).join(' ')
+      const compactStatus = `${entry.task.status} ${indicators}`
 
       if (isSelected) {
         const row = formatRow(entry.task.id, compactStatus, entry.task.title, rowWidth)

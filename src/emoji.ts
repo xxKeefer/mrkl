@@ -28,16 +28,58 @@ export const EMOJI = {
   priority_highest: '\u23EB', // ⏫
 } as const
 
+const ASCII: Record<EmojiKey, string> = {
+  success: '●',
+  error: '✖',
+  warn: '▲',
+  info: '◆',
+  done: '✔',
+  closed: '✖',
+  blocks: '►',
+  blocked_by: '◄',
+  create: '◇',
+  update: '◈',
+  delete: '▬',
+  empty: '○',
+  celebrate: '★',
+  module: '◉',
+  quit: '·',
+  found: '►',
+  not_found: '?',
+  flag: '⚑',
+  epic: '◉',
+  child: '·',
+  priority_lowest: '▼',
+  priority_low: '▽',
+  priority_normal: '—',
+  priority_high: '△',
+  priority_highest: '▲',
+}
+
 export type EmojiKey = keyof typeof EMOJI
 
-const PRIORITY_EMOJI: Record<Priority, string> = {
-  1: EMOJI.priority_lowest,
-  2: EMOJI.priority_low,
-  3: EMOJI.priority_normal,
-  4: EMOJI.priority_high,
-  5: EMOJI.priority_highest,
+let asciiMode = false
+
+export function setAsciiMode(on: boolean): void {
+  asciiMode = on
+}
+
+export function isAsciiMode(): boolean {
+  return asciiMode
+}
+
+export function getIcon(key: EmojiKey): string {
+  return asciiMode ? ASCII[key] : EMOJI[key]
+}
+
+const PRIORITY_KEYS: Record<Priority, EmojiKey> = {
+  1: 'priority_lowest',
+  2: 'priority_low',
+  3: 'priority_normal',
+  4: 'priority_high',
+  5: 'priority_highest',
 }
 
 export function priorityEmoji(p: Priority): string {
-  return PRIORITY_EMOJI[p]
+  return getIcon(PRIORITY_KEYS[p])
 }

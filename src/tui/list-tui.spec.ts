@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { buildEntries, renderList } from './list-tui.js'
 import type { ListRenderState } from './list-tui.js'
+import { setAsciiMode } from '../emoji.js'
 import { makeTask, makeListState, createMockStdout, renderToScreen, spawnTui, type TuiProcess } from './tui-test-harness.js'
 
 describe('buildEntries', () => {
@@ -425,6 +426,34 @@ describe('render snapshots', () => {
     renderList(state, stdout)
     const screen = await renderToScreen(stdout.getOutput(), 80, 24)
     expect(screen).toMatchSnapshot()
+  })
+
+  it('ascii mode snapshot at 80 cols', async () => {
+    setAsciiMode(true)
+    try {
+      const tasks = [
+        makeTask({ id: 'MRKL-001', title: 'Epic task', type: 'feat', status: 'todo', priority: 5, blocks: ['MRKL-002'] }),
+        makeTask({ id: 'MRKL-002', title: 'Child task', type: 'fix', status: 'in-progress', parent: 'MRKL-001', priority: 3 }),
+        makeTask({ id: 'MRKL-003', title: 'Standalone', type: 'chore', status: 'done', priority: 1 }),
+      ]
+      const entries = buildEntries(tasks)
+      const state = makeListState({
+        datasets: [
+          { label: 'Tasks', entries },
+          { label: 'Archive', entries: [] },
+        ],
+        filtered: entries,
+        allTasks: tasks,
+      })
+      const stdout = createMockStdout(80, 24)
+      renderList(state, stdout)
+      const screen = await renderToScreen(stdout.getOutput(), 80, 24)
+      // Should use ASCII symbols instead of emoji
+      expect(screen).not.toMatch(/[\u{1F300}-\u{1F9FF}]/u)
+      expect(screen).toMatchSnapshot()
+    } finally {
+      setAsciiMode(false)
+    }
   })
 
   it('title truncation snapshot at 40 cols', async () => {

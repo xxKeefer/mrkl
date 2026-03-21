@@ -180,6 +180,33 @@ MRKL-021    done ⏹️         Old bugfix      │ Archived feature
 ch  Esc: quit                                                                   "
 `;
 
+exports[`render snapshots > ascii mode snapshot at 80 cols 1`] = `
+"[Tasks]   Archive                                                               
+                                                                                
+                                                                                
+────────────────────────────────────────────┬───────────────────────────────────
+ID          STATUS          TITLE           │ Preview                           
+────────────────────────────────────────────┼───────────────────────────────────
+MRKL-001    todo ◉ ▲ ►      Epic task       │ ◉▲ MRKL-001 feat todo             
+├─MRKL-002    in-progress · —…Child task    │ Epic task                         
+MRKL-003    done ▼          Standalone      │                                   
+                                            │ Relationships                     
+                                            │   · Children: MRKL-002            
+                                            │   ► Blocks: MRKL-002              
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+────────────────────────────────────────────┴───────────────────────────────────
+3/3 tasks  ↑↓: navigate  /: search  s: sort  d: direction  p: preview  Tab: swit
+ch  Esc: quit                                                                   "
+`;
+
 exports[`render snapshots > basic task list snapshot at 80 cols 1`] = `
 "[Tasks]   Archive                                                               
                                                                                 
@@ -187,8 +214,8 @@ exports[`render snapshots > basic task list snapshot at 80 cols 1`] = `
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
-MRKL-001    todo ✴️⏫       Add user authe… │ ✴️⏫ MRKL-001 feat todo               
-├─MRKL-004    todo ❇️🔽       Design dashb… │ Add user authentication             
+MRKL-001    todo ✴️ ⏫      Add user authe… │ ✴️⏫ MRKL-001 feat todo               
+├─MRKL-004    todo ❇️ 🔽      Design dashb… │ Add user authentication             
 MRKL-002    in-progress 🔼  Fix login redi… │                                    
 MRKL-003    done ⏹️         Update CI pipe… │ Relationships                      
 MRKL-005    in-progress ⏬  Refactor token… │   ❇️ Children: MRKL-004             
@@ -214,9 +241,9 @@ exports[`render snapshots > blocking indicators snapshot at 80 cols 1`] = `
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
-MRKL-010    todo ⏫🚧       Database migra… │ ⏫ MRKL-010 feat todo                
-MRKL-011    todo 🔼🛑       API endpoints   │ Database migration                  
-MRKL-012    todo ⏹️🛑       Frontend integ… │                                     
+MRKL-010    todo ⏫ 🚧      Database migra… │ ⏫ MRKL-010 feat todo                
+MRKL-011    todo 🔼 🛑      API endpoints   │ Database migration                  
+MRKL-012    todo ⏹️ 🛑      Frontend integ… │                                     
                                             │ Relationships                     
                                             │   🚧 Blocks: MRKL-011, MRKL-012    
                                             │                                   
@@ -321,9 +348,9 @@ exports[`render snapshots > epic grouping snapshot at 80 cols 1`] = `
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
-MRKL-001    todo ✴️⏹️       Auth epic       │ ✴️⏹️ MRKL-001 feat todo               
-├─MRKL-002    in-progress ❇️⏹️Login page    │ Auth epic                           
-├─MRKL-003    todo ❇️⏹️       Token refresh │                                     
+MRKL-001    todo ✴️ ⏹️      Auth epic       │ ✴️⏹️ MRKL-001 feat todo               
+├─MRKL-002    in-progress ❇️ …Login page    │ Auth epic                          
+├─MRKL-003    todo ❇️ ⏹️      Token refresh │                                     
 MRKL-004    done ⏹️         Fix CI pipeline │ Relationships                      
 MRKL-005    todo ⏹️         Update README   │   ❇️ Children: MRKL-002, MRKL-003   
                                             │                                   
@@ -381,9 +408,9 @@ exports[`render snapshots > mixed emoji widths snapshot at 80 cols 1`] = `
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
-MRKL-001    todo ⏫🚧       Highest priori… │ ⏫ MRKL-001 feat todo                
+MRKL-001    todo ⏫ 🚧      Highest priori… │ ⏫ MRKL-001 feat todo                
 MRKL-002    in-progress ⏹️  Normal priorit… │ Highest priority blocker           
-MRKL-003    todo ⏬🛑       Lowest blocked… │                                     
+MRKL-003    todo ⏬ 🛑      Lowest blocked… │                                     
                                             │ Relationships                     
                                             │   🚧 Blocks: MRKL-003              
                                             │                                   
@@ -531,12 +558,12 @@ exports[`render snapshots > wraps long relationship ID lists with aligned contin
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
-MRKL-050    todo ⏫🚧       blocker task    │ ⏫ MRKL-050 feat todo                
-MRKL-051    todo ⏹️🛑       task a          │ blocker task                        
-MRKL-052    todo ⏹️🛑       task b          │                                     
-MRKL-053    todo ⏹️🛑       task c          │ Relationships                       
-MRKL-054    todo ⏹️🛑       task d          │   🚧 Blocks: MRKL-051, MRKL-052,     
-MRKL-055    todo ⏹️🛑       task e          │              MRKL-053, MRKL-054,    
+MRKL-050    todo ⏫ 🚧      blocker task    │ ⏫ MRKL-050 feat todo                
+MRKL-051    todo ⏹️ 🛑      task a          │ blocker task                        
+MRKL-052    todo ⏹️ 🛑      task b          │                                     
+MRKL-053    todo ⏹️ 🛑      task c          │ Relationships                       
+MRKL-054    todo ⏹️ 🛑      task d          │   🚧 Blocks: MRKL-051, MRKL-052,     
+MRKL-055    todo ⏹️ 🛑      task e          │              MRKL-053, MRKL-054,    
                                             │              MRKL-055             
                                             │                                   
                                             │                                   
