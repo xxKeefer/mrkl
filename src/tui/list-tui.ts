@@ -221,9 +221,24 @@ function buildPreviewLines(
   return lines
 }
 
+const MIN_COLS = 40
+
 export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): void {
   const cols = stdout.columns || 80
   const rows = stdout.rows || 24
+
+  if (cols < MIN_COLS) {
+    stdout.write(CLEAR_SCREEN)
+    const msg = 'Terminal too small'
+    const hint = `Need ${MIN_COLS}+ cols (have ${cols})`
+    const y = Math.floor(rows / 2)
+    const x1 = Math.max(0, Math.floor((cols - msg.length) / 2))
+    const x2 = Math.max(0, Math.floor((cols - hint.length) / 2))
+    stdout.write(`\x1B[${y};${x1 + 1}H${BOLD}${msg}${RESET}`)
+    stdout.write(`\x1B[${y + 1};${x2 + 1}H${FG_GRAY}${hint}${RESET}`)
+    return
+  }
+
   const { filtered, datasets } = state
   const buf: string[] = []
 

@@ -208,6 +208,41 @@ exports[`render > active autocomplete with suggestions snapshot at 80 cols 1`] =
   ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter submit  Esc quit   "
 `;
 
+exports[`render > create form snapshot at 60 cols 1`] = `
+"                                                            
+  Create Task                                               
+  ────────────────────────────────────────────────────────  
+› Type            ◂ feat ▸                                  
+  Priority          ⏹️ 3-normal                              
+  Title           ····················                      
+  Description     ····················                      
+  Flag            ····················                      
+  Parent          type to search...                         
+  + Block         type to search...                         
+  + Add           ····················                      
+  ────────────────────────────────────────────────────────  
+  ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter
+ submit  Esc quit                                           "
+`;
+
+exports[`render > edit form snapshot at 60 cols 1`] = `
+"                                                            
+  Edit Task MRKL-042                                        
+  ────────────────────────────────────────────────────────  
+› Type            ◂ feat ▸                                  
+  Status            todo                                    
+  Priority          ⏹️ 3-normal                              
+  Title           Fix responsive layout                     
+  Description     Make the form work at narrow widths       
+  Flag            ····················                      
+  Parent          type to search...                         
+  + Block         type to search...                         
+  + Add           ····················                      
+  ────────────────────────────────────────────────────────  
+  ↑↓ navigate  ←→ cycle type/status/priority  Ctrl+N newline
+  Enter submit  Esc quit                                    "
+`;
+
 exports[`render > edit mode form with status field snapshot at 80 cols 1`] = `
 "                                                                                
   Edit Task MRKL-042                                                            
@@ -338,4 +373,20 @@ exports[`render > long text wrapping snapshot at 40 cols 1`] = `
   ────────────────────────────────────  
   ↑↓ navigate  ←→ cycle type/priority  C
 trl+N newline  Enter submit  Esc quit   "
+`;
+
+exports[`render > terminal too small snapshot at 25 cols 1`] = `
+"                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+   Terminal too small    
+ Need 40+ cols (have 25) "
 `;

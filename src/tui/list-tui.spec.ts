@@ -149,6 +149,14 @@ describe('renderList', () => {
 })
 
 describe('render snapshots', () => {
+  it('terminal too small snapshot at 25 cols', async () => {
+    const stdout = createMockStdout(25, 24)
+    renderList(makeListState(), stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 25, 24)
+    expect(screen).toContain('Terminal too small')
+    expect(screen).toMatchSnapshot()
+  })
+
   it('empty task list snapshot at 40 cols', async () => {
     const stdout = createMockStdout(40, 24)
     renderList(makeListState(), stdout)

@@ -395,6 +395,22 @@ MRKL-018    done ⏹️         Task number 18  │
 uit                                                                             "
 `;
 
+exports[`render snapshots > terminal too small snapshot at 25 cols 1`] = `
+"                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+   Terminal too small    
+ Need 40+ cols (have 25) "
+`;
+
 exports[`render snapshots > title truncation snapshot at 40 cols 1`] = `
 "[Tasks]   Archive                       
                                         

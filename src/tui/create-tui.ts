@@ -370,8 +370,24 @@ function getFilteredSuggestions(state: FormState): AutocompleteCandidate[] {
   return []
 }
 
+const MIN_COLS = 40
+
 export function render(state: FormState, stdout: NodeJS.WriteStream): void {
   const cols = stdout.columns || 80
+  const rows = (stdout.rows || 24)
+
+  if (cols < MIN_COLS) {
+    stdout.write(CLEAR_SCREEN)
+    const msg = 'Terminal too small'
+    const hint = `Need ${MIN_COLS}+ cols (have ${cols})`
+    const y = Math.floor(rows / 2)
+    const x1 = Math.max(0, Math.floor((cols - msg.length) / 2))
+    const x2 = Math.max(0, Math.floor((cols - hint.length) / 2))
+    stdout.write(`\x1B[${y};${x1 + 1}H${BOLD}${msg}${RESET}`)
+    stdout.write(`\x1B[${y + 1};${x2 + 1}H${DIM}${hint}${RESET}`)
+    return
+  }
+
   const contentWidth = Math.max(10, cols - GUTTER - 2)
   const sepWidth = Math.min(cols - 4, 60)
   const buf: string[] = []

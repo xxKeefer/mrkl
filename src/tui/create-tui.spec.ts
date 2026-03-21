@@ -209,6 +209,35 @@ describe('render', () => {
     expect(screen).toMatchSnapshot()
   })
 
+  it('terminal too small snapshot at 25 cols', async () => {
+    const stdout = createMockStdout(25, 24)
+    render(makeFormState(), stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 25, 24)
+    expect(screen).toContain('Terminal too small')
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('create form snapshot at 60 cols', async () => {
+    const stdout = createMockStdout(60, 24)
+    render(makeFormState(), stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 60, 24)
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('edit form snapshot at 60 cols', async () => {
+    const state = makeFormState({
+      mode: 'edit',
+      taskId: 'MRKL-042',
+      title: 'Fix responsive layout',
+      description: 'Make the form work at narrow widths',
+      status: 0,
+    })
+    const stdout = createMockStdout(60, 24)
+    render(state, stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 60, 24)
+    expect(screen).toMatchSnapshot()
+  })
+
   it('long text wrapping snapshot at 40 cols', async () => {
     const state = makeFormState({
       title: 'A very long task title that should wrap at narrow width',
