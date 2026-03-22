@@ -1,5 +1,29 @@
 # Changelog
 
+## v0.5.3...main
+
+[compare changes](https://github.com/xxKeefer/mrkl/compare/v0.5.3...main)
+
+### Added
+
+- Add groom-backlog skill and edit CLI flags (MRKL-106, MRKL-098) ([#41](https://github.com/xxKeefer/mrkl/pull/41))
+- Remove task id collision by making them temporal ([#43](https://github.com/xxKeefer/mrkl/pull/43))
+
+### Changed
+
+- Add ubiquitous language glossary and wire into CLAUDE.md ([caa9121](https://github.com/xxKeefer/mrkl/commit/caa9121))
+- Add ubiquitous language glossary and wire into CLAUDE.md" ([99c4779](https://github.com/xxKeefer/mrkl/commit/99c4779))
+- Update all documentation for temporal base36 IDs ([#44](https://github.com/xxKeefer/mrkl/pull/44))
+
+### Changed
+
+- Add nix devshell with node 22 + pnpm ([#45](https://github.com/xxKeefer/mrkl/pull/45))
+
+### ❤️ Contributors
+
+- Daniel John Keefer <xxkeefer@proton.me>
+- XxKeefer <xxkeefer@pm.me>
+
 ## v0.5.2...main
 
 [compare changes](https://github.com/xxKeefer/mrkl/compare/v0.5.2...main)
