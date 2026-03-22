@@ -2,8 +2,9 @@
 id: MRKL-137
 title: wrap relationship ids with aligned indentation
 type: fix
-status: todo
+status: done
 created: '2026-03-17'
+flag: completed
 parent: MRKL-132
 priority: 4
 ---
@@ -14,6 +15,6 @@ Wrap long relationship ID lists in preview with label-aligned continuation lines
 
 ## Acceptance Criteria
 
-- [ ] Relationship IDs wrap at preview width with continuation lines aligned to the first ID
-- [ ] No task ID is ever split across two lines
-- [ ] Works for Children, Blocks, and Blocked by lines
+- [x] Relationship IDs wrap at preview width with continuation lines aligned to the first ID
+- [x] No task ID is ever split across two lines
+- [x] Works for Children, Blocks, and Blocked by lines

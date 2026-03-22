@@ -2,8 +2,9 @@
 id: MRKL-139
 title: plain mode search and multi-value filters
 type: feat
-status: todo
+status: done
 created: '2026-03-17'
+flag: completed
 parent: MRKL-132
 priority: 3
 blocks:
@@ -17,8 +18,5 @@ Add --search flag for exact substring filtering in plain mode. Support comma-sep
 
 ## Acceptance Criteria
 
-- [ ] mrkl list --plain --search auth outputs only tasks containing auth in id title or description
-- [ ] 
-- [ ] 
-- [ ] 
-- [ ] All flags --sort --search --status --type --no-emoji are combinable
+- [x] mrkl list --plain --search auth outputs only tasks containing auth in id title or description
+- [x] All flags --sort --search --status --type --no-emoji are combinable

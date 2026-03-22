@@ -1,4 +1,5 @@
 import matter from 'gray-matter'
+import { normalizeTitle } from './task.js'
 import type { TaskData, TaskType, Status, Priority } from './types.js'
 
 export function render(task: TaskData): string {
@@ -43,7 +44,7 @@ export function parse(content: string, _filename: string): TaskData {
   const title = data.title as string | undefined
   if (!title) {
     throw new Error(
-      "Task file missing title in frontmatter. Run 'mrkl migrate_prior_verbose' to fix.",
+      'Task file missing title in frontmatter.',
     )
   }
 
@@ -70,7 +71,7 @@ export function parse(content: string, _filename: string): TaskData {
     ...(data.flag ? { flag: data.flag as string } : {}),
     ...(data.parent ? { parent: data.parent as string } : {}),
     ...(data.blocks ? { blocks: data.blocks as string[] } : {}),
-    title,
+    title: normalizeTitle(title),
     description,
     acceptance_criteria,
   }

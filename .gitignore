@@ -5,3 +5,4 @@ coverage
 .worktrees
 .plans
 .claude/settings.local.json
+.tasks/.mrkl.json

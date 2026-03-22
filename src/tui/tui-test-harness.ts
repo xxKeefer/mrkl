@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 import type { TaskData } from '../types.js'
 import type { FormState, FormMode } from './create-tui.js'
 import type { ListRenderState } from './list-tui.js'
-export type { FzfEntry, ListRenderState } from './list-tui.js'
+export type { ListEntry, ListRenderState } from './list-tui.js'
 
 const PROJECT_ROOT = resolve(fileURLToPath(import.meta.url), '../../..')
 const TSX_BIN = resolve(PROJECT_ROOT, 'node_modules/.bin/tsx')
@@ -29,7 +29,7 @@ export function spawnTui(
 
   const cliPath = resolve(PROJECT_ROOT, 'src/cli.ts')
 
-  const pty = nodePty.spawn(TSX_BIN, [cliPath, command], {
+  const pty = nodePty.spawn(TSX_BIN, [cliPath, ...command.split(/\s+/)], {
     name: 'xterm-256color',
     cols,
     rows,
@@ -173,8 +173,12 @@ export function makeListState(overrides?: Partial<ListRenderState>): ListRenderS
   return {
     activeTab: 0,
     query: '',
+    searchMode: false,
     selectedIndex: 0,
     scrollOffset: 0,
+    sortField: 'none',
+    sortDirection: 'desc',
+    previewOpen: true,
     datasets: [
       { label: 'Tasks', entries: [] },
       { label: 'Archive', entries: [] },

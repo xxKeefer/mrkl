@@ -2,8 +2,9 @@
 id: MRKL-046
 title: remove migration script
 type: chore
-status: todo
+status: done
 created: '2026-03-07'
+flag: completed
 priority: 5
 ---
 
@@ -13,6 +14,6 @@ mrkl's user base right now is just me. if the migration is repo is fine and the 
 
 ## Acceptance Criteria
 
-- [ ] verbose mode = false is the only cofig
-- [ ] migrate verbose script is not longer a command
-- [ ] dead code deleted
+- [x] verbose mode = false is the only cofig
+- [x] migrate verbose script is not longer a command
+- [x] dead code deleted

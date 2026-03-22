@@ -1,18 +1,17 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`autocomplete interaction snapshots > Enter on empty +Block field skips without selecting a suggestion 1`] = `
+exports[`autocomplete interaction snapshots > Enter on empty +Block field advances to criteria instead of submitting 1`] = `
 "                                                                                
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
-  Title cannot be empty                                                         
   Type              feat                                                        
-  Priority          ⏹️ 3-normal                                                  
-› Title                                                                         
+  Priority          ◇ 3-normal                                                  
+  Title           ····················                                          
   Description     ····················                                          
   Flag            ····················                                          
   Parent          type to search...                                             
   + Block         type to search...                                             
-  + Add           ····················                                          
+› + Add                                                                         
   ────────────────────────────────────────────────────────────                  
   ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter submit  Esc quit   "
 `;
@@ -22,15 +21,15 @@ exports[`autocomplete interaction snapshots > Enter on empty parent field skips 
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
   Type              feat                                                        
-  Priority          ⏹️ 3-normal                                                  
+  Priority          ◇ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
   Flag            ····················                                          
   Parent          type to search...                                             
 › + Block                                                                       
-                    → MRKL-001 - Auth epic                                      
-                      MRKL-002 - Fix login bug                                  
-                      MRKL-003 - Auth tests                                     
+                    → MRKL-001 - auth epic                                      
+                      MRKL-002 - fix login bug                                  
+                      MRKL-003 - auth tests                                     
   + Add           ····················                                          
   ────────────────────────────────────────────────────────────                  
   ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter submit  Esc quit   "
@@ -41,13 +40,13 @@ exports[`autocomplete interaction snapshots > Enter selects highlighted suggesti
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
   Type              feat                                                        
-  Priority          ⏹️ 3-normal                                                  
+  Priority          ◇ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
   Flag            ····················                                          
 › Parent          auth                                                          
-                      MRKL-001 - Auth epic                                      
-                    → MRKL-003 - Auth tests                                     
+                      MRKL-001 - auth epic                                      
+                    → MRKL-003 - auth tests                                     
   + Block         type to search...                                             
   + Add           ····················                                          
   ────────────────────────────────────────────────────────────                  
@@ -59,14 +58,14 @@ exports[`autocomplete interaction snapshots > right arrow navigates suggestion h
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
   Type              feat                                                        
-  Priority          ⏹️ 3-normal                                                  
+  Priority          ◇ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
   Flag            ····················                                          
 › Parent          MRKL                                                          
-                      MRKL-001 - Auth epic                                      
-                    → MRKL-002 - Fix login bug                                  
-                      MRKL-003 - Auth tests                                     
+                      MRKL-001 - auth epic                                      
+                    → MRKL-002 - fix login bug                                  
+                      MRKL-003 - auth tests                                     
   + Block         type to search...                                             
   + Add           ····················                                          
   ────────────────────────────────────────────────────────────                  
@@ -78,14 +77,14 @@ exports[`autocomplete interaction snapshots > typing in parent field shows filte
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
   Type              feat                                                        
-  Priority          ⏹️ 3-normal                                                  
+  Priority          ◇ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
   Flag            ····················                                          
 › Parent                                                                        
-                    → MRKL-001 - Auth epic                                      
-                      MRKL-002 - Fix login bug                                  
-                      MRKL-003 - Auth tests                                     
+                    → MRKL-001 - auth epic                                      
+                      MRKL-002 - fix login bug                                  
+                      MRKL-003 - auth tests                                     
   + Block         type to search...                                             
   + Add           ····················                                          
   ────────────────────────────────────────────────────────────                  
@@ -97,7 +96,7 @@ exports[`interaction snapshots > arrow down moves to priority field 1`] = `
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
 › Type            ◂ feat ▸                                                      
-  Priority          ⏹️ 3-normal                                                  
+  Priority          ◇ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
   Flag            ····················                                          
@@ -113,7 +112,7 @@ exports[`interaction snapshots > arrow up returns to type field 1`] = `
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
 › Type            ◂ feat ▸                                                      
-  Priority          ⏹️ 3-normal                                                  
+  Priority          ◇ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
   Flag            ····················                                          
@@ -129,7 +128,7 @@ exports[`interaction snapshots > initial render shows type field highlighted 1`]
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
 › Type            ◂ feat ▸                                                      
-  Priority          ⏹️ 3-normal                                                  
+  Priority          ◇ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
   Flag            ····················                                          
@@ -145,7 +144,7 @@ exports[`interaction snapshots > left/right arrows cycle type options 1`] = `
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
 › Type            ◂ fix ▸                                                       
-  Priority          ⏹️ 3-normal                                                  
+  Priority          ◇ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
   Flag            ····················                                          
@@ -161,7 +160,7 @@ exports[`interaction snapshots > left/right arrows cycle type options 2`] = `
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
 › Type            ◂ feat ▸                                                      
-  Priority          ⏹️ 3-normal                                                  
+  Priority          ◇ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
   Flag            ····················                                          
@@ -172,28 +171,14 @@ exports[`interaction snapshots > left/right arrows cycle type options 2`] = `
   ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter submit  Esc quit   "
 `;
 
-exports[`interaction snapshots > pressing Enter on filled form triggers submit 1`] = `
-"                                                                                
-  Create Task                                                                   
-  ────────────────────────────────────────────────────────────                  
-  Type              feat                                                        
-  Priority          ⏹️ 3-normal                                                  
-  Title           Test task                                                     
-  Description     ····················                                          
-  Flag            ····················                                          
-  Parent          type to search...                                             
-› + Block                                                                       
-  + Add           ····················                                          
-  ────────────────────────────────────────────────────────────                  
-  ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter submit  Esc quit   "
-`;
+exports[`interaction snapshots > pressing Enter on filled form triggers submit 1`] = `"                                                                                "`;
 
 exports[`interaction snapshots > typing characters into title field shows text on screen 1`] = `
 "                                                                                
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
   Type              feat                                                        
-  Priority          ⏹️ 3-normal                                                  
+  Priority          ◇ 3-normal                                                  
 › Title           Hello                                                         
   Description     ····················                                          
   Flag            ····················                                          
@@ -209,7 +194,7 @@ exports[`render > active autocomplete with suggestions snapshot at 80 cols 1`] =
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
   Type              feat                                                        
-  Priority          ⏹️ 3-normal                                                  
+  Priority          ◇ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
   Flag            ····················                                          
@@ -223,13 +208,48 @@ exports[`render > active autocomplete with suggestions snapshot at 80 cols 1`] =
   ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter submit  Esc quit   "
 `;
 
+exports[`render > create form snapshot at 60 cols 1`] = `
+"                                                            
+  Create Task                                               
+  ────────────────────────────────────────────────────────  
+› Type            ◂ feat ▸                                  
+  Priority          ◇ 3-normal                              
+  Title           ····················                      
+  Description     ····················                      
+  Flag            ····················                      
+  Parent          type to search...                         
+  + Block         type to search...                         
+  + Add           ····················                      
+  ────────────────────────────────────────────────────────  
+  ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter
+ submit  Esc quit                                           "
+`;
+
+exports[`render > edit form snapshot at 60 cols 1`] = `
+"                                                            
+  Edit Task MRKL-042                                        
+  ────────────────────────────────────────────────────────  
+› Type            ◂ feat ▸                                  
+  Status            todo                                    
+  Priority          ◇ 3-normal                              
+  Title           Fix responsive layout                     
+  Description     Make the form work at narrow widths       
+  Flag            ····················                      
+  Parent          type to search...                         
+  + Block         type to search...                         
+  + Add           ····················                      
+  ────────────────────────────────────────────────────────  
+  ↑↓ navigate  ←→ cycle type/status/priority  Ctrl+N newline
+  Enter submit  Esc quit                                    "
+`;
+
 exports[`render > edit mode form with status field snapshot at 80 cols 1`] = `
 "                                                                                
   Edit Task MRKL-042                                                            
   ────────────────────────────────────────────────────────────                  
 › Type            ◂ feat ▸                                                      
   Status            in-progress                                                 
-  Priority          ⏹️ 3-normal                                                  
+  Priority          ◇ 3-normal                                                  
   Title           Fix login redirect                                            
   Description     Users are redirected to wrong page after login                
   Flag            ····················                                          
@@ -247,7 +267,7 @@ exports[`render > empty create form snapshot at 40 cols 1`] = `
   Create Task                           
   ────────────────────────────────────  
 › Type            ◂ feat ▸              
-  Priority          ⏹️ 3-normal          
+  Priority          ◇ 3-normal          
   Title           ····················  
   Description     ····················  
   Flag            ····················  
@@ -264,7 +284,7 @@ exports[`render > empty create form snapshot at 80 cols 1`] = `
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
 › Type            ◂ feat ▸                                                      
-  Priority          ⏹️ 3-normal                                                  
+  Priority          ◇ 3-normal                                                  
   Title           ····················                                          
   Description     ····················                                          
   Flag            ····················                                          
@@ -280,7 +300,7 @@ exports[`render > empty create form snapshot at 120 cols 1`] = `
   Create Task                                                                                                           
   ────────────────────────────────────────────────────────────                                                          
 › Type            ◂ feat ▸                                                                                              
-  Priority          ⏹️ 3-normal                                                                                          
+  Priority          ◇ 3-normal                                                                                          
   Title           ····················                                                                                  
   Description     ····················                                                                                  
   Flag            ····················                                                                                  
@@ -297,7 +317,7 @@ exports[`render > error state (empty title) snapshot at 80 cols 1`] = `
   ────────────────────────────────────────────────────────────                  
   Title cannot be empty                                                         
   Type              feat                                                        
-  Priority          ⏹️ 3-normal                                                  
+  Priority          ◇ 3-normal                                                  
 › Title                                                                         
   Description     ····················                                          
   Flag            ····················                                          
@@ -313,7 +333,7 @@ exports[`render > filled create form snapshot at 80 cols 1`] = `
   Create Task                                                                   
   ────────────────────────────────────────────────────────────                  
   Type              chore                                                       
-  Priority          ⏹️ 3-normal                                                  
+  Priority          ◇ 3-normal                                                  
 › Title           Implement user authentication                                 
   Description     Add JWT-based auth with refresh tokens                        
   Flag            ····················                                          
@@ -333,7 +353,7 @@ exports[`render > long text wrapping snapshot at 40 cols 1`] = `
   Create Task                           
   ────────────────────────────────────  
   Type              feat                
-  Priority          ⏹️ 3-normal          
+  Priority          ◇ 3-normal          
   Title           A very long task tit  
                   le that should wrap   
                   at narrow width       
@@ -353,4 +373,20 @@ exports[`render > long text wrapping snapshot at 40 cols 1`] = `
   ────────────────────────────────────  
   ↑↓ navigate  ←→ cycle type/priority  C
 trl+N newline  Enter submit  Esc quit   "
+`;
+
+exports[`render > terminal too small snapshot at 25 cols 1`] = `
+"                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+   Terminal too small    
+ Need 40+ cols (have 25) "
 `;

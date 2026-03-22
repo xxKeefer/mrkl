@@ -1,20 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`cli e2e — interactive create flow > final screen state is snapshotted 1`] = `
-"                                                                                
-  Create Task                                                                   
-  ────────────────────────────────────────────────────────────                  
-  Type              feat                                                        
-  Priority          ⏹️ 3-normal                                                  
-  Title           My interactive task                                           
-  Description     ····················                                          
-  Flag            ····················                                          
-  Parent          type to search...                                             
-› + Block                                                                       
-  + Add           ····················                                          
-  ────────────────────────────────────────────────────────────                  
-  ↑↓ navigate  ←→ cycle type/priority  Ctrl+N newline  Enter submit  Esc quit   "
-`;
+exports[`cli e2e — interactive create flow > final screen state is snapshotted 1`] = `"                                                                                "`;
 
 exports[`cli e2e — interactive edit flow > edit shows pre-populated form with task data 1`] = `
 "                                                                                
@@ -22,8 +8,8 @@ exports[`cli e2e — interactive edit flow > edit shows pre-populated form with 
   ────────────────────────────────────────────────────────────                  
 › Type            ◂ feat ▸                                                      
   Status            todo                                                        
-  Priority          ⏹️ 3-normal                                                  
-  Title           Original title                                                
+  Priority          ◇ 3-normal                                                  
+  Title           original title                                                
   Description     ····················                                          
   Flag            ····················                                          
   Parent          type to search...                                             
@@ -37,12 +23,12 @@ quit                                                                            
 exports[`cli e2e — interactive list flow > list renders pre-seeded tasks 1`] = `
 "[Tasks]   Archive                                                               
                                                                                 
->                                                                               
+                                                                                
 ────────────────────────────────────────────┬───────────────────────────────────
-ID          STATUS          TITLE           │ Preview                           
+ID          STATUS    TITLE                 │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
-TEST-001    todo ⏹️         First seeded t… │ ⏹️ TEST-001 feat todo               
-TEST-002    todo ⏹️         Second seeded … │ First seeded task                  
+TEST-001    ○ ◇       first seeded task     │ ◇ TEST-001 feat ○                 
+TEST-002    ○ ◇       second seeded task    │ first seeded task                 
                                             │                                   
                                             │                                   
                                             │                                   
@@ -57,5 +43,6 @@ TEST-002    todo ⏹️         Second seeded … │ First seeded task
                                             │                                   
                                             │                                   
 ────────────────────────────────────────────┴───────────────────────────────────
-2/2 tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search  "
+2/2 tasks  ↑↓: navigate  /: search  s: sort  d: direction  p: preview  Tab: swit
+ch  Esc: quit                                                                   "
 `;

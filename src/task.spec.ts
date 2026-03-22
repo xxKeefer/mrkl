@@ -24,6 +24,8 @@ import {
   groupByEpic,
   buildRelationshipIndicators,
   patchTask,
+  updateTask,
+  sortTasks,
 } from './task.js'
 import type { TaskData } from './types.js'
 
@@ -220,8 +222,8 @@ describe('groupByEpic', () => {
 
     const blockerEntry = grouped.find((g) => g.task.id === 'TEST-001')!
     const blockedEntry = grouped.find((g) => g.task.id === 'TEST-002')!
-    expect(blockerEntry.blocksIndicator).toBe('🚧 TEST-002')
-    expect(blockedEntry.blockedByIndicator).toBe('🛑 TEST-001')
+    expect(blockerEntry.blocksIndicator).toBe('« TEST-002')
+    expect(blockedEntry.blockedByIndicator).toBe('» TEST-001')
   })
 
   it('handles orphan children whose parent is not in the list', () => {
@@ -243,7 +245,7 @@ describe('buildRelationshipIndicators', () => {
 
     const result = buildRelationshipIndicators([blocker, t2, t3], blocker)
 
-    expect(result.blocksDisplay).toBe('🚧 TEST-002, TEST-003')
+    expect(result.blocksDisplay).toBe('« TEST-002, TEST-003')
     expect(result.blockedByDisplay).toBeNull()
   })
 
@@ -255,7 +257,7 @@ describe('buildRelationshipIndicators', () => {
     const result = buildRelationshipIndicators([blocker, t2, blocked], blocked)
 
     expect(result.blocksDisplay).toBeNull()
-    expect(result.blockedByDisplay).toBe('🛑 TEST-001, TEST-002')
+    expect(result.blockedByDisplay).toBe('» TEST-001, TEST-002')
   })
 
   it('returns null for both when no relationships exist', () => {
@@ -309,6 +311,66 @@ describe('cascadeClose', () => {
     const archived = listArchivedTasks({ dir })
     expect(archived).toHaveLength(1)
     expect(archived[0].status).toBe('closed')
+  })
+})
+
+describe('sortTasks', () => {
+  const tasks: TaskData[] = [
+    makeTask({ id: 'T-001', title: 'low priority', status: 'todo', priority: 1, created: '2026-01-03' }),
+    makeTask({ id: 'T-002', title: 'high priority', status: 'done', priority: 5, created: '2026-01-01' }),
+    makeTask({ id: 'T-003', title: 'mid priority blocker', status: 'in-progress', priority: 3, created: '2026-01-02', blocks: ['T-001'] }),
+    makeTask({ id: 'T-004', title: 'no priority', status: 'todo', created: '2026-01-04' }),
+  ]
+
+  it('sorts by priority descending', () => {
+    const sorted = sortTasks(tasks, 'priority', 'desc')
+    expect(sorted.map((t) => t.id)).toEqual(['T-002', 'T-003', 'T-001', 'T-004'])
+  })
+
+  it('sorts by priority ascending', () => {
+    const sorted = sortTasks(tasks, 'priority', 'asc')
+    expect(sorted.map((t) => t.id)).toEqual(['T-004', 'T-001', 'T-003', 'T-002'])
+  })
+
+  it('sorts by status descending (done > in-progress > todo)', () => {
+    const sorted = sortTasks(tasks, 'status', 'desc')
+    expect(sorted.map((t) => t.id)).toEqual(['T-002', 'T-003', 'T-001', 'T-004'])
+  })
+
+  it('sorts by status ascending', () => {
+    const sorted = sortTasks(tasks, 'status', 'asc')
+    expect(sorted.map((t) => t.id)).toEqual(['T-001', 'T-004', 'T-003', 'T-002'])
+  })
+
+  it('sorts by created descending', () => {
+    const sorted = sortTasks(tasks, 'created', 'desc')
+    expect(sorted.map((t) => t.id)).toEqual(['T-004', 'T-001', 'T-003', 'T-002'])
+  })
+
+  it('sorts by created ascending', () => {
+    const sorted = sortTasks(tasks, 'created', 'asc')
+    expect(sorted.map((t) => t.id)).toEqual(['T-002', 'T-003', 'T-001', 'T-004'])
+  })
+
+  it('sorts by blocks descending (has-blocks first)', () => {
+    const sorted = sortTasks(tasks, 'blocks', 'desc')
+    expect(sorted[0].id).toBe('T-003')
+  })
+
+  it('sorts by blocked descending (is-blocked first)', () => {
+    const sorted = sortTasks(tasks, 'blocked', 'desc')
+    expect(sorted[0].id).toBe('T-001')
+  })
+
+  it('returns original order for sort field none', () => {
+    const sorted = sortTasks(tasks, 'none', 'desc')
+    expect(sorted.map((t) => t.id)).toEqual(tasks.map((t) => t.id))
+  })
+
+  it('does not mutate the input array', () => {
+    const original = [...tasks]
+    sortTasks(tasks, 'priority', 'desc')
+    expect(tasks.map((t) => t.id)).toEqual(original.map((t) => t.id))
   })
 })
 
@@ -546,6 +608,31 @@ describe('task CRUD operations', () => {
       expect(listTasks({ dir: tmp, type: 'fix' })).toHaveLength(1)
       expect(listTasks({ dir: tmp, status: 'todo' })).toHaveLength(3)
       expect(listTasks({ dir: tmp, status: 'done' })).toHaveLength(0)
+    })
+    it('filters by comma-separated multi-value type', () => {
+      writeTask(tmp, makeTask({ id: 'aaa-000010', title: 'feature', type: 'feat' }))
+      writeTask(tmp, makeTask({ id: 'aaa-000011', title: 'bugfix', type: 'fix' }))
+      writeTask(tmp, makeTask({ id: 'aaa-000012', title: 'chore', type: 'chore' }))
+
+      expect(listTasks({ dir: tmp, type: 'feat,fix' })).toHaveLength(2)
+      expect(listTasks({ dir: tmp, type: 'chore' })).toHaveLength(1)
+    })
+    it('filters by comma-separated multi-value status', () => {
+      writeTask(tmp, makeTask({ id: 'aaa-000020', title: 'one', type: 'feat', status: 'todo' }))
+      writeTask(tmp, makeTask({ id: 'aaa-000021', title: 'two', type: 'feat', status: 'todo' }))
+
+      expect(listTasks({ dir: tmp, status: 'todo,in-progress' })).toHaveLength(2)
+      expect(listTasks({ dir: tmp, status: 'done,closed' })).toHaveLength(0)
+    })
+    it('filters by search substring on id, title, and description', () => {
+      writeTask(tmp, makeTask({ id: 'aaa-000030', title: 'auth login', type: 'feat', description: 'handles oauth' }))
+      writeTask(tmp, makeTask({ id: 'aaa-000031', title: 'fix button', type: 'fix', description: 'broken submit' }))
+      writeTask(tmp, makeTask({ id: 'aaa-000032', title: 'dashboard', type: 'feat', description: 'auth tokens display' }))
+
+      expect(listTasks({ dir: tmp, search: 'auth' })).toHaveLength(2)
+      expect(listTasks({ dir: tmp, search: 'button' })).toHaveLength(1)
+      expect(listTasks({ dir: tmp, search: 'aaa-000030' })).toHaveLength(1)
+      expect(listTasks({ dir: tmp, search: 'nonexistent' })).toHaveLength(0)
     })
     it('returns empty array when no tasks exist', () => {
       expect(listTasks({ dir: tmp })).toEqual([])
@@ -1132,6 +1219,71 @@ describe('task CRUD operations', () => {
       expect(patched.title).toBe('updated multi')
       expect(patched.description).toBe('added desc')
       expect(patched.status).toBe('todo')
+    })
+  })
+
+  describe('updateTask', () => {
+    it('persists parent to task file', () => {
+      const epic = createTask({ dir: tmp, type: 'feat', title: 'epic' })
+      const child = createTask({ dir: tmp, type: 'feat', title: 'child' })
+
+      const updated = updateTask(tmp, child.id, {
+        type: 'feat',
+        status: 'todo',
+        title: 'child',
+        parent: epic.id,
+      })
+
+      expect(updated.parent).toBe(epic.id)
+      const { task: reloaded } = findTaskFile(tmp, child.id)
+      expect(reloaded.parent).toBe(epic.id)
+    })
+
+    it('persists blocks to task file', () => {
+      const blocked = createTask({ dir: tmp, type: 'feat', title: 'blocked' })
+      const blocker = createTask({ dir: tmp, type: 'feat', title: 'blocker' })
+
+      const updated = updateTask(tmp, blocker.id, {
+        type: 'feat',
+        status: 'todo',
+        title: 'blocker',
+        blocks: [blocked.id],
+      })
+
+      expect(updated.blocks).toEqual([blocked.id])
+      const { task: reloaded } = findTaskFile(tmp, blocker.id)
+      expect(reloaded.blocks).toEqual([blocked.id])
+    })
+
+    it('preserves existing parent when update omits it', () => {
+      writeTask(tmp, makeTask({ id: 'bbb-000001', title: 'epic', type: 'feat' }))
+      writeTask(tmp, makeTask({ id: 'bbb-000002', title: 'child', type: 'feat', parent: 'bbb-000001' }))
+
+      const updated = updateTask(tmp, 'bbb-000002', {
+        type: 'feat',
+        status: 'todo',
+        title: 'child',
+      })
+
+      expect(updated.parent).toBe('bbb-000001')
+      const { task: reloaded } = findTaskFile(tmp, 'bbb-000002')
+      expect(reloaded.parent).toBe('bbb-000001')
+    })
+
+    it('clears parent when update sets empty string', () => {
+      writeTask(tmp, makeTask({ id: 'ccc-000001', title: 'epic', type: 'feat' }))
+      writeTask(tmp, makeTask({ id: 'ccc-000002', title: 'child', type: 'feat', parent: 'ccc-000001' }))
+
+      const updated = updateTask(tmp, 'ccc-000002', {
+        type: 'feat',
+        status: 'todo',
+        title: 'child',
+        parent: '',
+      })
+
+      expect(updated.parent).toBeFalsy()
+      const { task: reloaded } = findTaskFile(tmp, 'ccc-000002')
+      expect(reloaded.parent).toBeUndefined()
     })
   })
 })

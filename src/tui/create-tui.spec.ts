@@ -209,6 +209,35 @@ describe('render', () => {
     expect(screen).toMatchSnapshot()
   })
 
+  it('terminal too small snapshot at 25 cols', async () => {
+    const stdout = createMockStdout(25, 24)
+    render(makeFormState(), stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 25, 24)
+    expect(screen).toContain('Terminal too small')
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('create form snapshot at 60 cols', async () => {
+    const stdout = createMockStdout(60, 24)
+    render(makeFormState(), stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 60, 24)
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('edit form snapshot at 60 cols', async () => {
+    const state = makeFormState({
+      mode: 'edit',
+      taskId: 'MRKL-042',
+      title: 'Fix responsive layout',
+      description: 'Make the form work at narrow widths',
+      status: 0,
+    })
+    const stdout = createMockStdout(60, 24)
+    render(state, stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 60, 24)
+    expect(screen).toMatchSnapshot()
+  })
+
   it('long text wrapping snapshot at 40 cols', async () => {
     const state = makeFormState({
       title: 'A very long task title that should wrap at narrow width',
@@ -258,6 +287,42 @@ describe('interaction snapshots', () => {
     expect(screen).toMatchSnapshot()
   })
 
+  it('Tab moves to next field (same as arrow down)', async () => {
+    tui = spawnTui('create', { cols: 80, rows: 24 })
+    await tui.waitForContent('feat')
+
+    // Get screen with arrow down for reference
+    const refTui = spawnTui('create', { cols: 80, rows: 24 })
+    await refTui.waitForContent('feat')
+    refTui.write('\x1b[B') // arrow down
+    await new Promise((r) => setTimeout(r, 200))
+    const arrowScreen = refTui.readScreen()
+    refTui.kill()
+
+    // Tab should produce same result
+    tui.write('\t')
+    await new Promise((r) => setTimeout(r, 200))
+    const tabScreen = tui.readScreen()
+    expect(tabScreen).toBe(arrowScreen)
+  })
+
+  it('Shift+Tab moves to previous field (same as arrow up)', async () => {
+    tui = spawnTui('create', { cols: 80, rows: 24 })
+    await tui.waitForContent('feat')
+    tui.write('\t') // Tab → priority
+    await new Promise((r) => setTimeout(r, 200))
+    tui.write('\x1b[Z') // Shift+Tab → back to type
+    await new Promise((r) => setTimeout(r, 200))
+    const screen = tui.readScreen()
+
+    // Should be back on type field — pointer on feat row
+    const refTui = spawnTui('create', { cols: 80, rows: 24 })
+    const initialScreen = await refTui.waitForContent('feat')
+    refTui.kill()
+
+    expect(screen).toBe(initialScreen)
+  })
+
   it('left/right arrows cycle type options', async () => {
     tui = spawnTui('create', { cols: 80, rows: 24 })
     await tui.waitForContent('feat')
@@ -291,8 +356,8 @@ describe('interaction snapshots', () => {
       await new Promise((r) => setTimeout(r, 200))
       tui.write('Test task')
       await tui.waitForContent('Test task')
-      // Enter through: title → desc → flag → parent → blocks +Add → criteria +Add (empty = submit)
-      for (let i = 0; i < 5; i++) {
+      // Enter through: title → desc → flag → parent → +Block → +Add (empty = submit)
+      for (let i = 0; i < 6; i++) {
         tui.write('\r')
         await new Promise((r) => setTimeout(r, 100))
       }
@@ -353,7 +418,7 @@ describe('autocomplete interaction snapshots', () => {
     tui.write('\x1b[B\x1b[B\x1b[B\x1b[B\x1b[B')
     await new Promise((r) => setTimeout(r, 300))
     tui.write('auth')
-    const screen = await tui.waitForContent('Auth epic')
+    const screen = await tui.waitForContent('auth epic')
     expect(screen).toMatchSnapshot()
   })
 
@@ -376,11 +441,11 @@ describe('autocomplete interaction snapshots', () => {
     tui.write('\x1b[B\x1b[B\x1b[B\x1b[B\x1b[B')
     await new Promise((r) => setTimeout(r, 300))
     tui.write('auth')
-    await tui.waitForContent('Auth epic')
+    await tui.waitForContent('auth epic')
     tui.write('\x1b[C') // highlight "MRKL-003 - Auth tests" (index 1)
     await new Promise((r) => setTimeout(r, 200))
     tui.write('\r') // select it
-    await tui.waitForContent('Auth tests')
+    await tui.waitForContent('auth tests')
     const screen = tui.readScreen()
     expect(screen).toMatchSnapshot()
   })
@@ -403,7 +468,7 @@ describe('autocomplete interaction snapshots', () => {
     expect(screen).toMatchSnapshot()
   })
 
-  it('Enter on empty +Block field skips without selecting a suggestion', async () => {
+  it('Enter on empty +Block field advances to criteria instead of submitting', async () => {
     tui = spawnTui('create', { cols: 80, rows: 24, cwd: tempDir })
     await tui.waitForContent('feat')
     // Navigate to +Block field (index 6): type→priority→title→desc→flag→parent→+Block
@@ -418,6 +483,8 @@ describe('autocomplete interaction snapshots', () => {
     const screen = tui.readScreen()
     // Should NOT have added any blocks (no "Blocks 1" label)
     expect(screen).not.toMatch(/Blocks\s+1/)
+    // Form should still be visible — focus moved to criteria +Add, not submitted
+    expect(screen).toMatch(/\+ Add/)
     expect(screen).toMatchSnapshot()
   })
 })

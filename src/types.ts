@@ -50,8 +50,9 @@ export interface CreateTaskOpts {
 
 export interface ListFilter {
   dir: string
-  type?: TaskType
-  status?: Status
+  type?: string
+  status?: string
+  search?: string
 }
 
 export interface EditTaskResult {
@@ -72,6 +73,12 @@ export interface GroupedTask {
   blocksIndicator: string | null // e.g. "⛔► MRKL-010, MRKL-012"
   blockedByIndicator: string | null // e.g. "◄⛔ MRKL-005"
 }
+
+export const SORT_FIELDS = ['none', 'priority', 'status', 'created', 'blocks', 'blocked'] as const
+
+export type SortField = (typeof SORT_FIELDS)[number]
+
+export type SortDirection = 'asc' | 'desc'
 
 export interface PatchTaskOpts {
   type?: TaskType

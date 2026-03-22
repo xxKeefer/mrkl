@@ -2,8 +2,9 @@
 id: MRKL-132
 title: tui polish and ux improvements
 type: feat
-status: todo
+status: done
 created: '2026-03-17'
+flag: completed
 priority: 4
 ---
 
@@ -13,4 +14,4 @@ Umbrella epic for all TUI improvements: data-layer fixes, preview toggle, sortin
 
 ## Acceptance Criteria
 
-- [ ] All child tickets completed and verified
+- [x] All child tickets completed and verified

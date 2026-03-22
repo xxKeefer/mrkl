@@ -1,25 +1,18 @@
 ---
 id: MRKL-140
-title: temporal base36 ids
-type: feat
-status: closed
-created: '2026-03-19'
-flag: >-
-  Superseded: scope absorbed into parent MRKL-126 which now implements the
-  temporal IDs plan directly
-parent: MRKL-126
+title: list tui column misalignment from emoji visual width
+type: fix
+status: done
+created: '2026-03-18'
+flag: completed
+parent: MRKL-132
 priority: 3
 ---
 
 ## Description
 
-Replace sequential counter IDs with timestamp-based base36 IDs (ddd-mmmmmm). Eliminates counter, config, sync, merge, git hooks. See .plans/spike_temporal-ids.md
+padOrTruncate uses .length (code units) instead of visual width for columns, causing the divider and title columns to shift when emoji combinations have different code unit counts (e.g. ⏫🚧 vs ⏹️🛑)
 
 ## Acceptance Criteria
 
-- [ ] generateId() produces base36 days-millis format (10 chars)
-- [ ] IDs sort lexicographically in chronological order
-- [ ] No counter file, config file, sync command, or git hooks
-- [ ] Auto-create .tasks/ on first mrkl create
-- [ ] Prefix matching for task lookup
-- [ ] Existing PREFIX-NNN tasks still load and display
+- [x] divider line is vertically aligned regardless of emoji in status column

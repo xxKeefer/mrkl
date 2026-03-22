@@ -12,6 +12,9 @@
         packages = [
           pkgs.nodejs_22
           pkgs.pnpm
+          pkgs.python3
+          pkgs.gnumake
+          pkgs.gcc
         ];
       };
     };

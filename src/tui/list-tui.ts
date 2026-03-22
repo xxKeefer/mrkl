@@ -1,10 +1,11 @@
 import { watch, type FSWatcher } from 'node:fs'
 import { join } from 'node:path'
-import { Fzf } from 'fzf'
-import type { TaskData, Priority } from '../types.js'
-import { EMOJI, priorityEmoji } from '../emoji.js'
-import { groupByEpic, getChildren, getBlockedBy } from '../task.js'
+import type { TaskData, Priority, SortField, SortDirection } from '../types.js'
+import { SORT_FIELDS } from '../types.js'
+import { getIcon, priorityIcon, statusIcon } from '../icons.js'
+import { groupByEpic, getChildren, getBlockedBy, sortTasks } from '../task.js'
 import { TASKS_DIR } from '../id.js'
+import { readState, writeState } from '../state.js'
 import {
   ESC,
   ALT_SCREEN_ON,
@@ -23,7 +24,7 @@ import {
   FG_GRAY,
 } from './ansi.js'
 
-export interface FzfEntry {
+export interface ListEntry {
   task: TaskData
   searchText: string
   indent: number
@@ -35,10 +36,14 @@ export interface FzfEntry {
 export interface ListRenderState {
   activeTab: number
   query: string
+  searchMode: boolean
   selectedIndex: number
   scrollOffset: number
-  datasets: Array<{ label: string; entries: FzfEntry[] }>
-  filtered: FzfEntry[]
+  sortField: SortField
+  sortDirection: SortDirection
+  previewOpen: boolean
+  datasets: Array<{ label: string; entries: ListEntry[] }>
+  filtered: ListEntry[]
   allTasks: TaskData[]
 }
 
@@ -57,7 +62,7 @@ function statusColor(status: string): string {
   }
 }
 
-export function buildEntries(tasks: TaskData[]): FzfEntry[] {
+export function buildEntries(tasks: TaskData[]): ListEntry[] {
   const parentIds = new Set(tasks.filter((t) => t.parent).map((t) => t.parent!))
   const grouped = groupByEpic(tasks)
   return grouped.map((g) => ({
@@ -71,12 +76,14 @@ export function buildEntries(tasks: TaskData[]): FzfEntry[] {
 }
 
 const ID_W = 12
-const STATUS_W = 16
+const STATUS_W = 10
 
 
 function padOrTruncate(text: string, width: number): string {
-  if (text.length > width) return text.slice(0, width - 1) + '…'
-  return text.padEnd(width)
+  if (text.length > width) {
+    return text.slice(0, width - 1) + '…'
+  }
+  return text + ' '.repeat(width - text.length)
 }
 
 function formatRow(
@@ -125,6 +132,35 @@ function wrapText(text: string, width: number): string[] {
   return result
 }
 
+// eslint-disable-next-line no-control-regex
+const ESCAPE_RE = /\x1B\[[0-9;]*m/g
+function stripEscapes(text: string): string {
+  return text.replace(ESCAPE_RE, '')
+}
+function truncateToWidth(text: string, maxWidth: number): string {
+  const plain = stripEscapes(text)
+  if (plain.length <= maxWidth) return text
+  return plain.slice(0, maxWidth - 1) + '…'
+}
+
+function wrapRelationshipIds(label: string, ids: string[], width: number, color: string): string[] {
+  const prefix = `  ${label}: `
+  const indent = ' '.repeat(prefix.length)
+  const lines: string[] = []
+  let current = prefix
+  for (let i = 0; i < ids.length; i++) {
+    const token = i < ids.length - 1 ? `${ids[i]}, ` : ids[i]
+    if (current.length + token.length > width && current !== prefix) {
+      lines.push(current.trimEnd())
+      current = indent + token
+    } else {
+      current += token
+    }
+  }
+  if (current.trim()) lines.push(current.trimEnd())
+  return lines.map((l, i) => i === 0 ? l.replace(prefix, `${prefix}${color}`) + RESET : `${color}${l}${RESET}`)
+}
+
 function buildPreviewLines(
   task: TaskData | undefined,
   width: number,
@@ -135,11 +171,13 @@ function buildPreviewLines(
 
   const p = (task.priority ?? 3) as Priority
   const children = getChildren(allTasks, task.id)
-  const hierarchyEmoji = children.length > 0 ? EMOJI.epic : task.parent ? EMOJI.child : ''
+  const hierarchyIcon = children.length > 0 ? getIcon('epic') : task.parent ? getIcon('child') : ''
   lines.push(
-    `${hierarchyEmoji}${priorityEmoji(p)} ${BOLD}${task.id}${RESET} ${FG_GRAY}${task.type}${RESET} ${statusColor(task.status)}${task.status}${RESET}`,
+    `${hierarchyIcon}${priorityIcon(p)} ${BOLD}${task.id}${RESET} ${FG_GRAY}${task.type}${RESET} ${statusColor(task.status)}${statusIcon(task.status)}${RESET}`,
   )
-  lines.push(`${BOLD}${task.title}${RESET}`)
+  for (const tl of wrapText(task.title, width)) {
+    lines.push(`${BOLD}${tl}${RESET}`)
+  }
   lines.push('')
 
   const blockedBy = getBlockedBy(allTasks, task.id)
@@ -148,22 +186,24 @@ function buildPreviewLines(
   if (hasRelationships) {
     lines.push(`${UNDERLINE}Relationships${RESET}`)
     if (task.parent) {
-      lines.push(`  ${EMOJI.epic} Parent: ${FG_CYAN}${task.parent}${RESET}`)
+      lines.push(`  ${getIcon('epic')} Parent: ${FG_CYAN}${task.parent}${RESET}`)
     }
     if (children.length > 0) {
-      lines.push(`  ${EMOJI.child} Children: ${FG_CYAN}${children.map((c) => c.id).join(', ')}${RESET}`)
+      lines.push(...wrapRelationshipIds(`${getIcon('child')} Children`, children.map((c) => c.id), width, FG_CYAN))
     }
     if (task.blocks && task.blocks.length > 0) {
-      lines.push(`  ${EMOJI.blocks} Blocks: ${FG_RED}${task.blocks.join(', ')}${RESET}`)
+      lines.push(...wrapRelationshipIds(`${getIcon('blocks')} Blocks`, task.blocks, width, FG_RED))
     }
     if (blockedBy.length > 0) {
-      lines.push(`  ${EMOJI.blocked_by} Blocked by: ${FG_RED}${blockedBy.map((t) => t.id).join(', ')}${RESET}`)
+      lines.push(...wrapRelationshipIds(`${getIcon('blocked_by')} Blocked by`, blockedBy.map((t) => t.id), width, FG_RED))
     }
     lines.push('')
   }
 
   if (task.flag) {
-    lines.push(`${EMOJI.flag} ${task.flag}`)
+    for (const fl of wrapText(`${getIcon('flag')} ${task.flag}`, width)) {
+      lines.push(fl)
+    }
     lines.push('')
   }
 
@@ -187,10 +227,25 @@ function buildPreviewLines(
   return lines
 }
 
+const MIN_COLS = 40
+
 export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): void {
   const cols = stdout.columns || 80
   const rows = stdout.rows || 24
-  const { filtered, datasets } = state
+
+  if (cols < MIN_COLS) {
+    stdout.write(CLEAR_SCREEN)
+    const msg = 'Terminal too small'
+    const hint = `Need ${MIN_COLS}+ cols (have ${cols})`
+    const y = Math.floor(rows / 2)
+    const x1 = Math.max(0, Math.floor((cols - msg.length) / 2))
+    const x2 = Math.max(0, Math.floor((cols - hint.length) / 2))
+    stdout.write(`\x1B[${y};${x1 + 1}H${BOLD}${msg}${RESET}`)
+    stdout.write(`\x1B[${y + 1};${x2 + 1}H${FG_GRAY}${hint}${RESET}`)
+    return
+  }
+
+  const { filtered, datasets, previewOpen } = state
   const buf: string[] = []
 
   // Tab bar
@@ -204,28 +259,53 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
   buf.push('')
 
   // Search input
-  buf.push(`${FG_CYAN}>${RESET} ${state.query}${UNDERLINE} ${RESET}`)
+  if (state.searchMode) {
+    buf.push(`${FG_CYAN}/${RESET} ${state.query}${UNDERLINE} ${RESET}`)
+  } else if (state.query) {
+    buf.push(`${FG_GRAY}/ ${state.query}${RESET}`)
+  } else {
+    buf.push('')
+  }
+
+  // Layout modes: vertical split (wide), horizontal split (narrow), no preview
+  const HORIZONTAL_THRESHOLD = 80
+  const horizontal = previewOpen && cols < HORIZONTAL_THRESHOLD
+  const vertical = previewOpen && !horizontal
+  const listWidth = vertical ? Math.floor(cols * 0.55) : cols
+  const previewWidth = vertical ? cols - listWidth - 3 : cols - 2
+  const contentWidth = vertical ? listWidth - 1 : cols - 1
 
   // Separator
-  const listWidth = Math.floor(cols * 0.55)
-  const previewWidth = cols - listWidth - 3
-  buf.push(
-    `${FG_GRAY}${'─'.repeat(listWidth)}┬${'─'.repeat(previewWidth + 2)}${RESET}`,
-  )
+  if (vertical) {
+    buf.push(`${FG_GRAY}${'─'.repeat(listWidth)}┬${'─'.repeat(previewWidth + 2)}${RESET}`)
+  } else {
+    buf.push(`${FG_GRAY}${'─'.repeat(cols)}${RESET}`)
+  }
 
-  // Column headers (1-char padding before separator)
-  const contentWidth = listWidth - 1
+  // Column headers
   const headerLine = formatRow('ID', 'STATUS', 'TITLE', contentWidth)
-  buf.push(
-    `${BOLD}${headerLine}${RESET} ${FG_GRAY}│${RESET}${BOLD} Preview${RESET}`,
-  )
-  buf.push(
-    `${FG_GRAY}${'─'.repeat(listWidth)}┼${'─'.repeat(previewWidth + 2)}${RESET}`,
-  )
+  if (vertical) {
+    buf.push(`${BOLD}${headerLine}${RESET} ${FG_GRAY}│${RESET}${BOLD} Preview${RESET}`)
+    buf.push(`${FG_GRAY}${'─'.repeat(listWidth)}┼${'─'.repeat(previewWidth + 2)}${RESET}`)
+  } else {
+    buf.push(`${BOLD}${headerLine}${RESET}`)
+    buf.push(`${FG_GRAY}${'─'.repeat(cols)}${RESET}`)
+  }
 
-  // Content area
-  const contentRows = rows - 9
-  const maxVisible = Math.max(1, contentRows)
+  // Content area — in horizontal mode, reserve rows for preview below
+  const MIN_LIST_ROWS = 10
+  const overhead = 9 // tab bar, search, header, separators, bottom bar
+  const totalContentRows = rows - overhead
+  let maxVisible: number
+  let previewRowCount: number
+  if (horizontal) {
+    // List gets at least MIN_LIST_ROWS, preview gets the rest
+    maxVisible = Math.max(MIN_LIST_ROWS, Math.min(filtered.length, Math.floor(totalContentRows * 0.6)))
+    previewRowCount = Math.max(0, totalContentRows - maxVisible - 1) // -1 for separator
+  } else {
+    maxVisible = Math.max(1, totalContentRows)
+    previewRowCount = 0
+  }
 
   // Clamp selected index
   if (filtered.length === 0) {
@@ -240,11 +320,11 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
   if (state.selectedIndex >= state.scrollOffset + maxVisible)
     state.scrollOffset = state.selectedIndex - maxVisible + 1
 
-  // Build preview lines
   const selectedTask = filtered[state.selectedIndex]?.task
-  const previewLines = buildPreviewLines(selectedTask, previewWidth, state.allTasks)
+  const safePreviewWidth = Math.max(0, previewWidth)
+  const previewLines = buildPreviewLines(selectedTask, safePreviewWidth, state.allTasks)
 
-  // Render rows
+  // Render list rows
   for (let i = 0; i < maxVisible; i++) {
     const taskIdx = state.scrollOffset + i
     const entry = filtered[taskIdx]
@@ -257,44 +337,54 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
       const treePrefix = entry.indent === 1 ? '├─' : ''
       const prefixWidth = treePrefix ? 2 : 0
       const rowWidth = contentWidth - prefixWidth
-      const priEmoji = priorityEmoji((entry.task.priority ?? 3) as Priority)
-      const blockedByEmoji = entry.blockedByIndicator ? EMOJI.blocked_by : ''
-      const blocksEmoji = entry.blocksIndicator ? EMOJI.blocks : ''
-      const hierarchyEmoji = entry.isEpic ? EMOJI.epic : entry.task.parent ? EMOJI.child : ''
-      const compactStatus = `${entry.task.status} ${hierarchyEmoji}${priEmoji}${blockedByEmoji}${blocksEmoji}`
+      const indicators = [
+        entry.isEpic ? getIcon('epic') : entry.task.parent ? getIcon('child') : '',
+        priorityIcon((entry.task.priority ?? 3) as Priority),
+        entry.blockedByIndicator ? getIcon('blocked_by') : '',
+        entry.blocksIndicator ? getIcon('blocks') : '',
+      ].filter(Boolean).join(' ')
+      const compactStatus = `${statusIcon(entry.task.status)} ${indicators}`
 
       if (isSelected) {
-        const row = formatRow(
-          entry.task.id,
-          compactStatus,
-          entry.task.title,
-          rowWidth,
-        )
+        const row = formatRow(entry.task.id, compactStatus, entry.task.title, rowWidth)
         leftPart = `${treePrefix ? `${FG_GRAY}${treePrefix}${RESET}` : ''}${INVERSE}${row}${RESET} `
       } else {
         const sc = statusColor(entry.task.status)
-        const coloredRow = colorizeRow(
-          entry.task.id,
-          compactStatus,
-          entry.task.title,
-          rowWidth,
-          sc,
-        )
+        const coloredRow = colorizeRow(entry.task.id, compactStatus, entry.task.title, rowWidth, sc)
         leftPart = `${treePrefix ? `${FG_GRAY}${treePrefix}${RESET}` : ''}${coloredRow} `
       }
     }
 
-    const rightPart = previewLines[i] ?? ''
-    buf.push(`${leftPart}${FG_GRAY}│${RESET} ${rightPart}`)
+    if (vertical) {
+      const rightPart = truncateToWidth(previewLines[i] ?? '', previewWidth)
+      buf.push(`${leftPart}${FG_GRAY}│${RESET} ${rightPart}`)
+    } else {
+      buf.push(leftPart)
+    }
+  }
+
+  // Horizontal preview below list
+  if (horizontal) {
+    buf.push(`${FG_GRAY}${'─'.repeat(cols)}${RESET}`)
+    const hPreviewMax = cols - 2 // 1 for leading space, 1 for margin
+    for (let i = 0; i < previewRowCount; i++) {
+      buf.push(` ${truncateToWidth(previewLines[i] ?? '', hPreviewMax)}`)
+    }
   }
 
   // Bottom bar
-  buf.push(
-    `${FG_GRAY}${'─'.repeat(listWidth)}┴${'─'.repeat(previewWidth + 2)}${RESET}`,
-  )
+  if (vertical) {
+    buf.push(`${FG_GRAY}${'─'.repeat(listWidth)}┴${'─'.repeat(previewWidth + 2)}${RESET}`)
+  } else {
+    buf.push(`${FG_GRAY}${'─'.repeat(cols)}${RESET}`)
+  }
   const countInfo = `${filtered.length}/${datasets[state.activeTab].entries.length}`
+  const sortInfo = state.sortField !== 'none' ? `  sort: ${state.sortField} ${state.sortDirection === 'desc' ? getIcon('priority_lowest') : getIcon('priority_highest')}` : ''
+  const helpText = state.searchMode
+    ? 'Type to filter  Esc: done'
+    : '↑↓: navigate  /: search  s: sort  d: direction  p: preview  Tab: switch  Esc: quit'
   buf.push(
-    `${FG_GRAY}${countInfo} tasks  ↑↓: navigate  Tab: switch  Enter: select  Esc: quit  Type to search${RESET}`,
+    `${FG_GRAY}${countInfo} tasks${sortInfo}  ${helpText}${RESET}`,
   )
 
   stdout.write(CLEAR_SCREEN + buf.join('\n'))
@@ -306,6 +396,7 @@ export async function interactiveList(
   tasks: TaskData[],
   archivedTasks: TaskData[],
   onReload?: ReloadFn,
+  initialQuery?: string,
 ): Promise<TaskData | null> {
   const { stdin, stdout } = process
 
@@ -317,25 +408,41 @@ export async function interactiveList(
   let currentTasks = tasks
   let currentArchived = archivedTasks
   let activeTab = 0
-  let query = ''
+  let query = initialQuery ?? ''
+  let searchMode = false
   let selectedIndex = 0
   let scrollOffset = 0
+  let sortField: SortField = 'none'
+  let sortDirection: SortDirection = 'desc'
+  let previewOpen = readState().preview_open
 
-  function getFiltered(): FzfEntry[] {
+  function getFiltered(): ListEntry[] {
     const entries = datasets[activeTab].entries
-    if (!query) return entries
-    const fzf = new Fzf(entries, { selector: (e: FzfEntry) => e.searchText })
-    return fzf.find(query).map((r: { item: FzfEntry }) => r.item)
+    let result = entries
+    if (query) {
+      const q = query.toLowerCase()
+      result = result.filter((e) => e.searchText.toLowerCase().includes(q))
+    }
+    if (sortField !== 'none') {
+      const entryById = new Map(result.map((e) => [e.task.id, e]))
+      const sortedTasks = sortTasks(result.map((e) => e.task), sortField, sortDirection)
+      result = sortedTasks.map((t) => ({ ...entryById.get(t.id)!, indent: 0 }))
+    }
+    return result
   }
 
-  function render(): void {
+  function render(precomputed?: ListEntry[]): void {
     const state: ListRenderState = {
       activeTab,
       query,
+      searchMode,
       selectedIndex,
       scrollOffset,
+      sortField,
+      sortDirection,
+      previewOpen,
       datasets,
-      filtered: getFiltered(),
+      filtered: precomputed ?? getFiltered(),
       allTasks: activeTab === 0 ? currentTasks : currentArchived,
     }
     renderList(state, stdout)
@@ -354,7 +461,7 @@ export async function interactiveList(
     if (selectedIndex >= filtered.length) {
       selectedIndex = Math.max(0, filtered.length - 1)
     }
-    render()
+    render(filtered)
   }
 
   // Setup terminal
@@ -392,6 +499,7 @@ export async function interactiveList(
       if (stdin.isTTY) stdin.setRawMode(false)
       stdin.pause()
       stdin.removeListener('data', onData)
+      stdout.removeListener('resize', onResize)
     }
 
     function onData(data: string): void {
@@ -421,6 +529,11 @@ export async function interactiveList(
             i += 2
             continue
           }
+          // Esc in search mode exits search
+          if (searchMode) {
+            searchMode = false
+            continue
+          }
           // Plain Esc = exit
           cleanup()
           resolve(null)
@@ -432,6 +545,32 @@ export async function interactiveList(
           cleanup()
           resolve(null)
           return
+        }
+
+        // Search mode input
+        if (searchMode) {
+          if (ch === '\x7f' || ch === '\b') {
+            if (query.length > 0) {
+              query = query.slice(0, -1)
+              selectedIndex = 0
+              scrollOffset = 0
+            }
+            continue
+          }
+          if (ch >= ' ' && ch <= '~') {
+            query += ch
+            selectedIndex = 0
+            scrollOffset = 0
+          }
+          continue
+        }
+
+        // Command mode keys
+
+        // / enters search mode
+        if (ch === '/') {
+          searchMode = true
+          continue
         }
 
         // Tab
@@ -446,26 +585,30 @@ export async function interactiveList(
         // Enter
         if (ch === '\r' || ch === '\n') {
           cleanup()
-          const selected = getFiltered()[selectedIndex]
-          resolve(selected?.task ?? null)
+          resolve(filtered[selectedIndex]?.task ?? null)
           return
         }
 
-        // Backspace
-        if (ch === '\x7f' || ch === '\b') {
-          if (query.length > 0) {
-            query = query.slice(0, -1)
-            selectedIndex = 0
-            scrollOffset = 0
-          }
+        // Sort controls
+        if (ch === 's') {
+          const idx = SORT_FIELDS.indexOf(sortField)
+          sortField = SORT_FIELDS[(idx + 1) % SORT_FIELDS.length]
+          selectedIndex = 0
+          scrollOffset = 0
+          continue
+        }
+        if (ch === 'd') {
+          sortDirection = sortDirection === 'desc' ? 'asc' : 'desc'
+          selectedIndex = 0
+          scrollOffset = 0
           continue
         }
 
-        // Printable characters
-        if (ch >= ' ' && ch <= '~') {
-          query += ch
-          selectedIndex = 0
-          scrollOffset = 0
+        // Preview toggle
+        if (ch === 'p') {
+          previewOpen = !previewOpen
+          writeState({ preview_open: previewOpen })
+          continue
         }
       }
 
@@ -474,7 +617,7 @@ export async function interactiveList(
 
     stdin.on('data', onData)
 
-    // Handle resize
-    stdout.on('resize', () => render())
+    const onResize = () => render()
+    stdout.on('resize', onResize)
   })
 }

@@ -41,7 +41,6 @@
   "dependencies": {
     "citty": "^0.1.6",
     "consola": "^3.4.0",
-    "fzf": "^0.5.2",
     "gray-matter": "^4.0.3"
   },
   "devDependencies": {

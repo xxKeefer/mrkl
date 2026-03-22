@@ -6,7 +6,7 @@ import type {
   TaskData,
   EditTaskResult,
 } from '../types.js'
-import { priorityEmoji } from '../emoji.js'
+import { priorityIcon } from '../icons.js'
 import {
   ESC,
   ALT_SCREEN_ON,
@@ -370,8 +370,24 @@ function getFilteredSuggestions(state: FormState): AutocompleteCandidate[] {
   return []
 }
 
+const MIN_COLS = 40
+
 export function render(state: FormState, stdout: NodeJS.WriteStream): void {
   const cols = stdout.columns || 80
+  const rows = (stdout.rows || 24)
+
+  if (cols < MIN_COLS) {
+    stdout.write(CLEAR_SCREEN)
+    const msg = 'Terminal too small'
+    const hint = `Need ${MIN_COLS}+ cols (have ${cols})`
+    const y = Math.floor(rows / 2)
+    const x1 = Math.max(0, Math.floor((cols - msg.length) / 2))
+    const x2 = Math.max(0, Math.floor((cols - hint.length) / 2))
+    stdout.write(`\x1B[${y};${x1 + 1}H${BOLD}${msg}${RESET}`)
+    stdout.write(`\x1B[${y + 1};${x2 + 1}H${DIM}${hint}${RESET}`)
+    return
+  }
+
   const contentWidth = Math.max(10, cols - GUTTER - 2)
   const sepWidth = Math.min(cols - 4, 60)
   const buf: string[] = []
@@ -401,7 +417,7 @@ export function render(state: FormState, stdout: NodeJS.WriteStream): void {
       let value: string
       if (f.index === priorityFieldIndex(state)) {
         const p = PRIORITIES[state.priority]
-        value = `${priorityEmoji(p)} ${p}-${PRIORITY_LABELS[state.priority]}`
+        value = `${priorityIcon(p)} ${p}-${PRIORITY_LABELS[state.priority]}`
       } else if (f.index === 0) {
         value = TASK_TYPES[state.type]
       } else {
@@ -602,8 +618,8 @@ function runForm<T>(
 
       if (isBlocksAddField(state)) {
         if (state.currentBlock.trim() === '') {
-          // Empty input on +Block = move to criteria / submit
-          submit()
+          // Empty input on +Block = advance to criteria +Add field
+          moveToField(criteriaStartIndex(state) + state.criteria.length)
           return true
         }
         const suggestions = getFilteredSuggestions(state)
@@ -677,6 +693,12 @@ function runForm<T>(
 
           if (data[i + 1] === '[') {
             const arrow = data[i + 2]
+            // Shift+Tab (CSI Z)
+            if (arrow === 'Z') {
+              moveToField(state.activeField - 1)
+              i += 2
+              continue
+            }
             if (arrow === 'A') {
               moveToField(state.activeField - 1)
               i += 2
@@ -735,6 +757,13 @@ function runForm<T>(
           cleanup()
           resolve(null)
           return
+        }
+
+        // Tab — move to next field
+        if (ch === '\t') {
+          moveToField(state.activeField + 1)
+          render(state, stdout)
+          continue
         }
 
         // Ctrl+N — insert newline (reliable cross-terminal fallback)
@@ -885,8 +914,8 @@ export async function interactiveEdit(
         acceptance_criteria: criteria.length > 0 ? criteria : undefined,
         priority,
         flag: state.flag.trim() || undefined,
-        parent: state.parent || undefined,
-        blocks: state.blocks.length > 0 ? [...state.blocks] : undefined,
+        parent: state.parent || '',
+        blocks: [...state.blocks],
       }
     },
   )

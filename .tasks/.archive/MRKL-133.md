@@ -2,8 +2,9 @@
 id: MRKL-133
 title: trim task titles at data layer
 type: fix
-status: todo
+status: done
 created: '2026-03-17'
+flag: completed
 parent: MRKL-132
 priority: 4
 ---
@@ -14,5 +15,5 @@ Apply normalizeTitle() in template.ts parse() so all task files get clean titles
 
 ## Acceptance Criteria
 
-- [ ] A task with title '  foo  ' in frontmatter displays as 'foo' in both list and preview
-- [ ] Existing tasks with clean titles are unaffected
+- [x] A task with title '  foo  ' in frontmatter displays as 'foo' in both list and preview
+- [x] Existing tasks with clean titles are unaffected
