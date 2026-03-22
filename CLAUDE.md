@@ -5,17 +5,20 @@ IMPORTANT: when using skills that ask for a task tracker, use mrkl to attempt to
 
 # MRKL Design Philosophy
 - things should be simple. code, commands, config, files. all should be terse, precise, easy to use and read.
-- if a human user has to think about it, then the design needs more work. using mrkls should be like breathing. inuitive and auotomaitic
-- our users our developers and ai agents, our fetaures should be designed to make it easier for the to work together
+- if a human user has to think about it, then the design needs more work. using mrkl should be like breathing. intuitive and automatic
+- our users are developers and ai agents, our features should be designed to make it easier for them to work together
 - all mrkl commands should have an interactive tui mode if given no arguments for humans ease of use
-- all mrkl commands should by default either print a success message or printout to the console when given commands for agents ease od use
+- all mrkl commands should by default either print a success message or printout to the console when given commands for agents ease of use
 
 # Architecture
 - Entry point: `src/cli.ts` — citty `defineCommand` router with subcommands
 - Commands: `src/commands/` — each exports a `defineCommand` (see `close.ts` for reference pattern)
-- Core logic: `src/task.ts` (task CRUD), `src/id.ts` (temporal ID generation), `src/template.ts` (gray-matter frontmatter)
+- Core logic: `src/task.ts` (task CRUD + relationships), `src/id.ts` (temporal ID generation), `src/template.ts` (gray-matter frontmatter)
+- Icons: `src/icons.ts` — single `ICONS` map of 1-cell-wide Unicode symbols, `getIcon()`, `priorityIcon()`, `statusIcon()`
+- Logger: `src/logger.ts` — icon-prefixed logger wrapping consola, keyed by `IconKey`
+- State: `src/state.ts` — persisted TUI preferences (`.tasks/.mrkl.json`)
 - TUI: `src/tui/` — interactive prompts for commands invoked without arguments
-- Types: `src/types.ts` — `TaskData`, `Status`, `TaskType`, etc.
+- Types: `src/types.ts` — `TaskData`, `Status`, `TaskType`, `Priority`, `SortField`, etc.
 - Tasks are markdown files with YAML frontmatter, stored in `.tasks/` (archived to `.tasks/.archive/`)
 - Statuses: `todo | in-progress | done | closed`
 - Task types: `feat | fix | chore | docs | perf | refactor | test | ci | build | style`
