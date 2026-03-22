@@ -4,9 +4,11 @@ IMPORTANT: the latest version of mrkl can be called via: `pn dev <command> <flag
 IMPORTANT: when using skills that ask for a task tracker, use mrkl to attempt to perform the action. if it can not be done simulate the output and let the user know that mrkl is not feature complete
 
 # MRKL Design Philosophy
-- things should be simple. code, command. config. files. all should be terse, precise, easy to use and read
-- all mrkl commands should have an interactive tui mode if given no arguments
-- all mrkl commands should by default either print a success message or printout to the console when given commands
+- things should be simple. code, commands, config, files. all should be terse, precise, easy to use and read.
+- if a human user has to think about it, then the design needs more work. using mrkls should be like breathing. inuitive and auotomaitic
+- our users our developers and ai agents, our fetaures should be designed to make it easier for the to work together
+- all mrkl commands should have an interactive tui mode if given no arguments for humans ease of use
+- all mrkl commands should by default either print a success message or printout to the console when given commands for agents ease od use
 
 # Architecture
 - Entry point: `src/cli.ts` — citty `defineCommand` router with subcommands

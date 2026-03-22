@@ -44,7 +44,7 @@ export function parse(content: string, _filename: string): TaskData {
   const title = data.title as string | undefined
   if (!title) {
     throw new Error(
-      "Task file missing title in frontmatter. Run 'mrkl migrate_prior_verbose' to fix.",
+      'Task file missing title in frontmatter.',
     )
   }
 

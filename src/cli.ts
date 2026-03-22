@@ -7,7 +7,6 @@ import doneCommand from './commands/done.js'
 import pruneCommand from './commands/prune.js'
 import closeCommand from './commands/close.js'
 import editCommand from './commands/edit.js'
-import migrateCommand from './commands/migrate.js'
 import installSkillsCommand from './commands/install-skills.js'
 
 export const main = defineCommand({
@@ -31,7 +30,6 @@ export const main = defineCommand({
     p: pruneCommand,
     close: closeCommand,
     x: closeCommand,
-    migrate_prior_verbose: migrateCommand,
     'install-skills': installSkillsCommand,
   },
 })

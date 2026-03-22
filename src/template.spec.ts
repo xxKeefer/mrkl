@@ -106,7 +106,7 @@ describe('template', () => {
     it('throws when no title in frontmatter', () => {
       const content = `---\nid: TEST-001\ntype: feat\nstatus: todo\ncreated: '2026-03-01'\n---\n\n## Description\n\n\n\n## Acceptance Criteria\n\n`
       expect(() => parse(content, 'TEST-001.md')).toThrow(
-        "Task file missing title in frontmatter. Run 'mrkl migrate_prior_verbose' to fix.",
+        'Task file missing title in frontmatter.',
       )
     })
     it('extracts acceptance criteria items', () => {
