@@ -6,7 +6,7 @@ import type {
   TaskData,
   EditTaskResult,
 } from '../types.js'
-import { priorityEmoji } from '../emoji.js'
+import { priorityIcon } from '../icons.js'
 import {
   ESC,
   ALT_SCREEN_ON,
@@ -417,7 +417,7 @@ export function render(state: FormState, stdout: NodeJS.WriteStream): void {
       let value: string
       if (f.index === priorityFieldIndex(state)) {
         const p = PRIORITIES[state.priority]
-        value = `${priorityEmoji(p)} ${p}-${PRIORITY_LABELS[state.priority]}`
+        value = `${priorityIcon(p)} ${p}-${PRIORITY_LABELS[state.priority]}`
       } else if (f.index === 0) {
         value = TASK_TYPES[state.type]
       } else {

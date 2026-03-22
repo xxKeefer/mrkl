@@ -2,7 +2,7 @@ import { watch, type FSWatcher } from 'node:fs'
 import { join } from 'node:path'
 import type { TaskData, Priority, SortField, SortDirection } from '../types.js'
 import { SORT_FIELDS } from '../types.js'
-import { getIcon, priorityEmoji } from '../emoji.js'
+import { getIcon, priorityIcon, statusIcon } from '../icons.js'
 import { groupByEpic, getChildren, getBlockedBy, sortTasks } from '../task.js'
 import { TASKS_DIR } from '../id.js'
 import { readState, writeState } from '../state.js'
@@ -76,7 +76,7 @@ export function buildEntries(tasks: TaskData[]): ListEntry[] {
 }
 
 const ID_W = 12
-const STATUS_W = 16
+const STATUS_W = 10
 
 
 function padOrTruncate(text: string, width: number): string {
@@ -138,27 +138,19 @@ function wrapText(text: string, width: number): string[] {
   return result
 }
 
-// BMP emoji + VS16 → 2-wide; supplementary plane emoji → 2-wide; BMP emoji alone → 1-wide
-const WIDE_EMOJI_RE = /(?:[\u2300-\u23FF\u2600-\u26FF\u2700-\u27BF\u2B50-\u2B55]\uFE0F|[\u{1F300}-\u{1F9FF}]\uFE0F?)/gu
-const NARROW_EMOJI_RE = /[\u2300-\u23FF\u2600-\u26FF\u2700-\u27BF\u2B50-\u2B55](?!\uFE0F)/gu
-const ANSI_RE = /\x1B\[[0-9;]*m/g
-function stripAnsi(text: string): string {
-  return text.replace(ANSI_RE, '')
+// eslint-disable-next-line no-control-regex
+const ESCAPE_RE = /\x1B\[[0-9;]*m/g
+function stripEscapes(text: string): string {
+  return text.replace(ESCAPE_RE, '')
 }
 function visualWidth(text: string): number {
-  // Wide emoji (BMP+VS16 or supplementary) count as 2; narrow BMP emoji count as 1
-  return stripAnsi(text).replace(WIDE_EMOJI_RE, 'XX').length
+  return stripEscapes(text).length
 }
 
 function truncateToWidth(text: string, maxWidth: number): string {
-  const plain = stripAnsi(text)
-  if (visualWidth(plain) <= maxWidth) return text
-  // Truncate the plain text, then rebuild with original ANSI codes up to the cut point
-  let trimmed = plain
-  while (visualWidth(trimmed) > maxWidth - 1 && trimmed.length > 0) {
-    trimmed = trimmed.slice(0, -1)
-  }
-  return trimmed + '…'
+  const plain = stripEscapes(text)
+  if (plain.length <= maxWidth) return text
+  return plain.slice(0, maxWidth - 1) + '…'
 }
 
 function wrapRelationshipIds(label: string, ids: string[], width: number, color: string): string[] {
@@ -189,9 +181,9 @@ function buildPreviewLines(
 
   const p = (task.priority ?? 3) as Priority
   const children = getChildren(allTasks, task.id)
-  const hierarchyEmoji = children.length > 0 ? getIcon('epic') : task.parent ? getIcon('child') : ''
+  const hierarchyIcon = children.length > 0 ? getIcon('epic') : task.parent ? getIcon('child') : ''
   lines.push(
-    `${hierarchyEmoji}${priorityEmoji(p)} ${BOLD}${task.id}${RESET} ${FG_GRAY}${task.type}${RESET} ${statusColor(task.status)}${task.status}${RESET}`,
+    `${hierarchyIcon}${priorityIcon(p)} ${BOLD}${task.id}${RESET} ${FG_GRAY}${task.type}${RESET} ${statusColor(task.status)}${statusIcon(task.status)}${RESET}`,
   )
   for (const tl of wrapText(task.title, width)) {
     lines.push(`${BOLD}${tl}${RESET}`)
@@ -338,9 +330,8 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
   if (state.selectedIndex >= state.scrollOffset + maxVisible)
     state.scrollOffset = state.selectedIndex - maxVisible + 1
 
-  // Build preview lines (use previewWidth - 1 as margin for emoji width variance)
   const selectedTask = filtered[state.selectedIndex]?.task
-  const safePreviewWidth = Math.max(0, previewWidth - 1)
+  const safePreviewWidth = Math.max(0, previewWidth)
   const previewLines = buildPreviewLines(selectedTask, safePreviewWidth, state.allTasks)
 
   // Render list rows
@@ -358,11 +349,11 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
       const rowWidth = contentWidth - prefixWidth
       const indicators = [
         entry.isEpic ? getIcon('epic') : entry.task.parent ? getIcon('child') : '',
-        priorityEmoji((entry.task.priority ?? 3) as Priority),
+        priorityIcon((entry.task.priority ?? 3) as Priority),
         entry.blockedByIndicator ? getIcon('blocked_by') : '',
         entry.blocksIndicator ? getIcon('blocks') : '',
       ].filter(Boolean).join(' ')
-      const compactStatus = `${entry.task.status} ${indicators}`
+      const compactStatus = `${statusIcon(entry.task.status)} ${indicators}`
 
       if (isSelected) {
         const row = formatRow(entry.task.id, compactStatus, entry.task.title, rowWidth)

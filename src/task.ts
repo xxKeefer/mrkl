@@ -7,7 +7,7 @@ import {
   mkdirSync,
 } from 'node:fs'
 import { join } from 'node:path'
-import { getIcon } from './emoji.js'
+import { getIcon } from './icons.js'
 import { generateId, TASKS_DIR } from './id.js'
 import { render, parse } from './template.js'
 import type {

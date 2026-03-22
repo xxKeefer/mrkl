@@ -3,10 +3,11 @@ import { logger } from '../logger.js'
 import { listTasks, listArchivedTasks, updateTask, groupByEpic, sortTasks } from '../task.js'
 import type { Status, TaskType, SortField, SortDirection } from '../types.js'
 import { SORT_FIELDS } from '../types.js'
+import { statusIcon } from '../icons.js'
 
 const COL_ID = 14
 const COL_TYPE = 12
-const COL_STATUS = 14
+const COL_STATUS = 8
 
 function parseSortArg(raw: string): { field: SortField; direction: SortDirection } {
   const [fieldStr, dirStr] = raw.split(':')
@@ -86,7 +87,7 @@ export default defineCommand({
         if (sort && sort.field !== 'none') {
           const sorted = sortTasks(tasks, sort.field, sort.direction)
           for (const task of sorted) {
-            print(formatRow(task.id, task.type, task.status, task.title))
+            print(formatRow(task.id, task.type, statusIcon(task.status), task.title))
           }
         } else {
           const grouped = groupByEpic(tasks)
@@ -109,9 +110,9 @@ export default defineCommand({
               const siblings = childrenByParent.get(entry.task.parent!) ?? []
               const isLast = siblings[siblings.length - 1] === entry
               const prefix = isLast ? '  \u2514\u2500 ' : '  \u251C\u2500 '
-              print(`${prefix}${formatRow(entry.task.id, entry.task.type, entry.task.status, entry.task.title)}${suffix}`)
+              print(`${prefix}${formatRow(entry.task.id, entry.task.type, statusIcon(entry.task.status), entry.task.title)}${suffix}`)
             } else {
-              print(`${formatRow(entry.task.id, entry.task.type, entry.task.status, entry.task.title)}${suffix}`)
+              print(`${formatRow(entry.task.id, entry.task.type, statusIcon(entry.task.status), entry.task.title)}${suffix}`)
             }
           }
         }
@@ -120,7 +121,7 @@ export default defineCommand({
           print(`Archive (${archivedTasks.length}):`)
           print('\u2500'.repeat(60))
           for (const task of archivedTasks) {
-            print(formatRow(task.id, task.type, task.status, task.title))
+            print(formatRow(task.id, task.type, statusIcon(task.status), task.title))
           }
         }
         return

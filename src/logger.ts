@@ -1,5 +1,5 @@
 import consola from 'consola'
-import { ICONS, getIcon, type IconKey } from './emoji.js'
+import { ICONS, getIcon, type IconKey } from './icons.js'
 
 type Level = 'success' | 'error' | 'warn' | 'info'
 

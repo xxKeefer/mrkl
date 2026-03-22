@@ -13,7 +13,7 @@ vi.mock('consola', () => ({
 
 import consola from 'consola'
 import { logger } from './logger.js'
-import { ICONS, type IconKey } from './emoji.js'
+import { ICONS, type IconKey } from './icons.js'
 
 type Level = 'success' | 'error' | 'warn' | 'info'
 

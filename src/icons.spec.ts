@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { priorityEmoji, getIcon, ICONS } from './emoji.js'
+import { priorityIcon, getIcon, statusIcon, ICONS } from './icons.js'
 import type { Priority } from './types.js'
 
 describe('ICONS', () => {
@@ -17,7 +17,7 @@ describe('ICONS', () => {
   })
 })
 
-describe('priorityEmoji', () => {
+describe('priorityIcon', () => {
   const cases: Array<[Priority, string]> = [
     [1, '▼'],
     [2, '▽'],
@@ -27,7 +27,22 @@ describe('priorityEmoji', () => {
   ]
 
   it.each(cases)('maps priority %d to %s', (priority, expected) => {
-    expect(priorityEmoji(priority)).toBe(expected)
+    expect(priorityIcon(priority)).toBe(expected)
+  })
+})
+
+describe('statusIcon', () => {
+  it.each([
+    ['todo', '○'],
+    ['in-progress', '◑'],
+    ['done', '✔'],
+    ['closed', '✖'],
+  ] as const)('maps %s to %s', (status, expected) => {
+    expect(statusIcon(status)).toBe(expected)
+  })
+
+  it('returns raw string for unknown status', () => {
+    expect(statusIcon('unknown')).toBe('unknown')
   })
 })
 

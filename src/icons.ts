@@ -48,10 +48,6 @@ export const ICONS = {
 
 export type IconKey = keyof typeof ICONS
 
-// Backwards-compat aliases
-export type EmojiKey = IconKey
-export { ICONS as EMOJI }
-
 export function getIcon(key: IconKey): string {
   return ICONS[key]
 }
@@ -64,6 +60,18 @@ const PRIORITY_KEYS: Record<Priority, IconKey> = {
   5: 'priority_highest',
 }
 
-export function priorityEmoji(p: Priority): string {
+export function priorityIcon(p: Priority): string {
   return ICONS[PRIORITY_KEYS[p]]
+}
+
+const STATUS_KEYS: Record<string, IconKey> = {
+  'todo': 'todo',
+  'in-progress': 'in_progress',
+  'done': 'done',
+  'closed': 'closed',
+}
+
+export function statusIcon(status: string): string {
+  const key = STATUS_KEYS[status]
+  return key ? ICONS[key] : status
 }

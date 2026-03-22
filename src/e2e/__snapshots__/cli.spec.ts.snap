@@ -25,10 +25,10 @@ exports[`cli e2e — interactive list flow > list renders pre-seeded tasks 1`] =
                                                                                 
                                                                                 
 ────────────────────────────────────────────┬───────────────────────────────────
-ID          STATUS          TITLE           │ Preview                           
+ID          STATUS    TITLE                 │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
-TEST-001    todo ◇          first seeded t… │ ◇ TEST-001 feat todo              
-TEST-002    todo ◇          second seeded … │ first seeded task                 
+TEST-001    ○ ◇       first seeded task     │ ◇ TEST-001 feat ○                 
+TEST-002    ○ ◇       second seeded task    │ first seeded task                 
                                             │                                   
                                             │                                   
                                             │                                   
