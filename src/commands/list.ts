@@ -145,10 +145,9 @@ export default defineCommand({
         const result = await interactiveEdit(selected, currentTasks)
         if (result) {
           updateTask(dir, selected.id, result)
+          currentTasks = listTasks(filter)
+          currentArchived = listArchivedTasks(filter)
         }
-
-        currentTasks = listTasks(filter)
-        currentArchived = listArchivedTasks(filter)
       }
     } catch (err) {
       logger.error(`${(err as Error).message}`)

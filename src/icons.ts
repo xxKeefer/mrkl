@@ -1,4 +1,4 @@
-import type { Priority } from './types.js'
+import type { Priority, Status } from './types.js'
 
 export const ICONS = {
   // Log badges (vitest/consola standard)
@@ -64,14 +64,14 @@ export function priorityIcon(p: Priority): string {
   return ICONS[PRIORITY_KEYS[p]]
 }
 
-const STATUS_KEYS: Record<string, IconKey> = {
+const STATUS_KEYS: Record<Status, IconKey> = {
   'todo': 'todo',
   'in-progress': 'in_progress',
   'done': 'done',
   'closed': 'closed',
 }
 
-export function statusIcon(status: string): string {
+export function statusIcon(status: Status): string {
   const key = STATUS_KEYS[status]
   return key ? ICONS[key] : status
 }

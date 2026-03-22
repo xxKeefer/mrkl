@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { priorityIcon, getIcon, statusIcon, ICONS } from './icons.js'
-import type { Priority } from './types.js'
+import type { Priority, Status } from './types.js'
 
 describe('ICONS', () => {
   it('all values are exactly 1 character', () => {
@@ -32,17 +32,15 @@ describe('priorityIcon', () => {
 })
 
 describe('statusIcon', () => {
-  it.each([
+  const cases: Array<[Status, string]> = [
     ['todo', '○'],
     ['in-progress', '◑'],
     ['done', '✔'],
     ['closed', '✖'],
-  ] as const)('maps %s to %s', (status, expected) => {
-    expect(statusIcon(status)).toBe(expected)
-  })
+  ]
 
-  it('returns raw string for unknown status', () => {
-    expect(statusIcon('unknown')).toBe('unknown')
+  it.each(cases)('maps %s to %s', (status, expected) => {
+    expect(statusIcon(status)).toBe(expected)
   })
 })
 

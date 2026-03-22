@@ -118,7 +118,12 @@ MRKL-005    ○ ◇       dashboard layout      │
                                             │                                   
                                             │                                   
                                             │                                   
-                                            │                                   "
+                                            │                                   
+                                            │                                   
+                                            │                                   
+────────────────────────────────────────────┴───────────────────────────────────
+5/5 tasks  ↑↓: navigate  /: search  s: sort  d: direction  p: preview  Tab: swit
+ch  Esc: quit                                                                   "
 `;
 
 exports[`interaction snapshots > typing characters filters the task list 1`] = `

@@ -80,16 +80,10 @@ const STATUS_W = 10
 
 
 function padOrTruncate(text: string, width: number): string {
-  const vw = visualWidth(text)
-  if (vw > width) {
-    // Trim characters until visual width fits, then add ellipsis
-    let trimmed = text
-    while (visualWidth(trimmed) > width - 1 && trimmed.length > 0) {
-      trimmed = trimmed.slice(0, -1)
-    }
-    return trimmed + '…'
+  if (text.length > width) {
+    return text.slice(0, width - 1) + '…'
   }
-  return text + ' '.repeat(width - vw)
+  return text + ' '.repeat(width - text.length)
 }
 
 function formatRow(
@@ -143,10 +137,6 @@ const ESCAPE_RE = /\x1B\[[0-9;]*m/g
 function stripEscapes(text: string): string {
   return text.replace(ESCAPE_RE, '')
 }
-function visualWidth(text: string): number {
-  return stripEscapes(text).length
-}
-
 function truncateToWidth(text: string, maxWidth: number): string {
   const plain = stripEscapes(text)
   if (plain.length <= maxWidth) return text
@@ -155,12 +145,12 @@ function truncateToWidth(text: string, maxWidth: number): string {
 
 function wrapRelationshipIds(label: string, ids: string[], width: number, color: string): string[] {
   const prefix = `  ${label}: `
-  const indent = ' '.repeat(visualWidth(prefix))
+  const indent = ' '.repeat(prefix.length)
   const lines: string[] = []
   let current = prefix
   for (let i = 0; i < ids.length; i++) {
     const token = i < ids.length - 1 ? `${ids[i]}, ` : ids[i]
-    if (visualWidth(current + token) > width && current !== prefix) {
+    if (current.length + token.length > width && current !== prefix) {
       lines.push(current.trimEnd())
       current = indent + token
     } else {
@@ -389,7 +379,7 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
     buf.push(`${FG_GRAY}${'─'.repeat(cols)}${RESET}`)
   }
   const countInfo = `${filtered.length}/${datasets[state.activeTab].entries.length}`
-  const sortInfo = state.sortField !== 'none' ? `  sort: ${state.sortField} ${state.sortDirection === 'desc' ? '▼' : '▲'}` : ''
+  const sortInfo = state.sortField !== 'none' ? `  sort: ${state.sortField} ${state.sortDirection === 'desc' ? getIcon('priority_lowest') : getIcon('priority_highest')}` : ''
   const helpText = state.searchMode
     ? 'Type to filter  Esc: done'
     : '↑↓: navigate  /: search  s: sort  d: direction  p: preview  Tab: switch  Esc: quit'
@@ -509,6 +499,7 @@ export async function interactiveList(
       if (stdin.isTTY) stdin.setRawMode(false)
       stdin.pause()
       stdin.removeListener('data', onData)
+      stdout.removeListener('resize', onResize)
     }
 
     function onData(data: string): void {
@@ -594,8 +585,7 @@ export async function interactiveList(
         // Enter
         if (ch === '\r' || ch === '\n') {
           cleanup()
-          const selected = getFiltered()[selectedIndex]
-          resolve(selected?.task ?? null)
+          resolve(filtered[selectedIndex]?.task ?? null)
           return
         }
 
@@ -627,7 +617,7 @@ export async function interactiveList(
 
     stdin.on('data', onData)
 
-    // Handle resize
-    stdout.on('resize', () => render())
+    const onResize = () => render()
+    stdout.on('resize', onResize)
   })
 }
