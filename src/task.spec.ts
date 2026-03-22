@@ -222,8 +222,8 @@ describe('groupByEpic', () => {
 
     const blockerEntry = grouped.find((g) => g.task.id === 'TEST-001')!
     const blockedEntry = grouped.find((g) => g.task.id === 'TEST-002')!
-    expect(blockerEntry.blocksIndicator).toBe('🚧 TEST-002')
-    expect(blockedEntry.blockedByIndicator).toBe('🛑 TEST-001')
+    expect(blockerEntry.blocksIndicator).toBe('« TEST-002')
+    expect(blockedEntry.blockedByIndicator).toBe('» TEST-001')
   })
 
   it('handles orphan children whose parent is not in the list', () => {
@@ -245,7 +245,7 @@ describe('buildRelationshipIndicators', () => {
 
     const result = buildRelationshipIndicators([blocker, t2, t3], blocker)
 
-    expect(result.blocksDisplay).toBe('🚧 TEST-002, TEST-003')
+    expect(result.blocksDisplay).toBe('« TEST-002, TEST-003')
     expect(result.blockedByDisplay).toBeNull()
   })
 
@@ -257,7 +257,7 @@ describe('buildRelationshipIndicators', () => {
     const result = buildRelationshipIndicators([blocker, t2, blocked], blocked)
 
     expect(result.blocksDisplay).toBeNull()
-    expect(result.blockedByDisplay).toBe('🛑 TEST-001, TEST-002')
+    expect(result.blockedByDisplay).toBe('» TEST-001, TEST-002')
   })
 
   it('returns null for both when no relationships exist', () => {

@@ -138,9 +138,27 @@ function wrapText(text: string, width: number): string[] {
   return result
 }
 
-const EMOJI_RE = /[\u2300-\u23FF\u2600-\u26FF\u2700-\u27BF\u2B50-\u2B55\u{1F300}-\u{1F9FF}]\uFE0F?/gu
+// BMP emoji + VS16 → 2-wide; supplementary plane emoji → 2-wide; BMP emoji alone → 1-wide
+const WIDE_EMOJI_RE = /(?:[\u2300-\u23FF\u2600-\u26FF\u2700-\u27BF\u2B50-\u2B55]\uFE0F|[\u{1F300}-\u{1F9FF}]\uFE0F?)/gu
+const NARROW_EMOJI_RE = /[\u2300-\u23FF\u2600-\u26FF\u2700-\u27BF\u2B50-\u2B55](?!\uFE0F)/gu
+const ANSI_RE = /\x1B\[[0-9;]*m/g
+function stripAnsi(text: string): string {
+  return text.replace(ANSI_RE, '')
+}
 function visualWidth(text: string): number {
-  return text.replace(EMOJI_RE, 'XX').length
+  // Wide emoji (BMP+VS16 or supplementary) count as 2; narrow BMP emoji count as 1
+  return stripAnsi(text).replace(WIDE_EMOJI_RE, 'XX').length
+}
+
+function truncateToWidth(text: string, maxWidth: number): string {
+  const plain = stripAnsi(text)
+  if (visualWidth(plain) <= maxWidth) return text
+  // Truncate the plain text, then rebuild with original ANSI codes up to the cut point
+  let trimmed = plain
+  while (visualWidth(trimmed) > maxWidth - 1 && trimmed.length > 0) {
+    trimmed = trimmed.slice(0, -1)
+  }
+  return trimmed + '…'
 }
 
 function wrapRelationshipIds(label: string, ids: string[], width: number, color: string): string[] {
@@ -175,7 +193,9 @@ function buildPreviewLines(
   lines.push(
     `${hierarchyEmoji}${priorityEmoji(p)} ${BOLD}${task.id}${RESET} ${FG_GRAY}${task.type}${RESET} ${statusColor(task.status)}${task.status}${RESET}`,
   )
-  lines.push(`${BOLD}${task.title}${RESET}`)
+  for (const tl of wrapText(task.title, width)) {
+    lines.push(`${BOLD}${tl}${RESET}`)
+  }
   lines.push('')
 
   const blockedBy = getBlockedBy(allTasks, task.id)
@@ -199,7 +219,9 @@ function buildPreviewLines(
   }
 
   if (task.flag) {
-    lines.push(`${getIcon('flag')} ${task.flag}`)
+    for (const fl of wrapText(`${getIcon('flag')} ${task.flag}`, width)) {
+      lines.push(fl)
+    }
     lines.push('')
   }
 
@@ -316,9 +338,10 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
   if (state.selectedIndex >= state.scrollOffset + maxVisible)
     state.scrollOffset = state.selectedIndex - maxVisible + 1
 
-  // Build preview lines
+  // Build preview lines (use previewWidth - 1 as margin for emoji width variance)
   const selectedTask = filtered[state.selectedIndex]?.task
-  const previewLines = buildPreviewLines(selectedTask, previewWidth, state.allTasks)
+  const safePreviewWidth = Math.max(0, previewWidth - 1)
+  const previewLines = buildPreviewLines(selectedTask, safePreviewWidth, state.allTasks)
 
   // Render list rows
   for (let i = 0; i < maxVisible; i++) {
@@ -352,7 +375,7 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
     }
 
     if (vertical) {
-      const rightPart = previewLines[i] ?? ''
+      const rightPart = truncateToWidth(previewLines[i] ?? '', previewWidth)
       buf.push(`${leftPart}${FG_GRAY}│${RESET} ${rightPart}`)
     } else {
       buf.push(leftPart)
@@ -362,8 +385,9 @@ export function renderList(state: ListRenderState, stdout: NodeJS.WriteStream): 
   // Horizontal preview below list
   if (horizontal) {
     buf.push(`${FG_GRAY}${'─'.repeat(cols)}${RESET}`)
+    const hPreviewMax = cols - 2 // 1 for leading space, 1 for margin
     for (let i = 0; i < previewRowCount; i++) {
-      buf.push(` ${previewLines[i] ?? ''}`)
+      buf.push(` ${truncateToWidth(previewLines[i] ?? '', hPreviewMax)}`)
     }
   }
 
@@ -419,16 +443,14 @@ export async function interactiveList(
       result = result.filter((e) => e.searchText.toLowerCase().includes(q))
     }
     if (sortField !== 'none') {
+      const entryById = new Map(result.map((e) => [e.task.id, e]))
       const sortedTasks = sortTasks(result.map((e) => e.task), sortField, sortDirection)
-      result = sortedTasks.map((t) => {
-        const entry = result.find((e) => e.task.id === t.id)!
-        return { ...entry, indent: 0 }
-      })
+      result = sortedTasks.map((t) => ({ ...entryById.get(t.id)!, indent: 0 }))
     }
     return result
   }
 
-  function render(): void {
+  function render(precomputed?: ListEntry[]): void {
     const state: ListRenderState = {
       activeTab,
       query,
@@ -439,7 +461,7 @@ export async function interactiveList(
       sortDirection,
       previewOpen,
       datasets,
-      filtered: getFiltered(),
+      filtered: precomputed ?? getFiltered(),
       allTasks: activeTab === 0 ? currentTasks : currentArchived,
     }
     renderList(state, stdout)
@@ -458,7 +480,7 @@ export async function interactiveList(
     if (selectedIndex >= filtered.length) {
       selectedIndex = Math.max(0, filtered.length - 1)
     }
-    render()
+    render(filtered)
   }
 
   // Setup terminal

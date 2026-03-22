@@ -4,7 +4,6 @@ import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { buildEntries, renderList } from './list-tui.js'
 import type { ListRenderState } from './list-tui.js'
-import { setAsciiMode } from '../emoji.js'
 import { makeTask, makeListState, createMockStdout, renderToScreen, spawnTui, type TuiProcess } from './tui-test-harness.js'
 
 describe('buildEntries', () => {
@@ -428,32 +427,85 @@ describe('render snapshots', () => {
     expect(screen).toMatchSnapshot()
   })
 
-  it('ascii mode snapshot at 80 cols', async () => {
-    setAsciiMode(true)
-    try {
-      const tasks = [
-        makeTask({ id: 'MRKL-001', title: 'Epic task', type: 'feat', status: 'todo', priority: 5, blocks: ['MRKL-002'] }),
-        makeTask({ id: 'MRKL-002', title: 'Child task', type: 'fix', status: 'in-progress', parent: 'MRKL-001', priority: 3 }),
-        makeTask({ id: 'MRKL-003', title: 'Standalone', type: 'chore', status: 'done', priority: 1 }),
-      ]
-      const entries = buildEntries(tasks)
-      const state = makeListState({
-        datasets: [
-          { label: 'Tasks', entries },
-          { label: 'Archive', entries: [] },
-        ],
-        filtered: entries,
-        allTasks: tasks,
-      })
-      const stdout = createMockStdout(80, 24)
-      renderList(state, stdout)
-      const screen = await renderToScreen(stdout.getOutput(), 80, 24)
-      // Should use ASCII symbols instead of emoji
-      expect(screen).not.toMatch(/[\u{1F300}-\u{1F9FF}]/u)
-      expect(screen).toMatchSnapshot()
-    } finally {
-      setAsciiMode(false)
+
+  it('long preview title wraps within panel bounds at 80 cols', async () => {
+    const longTitle = 'create function should default to feat if not type provided and also handle edge cases'
+    const longDesc = 'ci job failed once on github, passed again on second run with no changes. This is a very long description that should wrap properly within the preview panel bounds.'
+    const tasks = [
+      makeTask({ id: 'MRKL-041', title: longTitle, type: 'feat', status: 'todo', priority: 5, description: longDesc }),
+      makeTask({ id: 'MRKL-002', title: 'Short task', type: 'fix', status: 'in-progress' }),
+    ]
+    const entries = buildEntries(tasks)
+    const state = makeListState({
+      datasets: [
+        { label: 'Tasks', entries },
+        { label: 'Archive', entries: [] },
+      ],
+      filtered: entries,
+      allTasks: tasks,
+    })
+    const stdout = createMockStdout(80, 24)
+    renderList(state, stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 80, 24)
+    const lines = screen.split('\n')
+    // Every line between the header separator and bottom separator should be exactly 80 chars
+    // (no wrapping causing extra-long or misaligned lines)
+    for (const line of lines) {
+      expect(line.length).toBeLessThanOrEqual(80)
     }
+    // The │ separator should appear on every data row in vertical mode
+    const dataLines = lines.filter((l: string) => l.includes('MRKL-') && !l.includes('Preview'))
+    for (const l of dataLines) {
+      expect(l).toContain('│')
+    }
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('long preview title wraps within panel bounds at 100 cols', async () => {
+    const longTitle = 'create function should default to feat if not type provided and also handle edge cases when no arguments given'
+    const tasks = [
+      makeTask({ id: 'MRKL-041', title: longTitle, type: 'feat', status: 'todo', priority: 5 }),
+    ]
+    const entries = buildEntries(tasks)
+    const state = makeListState({
+      datasets: [
+        { label: 'Tasks', entries },
+        { label: 'Archive', entries: [] },
+      ],
+      filtered: entries,
+      allTasks: tasks,
+    })
+    const stdout = createMockStdout(100, 24)
+    renderList(state, stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 100, 24)
+    const lines = screen.split('\n')
+    for (const line of lines) {
+      expect(line.length).toBeLessThanOrEqual(100)
+    }
+    expect(screen).toMatchSnapshot()
+  })
+
+  it('long flag wraps within preview panel at 80 cols', async () => {
+    const tasks = [
+      makeTask({ id: 'MRKL-001', title: 'Task', type: 'feat', status: 'todo', flag: 'this-is-a-very-long-flag-that-should-wrap-inside-the-preview-panel' }),
+    ]
+    const entries = buildEntries(tasks)
+    const state = makeListState({
+      datasets: [
+        { label: 'Tasks', entries },
+        { label: 'Archive', entries: [] },
+      ],
+      filtered: entries,
+      allTasks: tasks,
+    })
+    const stdout = createMockStdout(80, 24)
+    renderList(state, stdout)
+    const screen = await renderToScreen(stdout.getOutput(), 80, 24)
+    const lines = screen.split('\n')
+    for (const line of lines) {
+      expect(line.length).toBeLessThanOrEqual(80)
+    }
+    expect(screen).toMatchSnapshot()
   })
 
   it('title truncation snapshot at 40 cols', async () => {

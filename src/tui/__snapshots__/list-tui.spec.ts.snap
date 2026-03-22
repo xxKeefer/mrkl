@@ -6,7 +6,7 @@ exports[`interaction snapshots > Enter selects the highlighted task and opens ed
   ────────────────────────────────────────────────────────────                  
 › Type            ◂ feat ▸                                                      
   Status            todo                                                        
-  Priority          ⏫ 5-highest                                                 
+  Priority          ▲ 5-highest                                                 
   Title           auth epic                                                     
   Description     ····················                                          
   Flag            ····················                                          
@@ -25,7 +25,7 @@ exports[`interaction snapshots > Tab key switches between Tasks and Archive 1`] 
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
-MRKL-099    closed ⏹️       old feature     │ ⏹️ MRKL-099 feat closed             
+MRKL-099    closed ◇        old feature     │ ◇ MRKL-099 feat closed            
                                             │ old feature                       
                                             │                                   
                                             │                                   
@@ -52,11 +52,11 @@ exports[`interaction snapshots > arrow down moves selection to next task 1`] = `
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
-MRKL-001    todo ⏫         auth epic       │ 🔼 MRKL-002 fix in-progress         
-MRKL-002    in-progress 🔼  fix login bug   │ fix login bug                      
-MRKL-003    todo 🔽         auth tests      │                                    
-MRKL-004    done ⏹️         update ci conf… │                                    
-MRKL-005    todo ⏹️         dashboard layo… │                                    
+MRKL-001    todo ▲          auth epic       │ △ MRKL-002 fix in-progress        
+MRKL-002    in-progress △   fix login bug   │ fix login bug                     
+MRKL-003    todo ▽          auth tests      │                                   
+MRKL-004    done ◇          update ci conf… │                                   
+MRKL-005    todo ◇          dashboard layo… │                                   
                                             │                                   
                                             │                                   
                                             │                                   
@@ -79,11 +79,11 @@ exports[`interaction snapshots > arrow up moves selection back to previous task 
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
-MRKL-001    todo ⏫         auth epic       │ ⏫ MRKL-001 feat todo               
-MRKL-002    in-progress 🔼  fix login bug   │ auth epic                          
-MRKL-003    todo 🔽         auth tests      │                                    
-MRKL-004    done ⏹️         update ci conf… │                                    
-MRKL-005    todo ⏹️         dashboard layo… │                                    
+MRKL-001    todo ▲          auth epic       │ ▲ MRKL-001 feat todo              
+MRKL-002    in-progress △   fix login bug   │ auth epic                         
+MRKL-003    todo ▽          auth tests      │                                   
+MRKL-004    done ◇          update ci conf… │                                   
+MRKL-005    todo ◇          dashboard layo… │                                   
                                             │                                   
                                             │                                   
                                             │                                   
@@ -106,11 +106,11 @@ exports[`interaction snapshots > initial render shows task list with first item 
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
-MRKL-001    todo ⏫         auth epic       │ ⏫ MRKL-001 feat todo               
-MRKL-002    in-progress 🔼  fix login bug   │ auth epic                          
-MRKL-003    todo 🔽         auth tests      │                                    
-MRKL-004    done ⏹️         update ci conf… │                                    
-MRKL-005    todo ⏹️         dashboard layo… │                                    
+MRKL-001    todo ▲          auth epic       │ ▲ MRKL-001 feat todo              
+MRKL-002    in-progress △   fix login bug   │ auth epic                         
+MRKL-003    todo ▽          auth tests      │                                   
+MRKL-004    done ◇          update ci conf… │                                   
+MRKL-005    todo ◇          dashboard layo… │                                   
                                             │                                   
                                             │                                   
                                             │                                   
@@ -133,11 +133,11 @@ exports[`interaction snapshots > typing characters filters the task list 1`] = `
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
-MRKL-001    todo ⏫         auth epic       │ ⏫ MRKL-001 feat todo               
-MRKL-002    in-progress 🔼  fix login bug   │ auth epic                          
-MRKL-003    todo 🔽         auth tests      │                                    
-MRKL-004    done ⏹️         update ci conf… │                                    
-MRKL-005    todo ⏹️         dashboard layo… │                                    
+MRKL-001    todo ▲          auth epic       │ ▲ MRKL-001 feat todo              
+MRKL-002    in-progress △   fix login bug   │ auth epic                         
+MRKL-003    todo ▽          auth tests      │                                   
+MRKL-004    done ◇          update ci conf… │                                   
+MRKL-005    todo ◇          dashboard layo… │                                   
                                             │                                   
                                             │                                   
                                             │                                   
@@ -160,8 +160,8 @@ exports[`render snapshots > archive tab active snapshot at 80 cols 1`] = `
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
-MRKL-020    closed ⏹️       Archived featu… │ ⏹️ MRKL-020 feat closed             
-MRKL-021    done ⏹️         Old bugfix      │ Archived feature                   
+MRKL-020    closed ◇        Archived featu… │ ◇ MRKL-020 feat closed            
+MRKL-021    done ◇          Old bugfix      │ Archived feature                  
                                             │                                   
                                             │                                   
                                             │                                   
@@ -180,33 +180,6 @@ MRKL-021    done ⏹️         Old bugfix      │ Archived feature
 ch  Esc: quit                                                                   "
 `;
 
-exports[`render snapshots > ascii mode snapshot at 80 cols 1`] = `
-"[Tasks]   Archive                                                               
-                                                                                
-                                                                                
-────────────────────────────────────────────┬───────────────────────────────────
-ID          STATUS          TITLE           │ Preview                           
-────────────────────────────────────────────┼───────────────────────────────────
-MRKL-001    todo ◉ ▲ ►      Epic task       │ ◉▲ MRKL-001 feat todo             
-├─MRKL-002    in-progress · —…Child task    │ Epic task                         
-MRKL-003    done ▼          Standalone      │                                   
-                                            │ Relationships                     
-                                            │   · Children: MRKL-002            
-                                            │   ► Blocks: MRKL-002              
-                                            │                                   
-                                            │                                   
-                                            │                                   
-                                            │                                   
-                                            │                                   
-                                            │                                   
-                                            │                                   
-                                            │                                   
-                                            │                                   
-────────────────────────────────────────────┴───────────────────────────────────
-3/3 tasks  ↑↓: navigate  /: search  s: sort  d: direction  p: preview  Tab: swit
-ch  Esc: quit                                                                   "
-`;
-
 exports[`render snapshots > basic task list snapshot at 80 cols 1`] = `
 "[Tasks]   Archive                                                               
                                                                                 
@@ -214,12 +187,12 @@ exports[`render snapshots > basic task list snapshot at 80 cols 1`] = `
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
-MRKL-001    todo ✴️ ⏫      Add user authe… │ ✴️⏫ MRKL-001 feat todo               
-├─MRKL-004    todo ❇️ 🔽      Design dashb… │ Add user authentication             
-MRKL-002    in-progress 🔼  Fix login redi… │                                    
-MRKL-003    done ⏹️         Update CI pipe… │ Relationships                      
-MRKL-005    in-progress ⏬  Refactor token… │   ❇️ Children: MRKL-004             
-MRKL-006    todo ⏹️         Write integrat… │                                    
+MRKL-001    todo ◉ ▲        Add user authe… │ ◉▲ MRKL-001 feat todo             
+├─MRKL-004    todo ◌ ▽        Design dashb… │ Add user authentication           
+MRKL-002    in-progress △   Fix login redi… │                                   
+MRKL-003    done ◇          Update CI pipe… │ Relationships                     
+MRKL-005    in-progress ▼   Refactor token… │   ◌ Children: MRKL-004            
+MRKL-006    todo ◇          Write integrat… │                                   
                                             │                                   
                                             │                                   
                                             │                                   
@@ -241,11 +214,11 @@ exports[`render snapshots > blocking indicators snapshot at 80 cols 1`] = `
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
-MRKL-010    todo ⏫ 🚧      Database migra… │ ⏫ MRKL-010 feat todo                
-MRKL-011    todo 🔼 🛑      API endpoints   │ Database migration                  
-MRKL-012    todo ⏹️ 🛑      Frontend integ… │                                     
+MRKL-010    todo ▲ «        Database migra… │ ▲ MRKL-010 feat todo              
+MRKL-011    todo △ »        API endpoints   │ Database migration                
+MRKL-012    todo ◇ »        Frontend integ… │                                   
                                             │ Relationships                     
-                                            │   🚧 Blocks: MRKL-011, MRKL-012    
+                                            │   « Blocks: MRKL-011, MRKL-012    
                                             │                                   
                                             │                                   
                                             │                                   
@@ -348,11 +321,11 @@ exports[`render snapshots > epic grouping snapshot at 80 cols 1`] = `
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
-MRKL-001    todo ✴️ ⏹️      Auth epic       │ ✴️⏹️ MRKL-001 feat todo               
-├─MRKL-002    in-progress ❇️ …Login page    │ Auth epic                          
-├─MRKL-003    todo ❇️ ⏹️      Token refresh │                                     
-MRKL-004    done ⏹️         Fix CI pipeline │ Relationships                      
-MRKL-005    todo ⏹️         Update README   │   ❇️ Children: MRKL-002, MRKL-003   
+MRKL-001    todo ◉ ◇        Auth epic       │ ◉◇ MRKL-001 feat todo             
+├─MRKL-002    in-progress ◌ ◇ Login page    │ Auth epic                         
+├─MRKL-003    todo ◌ ◇        Token refresh │                                   
+MRKL-004    done ◇          Fix CI pipeline │ Relationships                     
+MRKL-005    todo ◇          Update README   │   ◌ Children: MRKL-002, MRKL-003  
                                             │                                   
                                             │                                   
                                             │                                   
@@ -375,9 +348,9 @@ exports[`render snapshots > horizontal split snapshot at 70 cols 1`] = `
 ──────────────────────────────────────────────────────────────────────
 ID          STATUS          TITLE                                     
 ──────────────────────────────────────────────────────────────────────
-MRKL-001    todo ⏫         Add user authentication                    
-MRKL-002    in-progress 🔼  Fix login redirect bug                     
-MRKL-003    done ⏹️         Update CI pipeline config                  
+MRKL-001    todo ▲          Add user authentication                   
+MRKL-002    in-progress △   Fix login redirect bug                    
+MRKL-003    done ◇          Update CI pipeline config                 
                                                                       
                                                                       
                                                                       
@@ -386,7 +359,7 @@ MRKL-003    done ⏹️         Update CI pipeline config
                                                                       
                                                                       
 ──────────────────────────────────────────────────────────────────────
- ⏫ MRKL-001 feat todo                                                 
+ ▲ MRKL-001 feat todo                                                 
  Add user authentication                                              
                                                                       
                                                                       
@@ -401,6 +374,86 @@ MRKL-003    done ⏹️         Update CI pipeline config
  Tab: switch  Esc: quit                                               "
 `;
 
+exports[`render snapshots > long flag wraps within preview panel at 80 cols 1`] = `
+"[Tasks]   Archive                                                               
+                                                                                
+                                                                                
+────────────────────────────────────────────┬───────────────────────────────────
+ID          STATUS          TITLE           │ Preview                           
+────────────────────────────────────────────┼───────────────────────────────────
+MRKL-001    todo ◇          Task            │ ◇ MRKL-001 feat todo              
+                                            │ Task                              
+                                            │                                   
+                                            │ ⚑                                 
+                                            │ this-is-a-very-long-flag-that-sh… 
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+                                            │                                   
+────────────────────────────────────────────┴───────────────────────────────────
+1/1 tasks  ↑↓: navigate  /: search  s: sort  d: direction  p: preview  Tab: swit
+ch  Esc: quit                                                                   "
+`;
+
+exports[`render snapshots > long preview title wraps within panel bounds at 80 cols 1`] = `
+"[Tasks]   Archive                                                               
+                                                                                
+                                                                                
+────────────────────────────────────────────┬───────────────────────────────────
+ID          STATUS          TITLE           │ Preview                           
+────────────────────────────────────────────┼───────────────────────────────────
+MRKL-041    todo ▲          create functio… │ ▲ MRKL-041 feat todo              
+MRKL-002    in-progress ◇   Short task      │ create function should default    
+                                            │ to feat if not type provided and  
+                                            │ also handle edge cases            
+                                            │                                   
+                                            │ Description                       
+                                            │ ci job failed once on github,     
+                                            │ passed again on second run with   
+                                            │ no changes. This is a very long   
+                                            │ description that should wrap      
+                                            │ properly within the preview       
+                                            │ panel bounds.                     
+                                            │                                   
+                                            │                                   
+                                            │                                   
+────────────────────────────────────────────┴───────────────────────────────────
+2/2 tasks  ↑↓: navigate  /: search  s: sort  d: direction  p: preview  Tab: swit
+ch  Esc: quit                                                                   "
+`;
+
+exports[`render snapshots > long preview title wraps within panel bounds at 100 cols 1`] = `
+"[Tasks]   Archive                                                                                   
+                                                                                                    
+                                                                                                    
+───────────────────────────────────────────────────────┬────────────────────────────────────────────
+ID          STATUS          TITLE                      │ Preview                                    
+───────────────────────────────────────────────────────┼────────────────────────────────────────────
+MRKL-041    todo ▲          create function should de… │ ▲ MRKL-041 feat todo                       
+                                                       │ create function should default to feat if  
+                                                       │ not type provided and also handle edge     
+                                                       │ cases when no arguments given              
+                                                       │                                            
+                                                       │                                            
+                                                       │                                            
+                                                       │                                            
+                                                       │                                            
+                                                       │                                            
+                                                       │                                            
+                                                       │                                            
+                                                       │                                            
+                                                       │                                            
+                                                       │                                            
+───────────────────────────────────────────────────────┴────────────────────────────────────────────
+1/1 tasks  ↑↓: navigate  /: search  s: sort  d: direction  p: preview  Tab: switch  Esc: quit       "
+`;
+
 exports[`render snapshots > mixed emoji widths snapshot at 80 cols 1`] = `
 "[Tasks]   Archive                                                               
                                                                                 
@@ -408,11 +461,11 @@ exports[`render snapshots > mixed emoji widths snapshot at 80 cols 1`] = `
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
-MRKL-001    todo ⏫ 🚧      Highest priori… │ ⏫ MRKL-001 feat todo                
-MRKL-002    in-progress ⏹️  Normal priorit… │ Highest priority blocker           
-MRKL-003    todo ⏬ 🛑      Lowest blocked… │                                     
+MRKL-001    todo ▲ «        Highest priori… │ ▲ MRKL-001 feat todo              
+MRKL-002    in-progress ◇   Normal priorit… │ Highest priority blocker          
+MRKL-003    todo ▼ »        Lowest blocked… │                                   
                                             │ Relationships                     
-                                            │   🚧 Blocks: MRKL-003              
+                                            │   « Blocks: MRKL-003              
                                             │                                   
                                             │                                   
                                             │                                   
@@ -435,9 +488,9 @@ exports[`render snapshots > preview hidden snapshot at 80 cols 1`] = `
 ────────────────────────────────────────────────────────────────────────────────
 ID          STATUS          TITLE                                               
 ────────────────────────────────────────────────────────────────────────────────
-MRKL-001    todo ⏫         Add user authentication                              
-MRKL-002    in-progress 🔼  Fix login redirect bug                               
-MRKL-003    done ⏹️         Update CI pipeline config                            
+MRKL-001    todo ▲          Add user authentication                             
+MRKL-002    in-progress △   Fix login redirect bug                              
+MRKL-003    done ◇          Update CI pipeline config                           
                                                                                 
                                                                                 
                                                                                 
@@ -462,21 +515,21 @@ exports[`render snapshots > scroll offset snapshot at 80 cols 1`] = `
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
-MRKL-004    todo ⏹️         Task number 4   │ ⏹️ MRKL-006 chore done              
-MRKL-005    in-progress ⏹️  Task number 5   │ Task number 6                      
-MRKL-006    done ⏹️         Task number 6   │                                    
-MRKL-007    todo ⏹️         Task number 7   │                                    
-MRKL-008    in-progress ⏹️  Task number 8   │                                    
-MRKL-009    done ⏹️         Task number 9   │                                    
-MRKL-010    todo ⏹️         Task number 10  │                                    
-MRKL-011    in-progress ⏹️  Task number 11  │                                    
-MRKL-012    done ⏹️         Task number 12  │                                    
-MRKL-013    todo ⏹️         Task number 13  │                                    
-MRKL-014    in-progress ⏹️  Task number 14  │                                    
-MRKL-015    done ⏹️         Task number 15  │                                    
-MRKL-016    todo ⏹️         Task number 16  │                                    
-MRKL-017    in-progress ⏹️  Task number 17  │                                    
-MRKL-018    done ⏹️         Task number 18  │                                    
+MRKL-004    todo ◇          Task number 4   │ ◇ MRKL-006 chore done             
+MRKL-005    in-progress ◇   Task number 5   │ Task number 6                     
+MRKL-006    done ◇          Task number 6   │                                   
+MRKL-007    todo ◇          Task number 7   │                                   
+MRKL-008    in-progress ◇   Task number 8   │                                   
+MRKL-009    done ◇          Task number 9   │                                   
+MRKL-010    todo ◇          Task number 10  │                                   
+MRKL-011    in-progress ◇   Task number 11  │                                   
+MRKL-012    done ◇          Task number 12  │                                   
+MRKL-013    todo ◇          Task number 13  │                                   
+MRKL-014    in-progress ◇   Task number 14  │                                   
+MRKL-015    done ◇          Task number 15  │                                   
+MRKL-016    todo ◇          Task number 16  │                                   
+MRKL-017    in-progress ◇   Task number 17  │                                   
+MRKL-018    done ◇          Task number 18  │                                   
 ────────────────────────────────────────────┴───────────────────────────────────
 20/20 tasks  ↑↓: navigate  /: search  s: sort  d: direction  p: preview  Tab: sw
 itch  Esc: quit                                                                 "
@@ -505,9 +558,9 @@ exports[`render snapshots > title truncation snapshot at 40 cols 1`] = `
 ────────────────────────────────────────
 ID          STATUS          TITLE       
 ────────────────────────────────────────
-MRKL-001    todo ⏹️         Implement …  
-MRKL-002    in-progress ⏹️  Fix critic…  
-MRKL-003    done ⏹️         Refactor l…  
+MRKL-001    todo ◇          Implement … 
+MRKL-002    in-progress ◇   Fix critic… 
+MRKL-003    done ◇          Refactor l… 
                                         
                                         
                                         
@@ -516,13 +569,13 @@ MRKL-003    done ⏹️         Refactor l…
                                         
                                         
 ────────────────────────────────────────
- ⏹️ MRKL-001 feat todo                   
- Implement user authentication with OAut
-h2 and SAML                             
-                                        
+ ◇ MRKL-001 feat todo                   
+ Implement user authentication with     
+ OAuth2 and SAML                        
                                         
 ────────────────────────────────────────
-3/3 tasks  ↑↓: navigate  /: search  s: s"
+3/3 tasks  ↑↓: navigate  /: search  s: s
+ort  d: direction  p: preview  Tab: swit"
 `;
 
 exports[`render snapshots > vertical split still used at 100 cols 1`] = `
@@ -532,7 +585,7 @@ exports[`render snapshots > vertical split still used at 100 cols 1`] = `
 ───────────────────────────────────────────────────────┬────────────────────────────────────────────
 ID          STATUS          TITLE                      │ Preview                                    
 ───────────────────────────────────────────────────────┼────────────────────────────────────────────
-MRKL-001    todo ⏫         Add user authentication    │ ⏫ MRKL-001 feat todo                        
+MRKL-001    todo ▲          Add user authentication    │ ▲ MRKL-001 feat todo                       
                                                        │ Add user authentication                    
                                                        │                                            
                                                        │                                            
@@ -558,13 +611,13 @@ exports[`render snapshots > wraps long relationship ID lists with aligned contin
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
-MRKL-050    todo ⏫ 🚧      blocker task    │ ⏫ MRKL-050 feat todo                
-MRKL-051    todo ⏹️ 🛑      task a          │ blocker task                        
-MRKL-052    todo ⏹️ 🛑      task b          │                                     
-MRKL-053    todo ⏹️ 🛑      task c          │ Relationships                       
-MRKL-054    todo ⏹️ 🛑      task d          │   🚧 Blocks: MRKL-051, MRKL-052,     
-MRKL-055    todo ⏹️ 🛑      task e          │              MRKL-053, MRKL-054,    
-                                            │              MRKL-055             
+MRKL-050    todo ▲ «        blocker task    │ ▲ MRKL-050 feat todo              
+MRKL-051    todo ◇ »        task a          │ blocker task                      
+MRKL-052    todo ◇ »        task b          │                                   
+MRKL-053    todo ◇ »        task c          │ Relationships                     
+MRKL-054    todo ◇ »        task d          │   « Blocks: MRKL-051, MRKL-052,   
+MRKL-055    todo ◇ »        task e          │             MRKL-053, MRKL-054,   
+                                            │             MRKL-055              
                                             │                                   
                                             │                                   
                                             │                                   

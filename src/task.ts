@@ -85,6 +85,27 @@ export function createTask(opts: CreateTaskOpts): TaskData {
   return task
 }
 
+function applyFilters(tasks: TaskData[], filter: ListFilter): TaskData[] {
+  let result = tasks
+  if (filter.type) {
+    const types = filter.type.split(',')
+    result = result.filter((t) => types.includes(t.type))
+  }
+  if (filter.status) {
+    const statuses = filter.status.split(',')
+    result = result.filter((t) => statuses.includes(t.status))
+  }
+  if (filter.search) {
+    const q = filter.search.toLowerCase()
+    result = result.filter((t) =>
+      t.id.toLowerCase().includes(q) ||
+      t.title.toLowerCase().includes(q) ||
+      t.description.toLowerCase().includes(q),
+    )
+  }
+  return result
+}
+
 export function listTasks(filter: ListFilter): TaskData[] {
   const tasksDir = join(filter.dir, TASKS_DIR)
 
@@ -92,7 +113,7 @@ export function listTasks(filter: ListFilter): TaskData[] {
     (f) => f.endsWith('.md') && !f.startsWith('.'),
   )
 
-  let tasks = files.flatMap((f) => {
+  const tasks = files.flatMap((f) => {
     try {
       const content = readFileSync(join(tasksDir, f), 'utf-8')
       const task = parse(content, f)
@@ -103,24 +124,7 @@ export function listTasks(filter: ListFilter): TaskData[] {
     }
   })
 
-  if (filter.type) {
-    const types = filter.type.split(',')
-    tasks = tasks.filter((t) => types.includes(t.type))
-  }
-  if (filter.status) {
-    const statuses = filter.status.split(',')
-    tasks = tasks.filter((t) => statuses.includes(t.status))
-  }
-  if (filter.search) {
-    const q = filter.search.toLowerCase()
-    tasks = tasks.filter((t) =>
-      t.id.toLowerCase().includes(q) ||
-      t.title.toLowerCase().includes(q) ||
-      t.description.toLowerCase().includes(q),
-    )
-  }
-
-  return tasks
+  return applyFilters(tasks, filter)
 }
 
 export function parseCutoffDate(input: string): string {
@@ -194,7 +198,7 @@ export function listArchivedTasks(filter: ListFilter): TaskData[] {
     (f) => f.endsWith('.md') && !f.startsWith('.'),
   )
 
-  let tasks = files.flatMap((f) => {
+  const tasks = files.flatMap((f) => {
     try {
       const content = readFileSync(join(archiveDir, f), 'utf-8')
       const task = parse(content, f)
@@ -205,24 +209,7 @@ export function listArchivedTasks(filter: ListFilter): TaskData[] {
     }
   })
 
-  if (filter.type) {
-    const types = filter.type.split(',')
-    tasks = tasks.filter((t) => types.includes(t.type))
-  }
-  if (filter.status) {
-    const statuses = filter.status.split(',')
-    tasks = tasks.filter((t) => statuses.includes(t.status))
-  }
-  if (filter.search) {
-    const q = filter.search.toLowerCase()
-    tasks = tasks.filter((t) =>
-      t.id.toLowerCase().includes(q) ||
-      t.title.toLowerCase().includes(q) ||
-      t.description.toLowerCase().includes(q),
-    )
-  }
-
-  return tasks
+  return applyFilters(tasks, filter)
 }
 
 export function getChildren(tasks: TaskData[], epicId: string): TaskData[] {

@@ -1,16 +1,29 @@
-import { describe, expect, it, afterEach } from 'vitest'
-import { priorityEmoji, getIcon, setAsciiMode, isAsciiMode } from './emoji.js'
+import { describe, expect, it } from 'vitest'
+import { priorityEmoji, getIcon, ICONS } from './emoji.js'
 import type { Priority } from './types.js'
 
-afterEach(() => setAsciiMode(false))
+describe('ICONS', () => {
+  it('all values are exactly 1 character', () => {
+    for (const [key, value] of Object.entries(ICONS)) {
+      expect(value.length, `ICONS.${key} should be 1 char`).toBe(1)
+    }
+  })
+
+  it('contains status icons', () => {
+    expect(ICONS.todo).toBe('○')
+    expect(ICONS.in_progress).toBe('◑')
+    expect(ICONS.done).toBe('✔')
+    expect(ICONS.closed).toBe('✖')
+  })
+})
 
 describe('priorityEmoji', () => {
   const cases: Array<[Priority, string]> = [
-    [1, '⏬'],
-    [2, '🔽'],
-    [3, '⏹️'],
-    [4, '🔼'],
-    [5, '⏫'],
+    [1, '▼'],
+    [2, '▽'],
+    [3, '◇'],
+    [4, '△'],
+    [5, '▲'],
   ]
 
   it.each(cases)('maps priority %d to %s', (priority, expected) => {
@@ -19,31 +32,11 @@ describe('priorityEmoji', () => {
 })
 
 describe('getIcon', () => {
-  it('returns emoji by default', () => {
-    expect(getIcon('success')).toBe('🟢')
-    expect(getIcon('blocks')).toBe('🚧')
-  })
-
-  it('returns ASCII in ascii mode', () => {
-    setAsciiMode(true)
-    expect(getIcon('success')).toBe('●')
-    expect(getIcon('blocks')).toBe('►')
+  it('returns the icon for a key', () => {
+    expect(getIcon('success')).toBe('✔')
+    expect(getIcon('blocks')).toBe('«')
     expect(getIcon('priority_highest')).toBe('▲')
-  })
-
-  it('priorityEmoji respects ascii mode', () => {
-    setAsciiMode(true)
-    expect(priorityEmoji(5)).toBe('▲')
-    expect(priorityEmoji(1)).toBe('▼')
-  })
-})
-
-describe('setAsciiMode', () => {
-  it('toggles mode', () => {
-    expect(isAsciiMode()).toBe(false)
-    setAsciiMode(true)
-    expect(isAsciiMode()).toBe(true)
-    setAsciiMode(false)
-    expect(isAsciiMode()).toBe(false)
+    expect(getIcon('epic')).toBe('◉')
+    expect(getIcon('flag')).toBe('⚑')
   })
 })

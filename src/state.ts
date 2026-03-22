@@ -6,12 +6,10 @@ export const STATE_FILE = '.mrkl.json'
 
 export interface MrklState {
   preview_open: boolean
-  theme: 'emoji' | 'ascii'
 }
 
 const DEFAULTS: MrklState = {
   preview_open: true,
-  theme: 'emoji',
 }
 
 function statePath(): string {

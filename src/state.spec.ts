@@ -22,37 +22,33 @@ describe('state', () => {
 
   it('returns defaults when state file is missing', () => {
     const state = readState()
-    expect(state).toEqual({ preview_open: true, theme: 'emoji' })
+    expect(state).toEqual({ preview_open: true })
   })
 
   it('reads existing state file', () => {
     const filePath = join(tempDir, '.tasks', STATE_FILE)
-    const data = JSON.stringify({ preview_open: false, theme: 'ascii' })
-    writeFileSync(filePath, data)
+    writeFileSync(filePath, JSON.stringify({ preview_open: false }))
     const state = readState()
     expect(state.preview_open).toBe(false)
-    expect(state.theme).toBe('ascii')
   })
 
   it('writeState merges patches into existing state', () => {
     writeState({ preview_open: false })
     const state = readState()
     expect(state.preview_open).toBe(false)
-    expect(state.theme).toBe('emoji') // default preserved
   })
 
   it('writeState creates file if missing', () => {
-    writeState({ theme: 'ascii' })
+    writeState({ preview_open: false })
     const raw = readFileSync(join(tempDir, '.tasks', STATE_FILE), 'utf-8')
     const data = JSON.parse(raw)
-    expect(data.theme).toBe('ascii')
-    expect(data.preview_open).toBe(true)
+    expect(data.preview_open).toBe(false)
   })
 
   it('round-trips correctly', () => {
-    writeState({ preview_open: false, theme: 'ascii' })
+    writeState({ preview_open: false })
     writeState({ preview_open: true })
     const state = readState()
-    expect(state).toEqual({ preview_open: true, theme: 'ascii' })
+    expect(state).toEqual({ preview_open: true })
   })
 })

@@ -8,7 +8,7 @@ exports[`cli e2e — interactive edit flow > edit shows pre-populated form with 
   ────────────────────────────────────────────────────────────                  
 › Type            ◂ feat ▸                                                      
   Status            todo                                                        
-  Priority          ⏹️ 3-normal                                                  
+  Priority          ◇ 3-normal                                                  
   Title           original title                                                
   Description     ····················                                          
   Flag            ····················                                          
@@ -27,8 +27,8 @@ exports[`cli e2e — interactive list flow > list renders pre-seeded tasks 1`] =
 ────────────────────────────────────────────┬───────────────────────────────────
 ID          STATUS          TITLE           │ Preview                           
 ────────────────────────────────────────────┼───────────────────────────────────
-TEST-001    todo ⏹️         first seeded t… │ ⏹️ TEST-001 feat todo               
-TEST-002    todo ⏹️         second seeded … │ first seeded task                  
+TEST-001    todo ◇          first seeded t… │ ◇ TEST-001 feat todo              
+TEST-002    todo ◇          second seeded … │ first seeded task                 
                                             │                                   
                                             │                                   
                                             │                                   
@@ -43,6 +43,6 @@ TEST-002    todo ⏹️         second seeded … │ first seeded task
                                             │                                   
                                             │                                   
 ────────────────────────────────────────────┴───────────────────────────────────
-2/2 tasks  ↑↓: navigate  /: search  s: sort  d: direction  Tab: switch  Esc: qui
-t                                                                               "
+2/2 tasks  ↑↓: navigate  /: search  s: sort  d: direction  p: preview  Tab: swit
+ch  Esc: quit                                                                   "
 `;

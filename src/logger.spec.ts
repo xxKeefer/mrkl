@@ -13,15 +13,17 @@ vi.mock('consola', () => ({
 
 import consola from 'consola'
 import { logger } from './logger.js'
-import { EMOJI, type EmojiKey } from './emoji.js'
+import { ICONS, type IconKey } from './emoji.js'
 
 type Level = 'success' | 'error' | 'warn' | 'info'
 
-const LEVEL_MAP: Record<EmojiKey, Level> = {
+const LEVEL_MAP: Record<IconKey, Level> = {
   success: 'success',
   error: 'error',
   warn: 'warn',
   info: 'info',
+  todo: 'info',
+  in_progress: 'info',
   done: 'success',
   closed: 'info',
   blocks: 'info',
@@ -45,19 +47,19 @@ const LEVEL_MAP: Record<EmojiKey, Level> = {
   child: 'info',
 }
 
-const LEVEL_EMOJI: Record<Level, string> = {
-  success: EMOJI.success,
-  error: EMOJI.error,
-  warn: EMOJI.warn,
-  info: EMOJI.info,
+const LEVEL_ICONS: Record<Level, string> = {
+  success: ICONS.success,
+  error: ICONS.error,
+  warn: ICONS.warn,
+  info: ICONS.info,
 }
 
-function expectedPrefix(key: EmojiKey): string {
+function expectedPrefix(key: IconKey): string {
   const level = LEVEL_MAP[key]
-  const badge = LEVEL_EMOJI[level]
+  const badge = LEVEL_ICONS[level]
   return key === level
     ? `${badge} — `
-    : `${badge} — ${EMOJI[key]} `
+    : `${badge} — ${ICONS[key]} `
 }
 
 describe('logger', () => {
@@ -65,9 +67,9 @@ describe('logger', () => {
     vi.clearAllMocks()
   })
 
-  const keys = Object.keys(EMOJI) as EmojiKey[]
+  const keys = Object.keys(ICONS) as IconKey[]
 
-  it.each(keys)('%s — logs with level badge and emoji prefix', (key) => {
+  it.each(keys)('%s — logs with level badge and icon prefix', (key) => {
     logger[key]('test message')
     expect(consola.log).toHaveBeenCalledWith(`${expectedPrefix(key)}test message`)
   })
@@ -77,7 +79,7 @@ describe('logger', () => {
     expect(consola.log).toHaveBeenCalledWith(`${expectedPrefix(key)}msg`, 42, { x: 1 })
   })
 
-  it('log — passes through to consola.log without emoji', () => {
+  it('log — passes through to consola.log without icon', () => {
     logger.log('raw output')
     expect(consola.log).toHaveBeenCalledWith('raw output')
   })
